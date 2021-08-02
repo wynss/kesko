@@ -3,6 +3,16 @@ name = "nora"
 version = "0.1.0"
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "nora"
+crate-type = ["cdylib"]
 
-[dependencies]
+
+[dependencies.pyo3]
+version = "0.14.1" 
+features = ["extension-module"]
+
+[dependencies.bevy]
+version = "0.5"
+default-features=false
+features = ["bevy_gltf", "bevy_winit", "bevy_wgpu", "render", "bevy_dynamic_plugin", "png", "hdr", "x11"]
