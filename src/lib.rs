@@ -2,14 +2,11 @@ use pyo3::prelude::*;
 use bevy::prelude::*;
 
 
-fn hello_world() {
-    println!("Hello from bevy!")
-}
-
 #[pyfunction]
 fn run_bevy() -> PyResult<()> {
     App::build()
-        .add_startup_system(hello_world.system())
+        .add_plugins(DefaultPlugins)
+        .add_system(bevy::input::system::exit_on_esc_system.system())
         .run();
 
     Ok(())
