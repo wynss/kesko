@@ -1,16 +1,14 @@
+[workspace]
+members = ["core", "python"]
+
 [package]
 name = "nora"
 version = "0.1.0"
 edition = "2018"
 
 [lib]
-name = "nora"
-crate-type = ["cdylib"]
-
-
-[dependencies.pyo3]
-version = "0.14.1" 
-features = ["extension-module"]
+name = "nora_lib"
+path = "src/lib.rs"
 
 [dependencies.bevy]
 version = "0.5"

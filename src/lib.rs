@@ -1,21 +1,18 @@
-use pyo3::prelude::*;
 use bevy::prelude::*;
 
+pub fn world() -> String {
+    String::from("world")
+}
 
-#[pyfunction]
-fn run_bevy() -> PyResult<()> {
+pub fn start() {
     App::build()
+        .insert_resource(WindowDescriptor {
+            title: String::from("Nora"),
+            width: 1280.0,
+            height: 720.0,
+            ..Default::default()
+        })
         .add_plugins(DefaultPlugins)
         .add_system(bevy::input::system::exit_on_esc_system.system())
         .run();
-
-    Ok(())
-}
-
-#[pymodule]
-fn nora(_py: Python, m: &PyModule) -> PyResult<()> {
-
-    m.add_function(wrap_pyfunction!(run_bevy, m)?)?;
-
-    Ok(())
 }
