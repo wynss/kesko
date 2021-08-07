@@ -1,6 +1,10 @@
 use bevy::prelude::*;
 use heron::prelude::*;
 
+mod camera;
+
+use camera::pan_orbit_camera::{handle_camera, spawn_camera};
+
 pub fn world() -> String {
     String::from("world")
 }
@@ -18,8 +22,9 @@ pub fn start() {
         .add_plugins(DefaultPlugins)
         .add_plugin(PhysicsPlugin::default())
         .insert_resource(Gravity::from(Vec3::new(0.0, -9.81, 0.0)))
-        .add_system(bevy::input::system::exit_on_esc_system.system())
         .add_startup_system(setup.system())
+        .add_system(bevy::input::system::exit_on_esc_system.system())
+        .add_system(handle_camera.system())
         .run();
 }
 
@@ -35,11 +40,9 @@ fn setup(
         material: materials.add(Color::hex("37474F").unwrap().into()),
         ..Default::default()
     })
-    //Make it a rigid body
     .insert(RigidBody::Static)
-    // Attach collision shape
     .insert(CollisionShape::Cuboid {
-        half_extends: Vec3::new(2.5, 2.5, 0.0),
+        half_extends: Vec3::new(2.5, 0.0, 2.5),
         border_radius: None
     });
 
@@ -63,9 +66,6 @@ fn setup(
         ..Default::default()
     });
 
-    // Camera
-    commands.spawn_bundle(PerspectiveCameraBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..Default::default()
-    });
+    spawn_camera(commands);
+
 }
