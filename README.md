@@ -1,12 +1,18 @@
 # Nora
 
-Experimental project that tries to combine [Bevy](https://bevyengine.org), [Rapier](https://www.rapier.rs) and Python to create a simple and flexible simulator for Robotics and RL. :robot:
+Experimental project that tries to combine [Bevy](https://bevyengine.org), [Rapier](https://www.rapier.rs) and Python (using [pyo3](https://github.com/PyO3/pyo3)) to create a simple and flexible simulator for Robotics and RL. :robot:
 
 #### ToDo
-- [ ] PoC
+- [x] Demo Scene with physics
+- [x] Orbital camera
+- [ ] Spawn entities using input
+- [ ] Render multiple views and display
+- [ ] Simple UI to select what to spawn
+- [ ] Python bindings PoC
   - [x] Start Bevy from python
-  - [ ] Step one time step at a time from python
-  - [ ] Keyboard and mouse input from python
+  - [ ] Spawn entities from python
+  - [ ] Get back entity state to python
+  - [ ] Control entity from python
 
 
 #### Try python package
@@ -25,10 +31,14 @@ pip install -r requirements.txt
 ###### 3. Build PyNora package
 Jump into the python folder and run
 ```
+cd python
 maturin develop
 ```
 
 Now you can start a python session and do
 ```
 import pynora
+pynora.run_bevy()
 ```
+
+Close with ESC

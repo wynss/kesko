@@ -58,7 +58,27 @@ fn setup(
         ..Default::default()
     })
     .insert(RigidBody::Dynamic)
-    .insert(CollisionShape::Sphere { radius });
+    .insert(CollisionShape::Sphere { radius })
+    .insert(PhysicMaterial {
+        restitution: 0.7,
+        ..Default::default()
+    });
+    
+    // Cube
+    let size = 0.5;
+    commands.spawn_bundle(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube {
+            size,
+        })),
+        material: materials.add(Color::hex("f44336").unwrap().into()),
+        transform: Transform::from_xyz(1.0, 2.0, 0.0),
+        ..Default::default()
+    })
+    .insert(RigidBody::Dynamic)
+    .insert(CollisionShape::Cuboid { 
+        half_extends: Vec3::ONE * size / 2.0,
+        border_radius: None
+    });
 
     // Light
     commands.spawn_bundle(LightBundle {
