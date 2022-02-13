@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use nora_lib::*;
+use nora_lib;
 
 #[bevy_main]
 fn main() {
-    start();
+    nora_lib::start();
 }

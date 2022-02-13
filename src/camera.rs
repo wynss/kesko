@@ -4,7 +4,8 @@ pub mod pan_orbit_camera {
     use bevy::prelude::*;
     use bevy::input::mouse::{MouseMotion, MouseWheel};
     use bevy::render::camera::PerspectiveProjection;
-
+    
+    #[derive(Component)]
     pub struct PanOrbitCamera {
         pub focus: Vec3,
         pub radius: f32,

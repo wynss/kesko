@@ -1,16 +1,13 @@
+mod camera;
+
 use bevy::prelude::*;
 use heron::prelude::*;
 
-mod camera;
-
 use camera::pan_orbit_camera::{handle_camera, spawn_camera};
 
-pub fn world() -> String {
-    String::from("world")
-}
 
 pub fn start() {
-    App::build()
+    App::new()
         .insert_resource(ClearColor(Color::hex("FCE4EC").unwrap()))
         .insert_resource(WindowDescriptor {
             title: String::from("Nora"),
@@ -22,9 +19,9 @@ pub fn start() {
         .add_plugins(DefaultPlugins)
         .add_plugin(PhysicsPlugin::default())
         .insert_resource(Gravity::from(Vec3::new(0.0, -9.81, 0.0)))
-        .add_startup_system(setup.system())
-        .add_system(bevy::input::system::exit_on_esc_system.system())
-        .add_system(handle_camera.system())
+        .add_startup_system(setup)
+        .add_system(bevy::input::system::exit_on_esc_system)
+        .add_system(handle_camera)
         .run();
 }
 
@@ -81,7 +78,7 @@ fn setup(
     });
 
     // Light
-    commands.spawn_bundle(LightBundle {
+    commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
