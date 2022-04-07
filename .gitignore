@@ -2,3 +2,6 @@
 Cargo.lock
 
 /venv
+
+.idea
+.vscode
