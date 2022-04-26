@@ -8,9 +8,9 @@ use camera::pan_orbit_camera::{handle_camera, spawn_camera};
 
 pub fn start() {
     App::new()
-        .insert_resource(ClearColor(Color::hex("FCE4EC").unwrap()))
+        .insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
         .insert_resource(WindowDescriptor {
-            title: String::from("Nora"),
+            title: String::from("Nora 0.1-alpha"),
             width: 1280.0,
             height: 720.0,
             ..Default::default()
@@ -30,7 +30,7 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    
+
     // Spaw ground
     commands.spawn_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
@@ -60,7 +60,7 @@ fn setup(
         restitution: 0.7,
         ..Default::default()
     });
-    
+
     // Cube
     let size = 0.5;
     commands.spawn_bundle(PbrBundle {
