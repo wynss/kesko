@@ -1,40 +1,27 @@
-mod camera;
-
 use bevy::prelude::*;
 use heron::prelude::*;
 
-use camera::pan_orbit_camera::{handle_camera, spawn_camera};
+use nora_core::plugins::CorePlugins;
 
 
 pub fn start() {
     App::new()
-        .insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
-        .insert_resource(WindowDescriptor {
-            title: String::from("Nora 0.1-alpha"),
-            width: 1280.0,
-            height: 720.0,
-            ..Default::default()
-        })
-        .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
-        .add_plugin(PhysicsPlugin::default())
-        .insert_resource(Gravity::from(Vec3::new(0.0, -9.81, 0.0)))
-        .add_startup_system(setup)
-        .add_system(bevy::input::system::exit_on_esc_system)
-        .add_system(handle_camera)
+        .add_plugins(CorePlugins)
+        .add_startup_system(test_scene)
         .run();
 }
 
-fn setup(
+fn test_scene(
     mut commands: Commands, 
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
 
-    // Spaw ground
+    // Spawn ground
     commands.spawn_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
-        material: materials.add(Color::hex("37474F").unwrap().into()),
+        material: materials.add(Color::hex("ECEFF1").unwrap().into()),
         ..Default::default()
     })
     .insert(RigidBody::Static)
@@ -74,15 +61,16 @@ fn setup(
     .insert(RigidBody::Dynamic)
     .insert(CollisionShape::Cuboid { 
         half_extends: Vec3::ONE * size / 2.0,
-        border_radius: None
+        border_radius: None,
     });
 
     // Light
     commands.spawn_bundle(PointLightBundle {
+        point_light: PointLight {
+            intensity: 4000.0,
+            ..Default::default()
+        },
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
-
-    spawn_camera(commands);
-
 }

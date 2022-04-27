@@ -10,6 +10,7 @@ edition = "2021"
 name = "nora_lib"
 path = "src/lib.rs"
 
+
 [dependencies.bevy]
 version = "0.7.0"
 default-features=false
@@ -18,3 +19,7 @@ features = ["bevy_gltf", "bevy_winit", "render", "bevy_dynamic_plugin", "png", "
 [dependencies.heron]
 version = "3.0.0"
 features = ["3d"]
+
+[dependencies]
+nora_core = {version = "0.1.0", path = "core"}
+bevy_egui = "0.13"
