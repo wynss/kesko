@@ -20,13 +20,13 @@ fn test_scene(
 
     // Spawn ground
     commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
+        mesh: meshes.add(Mesh::from(shape::Plane { size: 10.0 })),
         material: materials.add(Color::hex("ECEFF1").unwrap().into()),
         ..Default::default()
     })
     .insert(RigidBody::Static)
     .insert(CollisionShape::Cuboid {
-        half_extends: Vec3::new(2.5, 0.0, 2.5),
+        half_extends: Vec3::new(5.0, 0.0, 5.0),
         border_radius: None
     });
 
@@ -54,7 +54,7 @@ fn test_scene(
         mesh: meshes.add(Mesh::from(shape::Cube {
             size,
         })),
-        material: materials.add(Color::hex("f44336").unwrap().into()),
+        material: materials.add(Color::hex("8BC34A").unwrap().into()),
         transform: Transform::from_xyz(1.0, 2.0, 0.0),
         ..Default::default()
     })
