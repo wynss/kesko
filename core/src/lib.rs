@@ -1,4 +1,1 @@
-
-pub fn hello() -> String {
-    String::from("Hello!")
-}
+pub mod plugins;

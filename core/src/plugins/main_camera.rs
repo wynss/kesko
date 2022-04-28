@@ -1,10 +1,25 @@
+use bevy::app::{App, Plugin};
+use pan_orbit_camera::{handle_camera, spawn_camera};
 
-pub mod pan_orbit_camera {
+pub(crate) struct MainCameraPlugin;
+
+impl Plugin for MainCameraPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_startup_system(spawn_camera)
+            .add_system(handle_camera);
+    }
+
+    fn name(&self) -> &str {
+        "Main Camera Plugin"
+    }
+}
+
+pub(super) mod pan_orbit_camera {
 
     use bevy::prelude::*;
     use bevy::input::mouse::{MouseMotion, MouseWheel};
     use bevy::render::camera::PerspectiveProjection;
-    
+
     #[derive(Component)]
     pub struct PanOrbitCamera {
         pub focus: Vec3,
@@ -20,6 +35,22 @@ pub mod pan_orbit_camera {
                 upside_down: false
             }
         }
+    }
+
+    pub fn spawn_camera(
+        mut commands: Commands
+    ) {
+        let translation = Vec3::new(-2.0, 2.5, 5.0);
+        let radius = translation.length();
+
+        commands.spawn_bundle(PerspectiveCameraBundle {
+            transform: Transform::from_translation(translation)
+                .looking_at(Vec3::ZERO, Vec3::Y),
+            ..Default::default()
+        }).insert(PanOrbitCamera {
+            radius,
+            ..Default::default()
+        });
     }
 
     pub fn handle_camera(
@@ -46,7 +77,7 @@ pub mod pan_orbit_camera {
             for ev in ev_motion.iter() {
                 pan += ev.delta;
             }
-        } 
+        }
 
         for ev in ev_scroll.iter() {
             scroll += ev.y;
@@ -108,19 +139,5 @@ pub mod pan_orbit_camera {
         let window = windows.get_primary().unwrap();
         let window = Vec2::new(window.width() as f32, window.height() as f32);
         window
-    }
-
-    pub fn spawn_camera(mut commands: Commands) {
-        let translation = Vec3::new(-2.0, 2.5, 5.0);
-        let radius = translation.length();
-
-        commands.spawn_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_translation(translation)
-                .looking_at(Vec3::ZERO, Vec3::Y),
-            ..Default::default()
-        }).insert(PanOrbitCamera {
-            radius,
-            ..Default::default()
-        });
     }
 }
