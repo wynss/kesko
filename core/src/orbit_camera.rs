@@ -21,14 +21,14 @@ enum PanOrbitCameraEvents {
 }
 
 #[derive(Component)]
-struct PanOrbitCamera {
+pub struct PanOrbitCamera {
     pub center: Vec3,
     pub distance: f32,
     pub orbit_sensitivity: f32,
     pub pan_sensitivity: f32,
     pub zoom_sensitivity: f32,
-    pub orbit_button: MouseButton,
-    pub pan_button: MouseButton
+    orbit_button: MouseButton,
+    pan_button: MouseButton
 }
 
 impl Default for PanOrbitCamera {
@@ -37,7 +37,7 @@ impl Default for PanOrbitCamera {
             center: Vec3::ZERO,
             distance: 5.0,
             orbit_sensitivity: 1.0,
-            pan_sensitivity: 20.0,
+            pan_sensitivity: 40.0,
             zoom_sensitivity: 0.05,
             orbit_button: MouseButton::Right,
             pan_button: MouseButton::Middle
@@ -97,7 +97,6 @@ fn handle_camera_mouse_events(
             events.send(PanOrbitCameraEvents::Zoom(scroll_delta));
         }
     }
-
 }
 
 fn handle_camera_events(
