@@ -1,5 +1,5 @@
 [workspace]
-members = ["core", "python"]
+members = ["core", "nora_physics", "python"]
 
 [package]
 name = "nora"
@@ -9,7 +9,6 @@ edition = "2021"
 [lib]
 name = "nora_lib"
 path = "src/lib.rs"
-
 
 [dependencies.bevy]
 version = "0.7.0"
@@ -21,5 +20,6 @@ version = "3.0.0"
 features = ["3d"]
 
 [dependencies]
-nora_core = {version = "0.1.0", path = "core"}
+nora_physics = { version = "0.1.0", path = "nora_physics"}
+nora_core = { version = "0.1.0", path = "core"}
 bevy_egui = "0.13"

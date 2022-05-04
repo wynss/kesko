@@ -8,8 +8,8 @@ use crate::plugins::{
     core::CorePlugin,
     menu::MenuPlugin,
     main_camera::MainCameraPlugin,
-    physics::DefaultPhysicsPlugin
 };
+use nora_physics::PhysicsPlugin;
 
 
 pub struct CorePlugins;
@@ -19,6 +19,6 @@ impl PluginGroup for CorePlugins {
         group.add(CorePlugin);
         group.add(MenuPlugin);
         group.add(MainCameraPlugin);
-        group.add(DefaultPhysicsPlugin);
+        group.add(PhysicsPlugin::default());
     }
 }
