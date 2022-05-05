@@ -1,5 +1,5 @@
 use bevy::ecs::component::Component;
-use rapier3d_f64::dynamics::RigidBodyHandle;
+use rapier3d::dynamics::RigidBodyHandle;
 
 #[derive(Component)]
 pub enum RigidBodyComp {

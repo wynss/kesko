@@ -1,19 +1,19 @@
-use bevy::math::DVec3;
+use bevy::math::Vec3;
 
- pub struct Gravity(DVec3);
+ pub struct Gravity(Vec3);
 
 impl Gravity {
-    pub fn new(vec: DVec3) -> Self {
+    pub fn new(vec: Vec3) -> Self {
         Self(vec)
     }
 
-    pub fn get(&self) -> &DVec3 {
+    pub fn get(&self) -> &Vec3 {
         &self.0
     }
 }
 
 impl Default for Gravity {
     fn default() -> Self {
-        Self(DVec3::ZERO)
+        Self(Vec3::ZERO)
     }
 }

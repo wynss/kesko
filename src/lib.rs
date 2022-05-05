@@ -23,14 +23,16 @@ fn test_scene(
         mesh: meshes.add(Mesh::from(shape::Plane { size: 10.0 })),
         material: materials.add(Color::hex("ECEFF1").unwrap().into()),
         ..Default::default()
-    }).insert(RigidBodyComp::Fixed);
+    })
+        .insert(RigidBodyComp::Fixed);
+
 
     commands.spawn_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0})),
         material: materials.add(Color::hex("FF0000").unwrap().into()),
-        transform: Transform::from_xyz(0.0, 0.5, 0.0),
+        transform: Transform::from_xyz(0.0, 3.0, 0.0),
         ..Default::default()
-    });
+    }).insert(RigidBodyComp::Dynamic);
 
 
     // Light
