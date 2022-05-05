@@ -33,7 +33,7 @@ fn test_scene(
         .insert(RigidBodyComp::Fixed)
         .insert(ColliderComp::Cuboid {x_half: 5.0, y_half: 0.0, z_half: 5.0});
 
-
+    // Spawn cube
     commands.spawn_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0})),
         material: materials.add(Color::hex("FF0000").unwrap().into()),
@@ -42,6 +42,16 @@ fn test_scene(
     })
         .insert(RigidBodyComp::Dynamic)
         .insert(ColliderComp::Cuboid {x_half: 0.5, y_half: 0.5, z_half: 0.5});
+
+    // Spawn sphere
+    commands.spawn_bundle(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 0.5, subdivisions: 5})),
+        material: materials.add(Color::hex("00FF00").unwrap().into()),
+        transform: Transform::from_xyz(-2.0, 3.0, 0.0),
+        ..Default::default()
+    })
+        .insert(RigidBodyComp::Dynamic)
+        .insert(ColliderComp::Sphere { radius: 0.5});
 
 
     // Light

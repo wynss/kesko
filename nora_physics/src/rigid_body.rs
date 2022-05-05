@@ -26,20 +26,16 @@ pub(crate) fn add_rigid_bodies(
 
     for (entity, rigid_body_comp, transform) in query.iter() {
 
-        let rigid_body = match rigid_body_comp {
-            RigidBodyComp::Fixed => {
-                rapier::RigidBodyBuilder::fixed()
-                    .translation(transform.translation.into_rapier())
-                    .build()
-
-            }
-            RigidBodyComp::Dynamic => {
-                rapier::RigidBodyBuilder::dynamic()
-                    .translation(transform.translation.into_rapier())
-                    .build()
-            }
+        let rigid_body_builder = match rigid_body_comp {
+            RigidBodyComp::Fixed => rapier::RigidBodyBuilder::fixed(),
+            RigidBodyComp::Dynamic => rapier::RigidBodyBuilder::dynamic()
         };
 
+        let rigid_body = rigid_body_builder
+            .translation(transform.translation.into_rapier())
+            .build();
+
+        // insert and add to map
         let rigid_body_handle = rigid_body_set.insert(rigid_body);
         entity_body_map.insert(entity, rigid_body_handle);
 

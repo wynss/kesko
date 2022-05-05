@@ -14,6 +14,9 @@ pub enum ColliderComp {
         x_half: f32,
         y_half: f32,
         z_half: f32
+    },
+    Sphere {
+        radius: f32
     }
 }
 
@@ -29,11 +32,15 @@ pub(crate) fn add_collider_to_bodies(
     query: Query<(Entity, &ColliderComp, &RigidBodyHandleComp), Without<ColliderHandleComp>>
 ) {
     for (entity, collider_comp, rigid_body_handle) in query.iter() {
-        let collider = match collider_comp {
+
+        let collider_builder = match collider_comp {
             ColliderComp::Cuboid {x_half, y_half, z_half} => {
-                rapier::ColliderBuilder::cuboid(*x_half, *y_half, *z_half).build()
-            }
+                rapier::ColliderBuilder::cuboid(*x_half, *y_half, *z_half)
+            },
+            ColliderComp::Sphere {radius} => rapier::ColliderBuilder::ball(*radius)
         };
+
+        let collider = collider_builder.build();
 
         let collider_handle = collider_set.insert_with_parent(
             collider,
