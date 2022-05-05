@@ -1,12 +1,18 @@
 use bevy::prelude::*;
+use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
 use nora_core::plugins::CorePlugins;
-use nora_physics::components::RigidBodyComp;
+use nora_physics::{
+    collider::ColliderComp,
+    rigid_body::RigidBodyComp
+};
 
 
 pub fn start() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugin(LogDiagnosticsPlugin::default())
+        .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugins(CorePlugins)
         .add_startup_system(test_scene)
         .run();
@@ -24,7 +30,8 @@ fn test_scene(
         material: materials.add(Color::hex("ECEFF1").unwrap().into()),
         ..Default::default()
     })
-        .insert(RigidBodyComp::Fixed);
+        .insert(RigidBodyComp::Fixed)
+        .insert(ColliderComp::Cuboid {x_half: 5.0, y_half: 0.0, z_half: 5.0});
 
 
     commands.spawn_bundle(PbrBundle {
@@ -32,7 +39,9 @@ fn test_scene(
         material: materials.add(Color::hex("FF0000").unwrap().into()),
         transform: Transform::from_xyz(0.0, 3.0, 0.0),
         ..Default::default()
-    }).insert(RigidBodyComp::Dynamic);
+    })
+        .insert(RigidBodyComp::Dynamic)
+        .insert(ColliderComp::Cuboid {x_half: 0.5, y_half: 0.5, z_half: 0.5});
 
 
     // Light
