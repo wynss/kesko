@@ -3,8 +3,8 @@ use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
 use nora_core::plugins::CorePlugins;
 use nora_physics::{
-    collider::ColliderComp,
-    rigid_body::RigidBodyComp
+    collider::{ColliderShape, ColliderPhysicalProperties},
+    rigid_body::RigidBody
 };
 
 
@@ -30,8 +30,8 @@ fn test_scene(
         material: materials.add(Color::hex("ECEFF1").unwrap().into()),
         ..Default::default()
     })
-        .insert(RigidBodyComp::Fixed)
-        .insert(ColliderComp::Cuboid {x_half: 5.0, y_half: 0.0, z_half: 5.0});
+        .insert(RigidBody::Fixed)
+        .insert(ColliderShape::Cuboid {x_half: 5.0, y_half: 0.0, z_half: 5.0});
 
     // Spawn cube
     commands.spawn_bundle(PbrBundle {
@@ -40,8 +40,8 @@ fn test_scene(
         transform: Transform::from_xyz(0.0, 3.0, 0.0),
         ..Default::default()
     })
-        .insert(RigidBodyComp::Dynamic)
-        .insert(ColliderComp::Cuboid {x_half: 0.5, y_half: 0.5, z_half: 0.5});
+        .insert(RigidBody::Dynamic)
+        .insert(ColliderShape::Cuboid {x_half: 0.5, y_half: 0.5, z_half: 0.5});
 
     // Spawn sphere
     commands.spawn_bundle(PbrBundle {
@@ -50,9 +50,12 @@ fn test_scene(
         transform: Transform::from_xyz(-2.0, 3.0, 0.0),
         ..Default::default()
     })
-        .insert(RigidBodyComp::Dynamic)
-        .insert(ColliderComp::Sphere { radius: 0.5});
-
+        .insert(RigidBody::Dynamic)
+        .insert(ColliderShape::Sphere { radius: 0.5 })
+        .insert(ColliderPhysicalProperties {
+            restitution: 1.0,
+            ..Default::default()
+        });
 
     // Light
     commands.spawn_bundle(PointLightBundle {

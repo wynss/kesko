@@ -92,7 +92,7 @@ fn physics_pipeline_step(
 
 fn update_bevy_world(
     rigid_bodies: Res<rapier::RigidBodySet>,
-    mut query: Query<(&rigid_body::RigidBodyHandleComp, &mut Transform)>
+    mut query: Query<(&rigid_body::RigidBodyHandle, &mut Transform)>
 ) {
     for (rigid_body_handle, mut transform) in query.iter_mut() {
 

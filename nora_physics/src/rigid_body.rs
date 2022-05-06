@@ -8,27 +8,27 @@ use crate::conversions::IntoRapier;
 pub type EntityBodyHandleMap = FnvHashMap<Entity, rapier::RigidBodyHandle>;
 
 #[derive(Component)]
-pub enum RigidBodyComp {
+pub enum RigidBody {
     Fixed,
     Dynamic
 }
 
 #[derive(Component)]
-pub(crate) struct RigidBodyHandleComp(pub(crate) rapier::RigidBodyHandle);
+pub(crate) struct RigidBodyHandle(pub(crate) rapier::RigidBodyHandle);
 
 
 pub(crate) fn add_rigid_bodies(
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
     mut entity_body_map: ResMut<EntityBodyHandleMap>,
     mut commands: Commands,
-    query: Query<(Entity, &RigidBodyComp, &Transform), Without<RigidBodyHandleComp>>
+    query: Query<(Entity, &RigidBody, &Transform), Without<RigidBodyHandle>>
 ) {
 
     for (entity, rigid_body_comp, transform) in query.iter() {
 
         let rigid_body_builder = match rigid_body_comp {
-            RigidBodyComp::Fixed => rapier::RigidBodyBuilder::fixed(),
-            RigidBodyComp::Dynamic => rapier::RigidBodyBuilder::dynamic()
+            RigidBody::Fixed => rapier::RigidBodyBuilder::fixed(),
+            RigidBody::Dynamic => rapier::RigidBodyBuilder::dynamic()
         };
 
         let rigid_body = rigid_body_builder
@@ -40,6 +40,6 @@ pub(crate) fn add_rigid_bodies(
         entity_body_map.insert(entity, rigid_body_handle);
 
         // Add the rigid body component to the entity
-        commands.entity(entity).insert(RigidBodyHandleComp(rigid_body_handle));
+        commands.entity(entity).insert(RigidBodyHandle(rigid_body_handle));
     }
 }
