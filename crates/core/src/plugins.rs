@@ -4,12 +4,13 @@ pub(crate) mod main_camera;
 pub(crate) mod physics;
 
 use bevy::app::{PluginGroup, PluginGroupBuilder};
+use bevy::math::Vec3;
 use crate::plugins::{
     core::CorePlugin,
     menu::MenuPlugin,
     main_camera::MainCameraPlugin,
-    physics::DefaultPhysicsPlugin
 };
+use nora_physics::PhysicsPlugin;
 
 
 pub struct CorePlugins;
@@ -19,6 +20,6 @@ impl PluginGroup for CorePlugins {
         group.add(CorePlugin);
         group.add(MenuPlugin);
         group.add(MainCameraPlugin);
-        group.add(DefaultPhysicsPlugin);
+        group.add(PhysicsPlugin{gravity: Vec3::new(0.0, -9.81, 0.0)});
     }
 }

@@ -9,6 +9,6 @@ crate-type = ["cdylib"]
 
 
 [dependencies]
-nora = { path="../." }
-nora_core = { path="../core" }
+nora = { path= "../.." }
+nora_core = { path= "../core" }
 pyo3 = { version = "0.14.1", features = ["extension-module"] }
