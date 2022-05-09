@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use rapier3d::prelude as rapier;
 use fnv::FnvHashMap;
+use rapier3d::prelude::ColliderBuilder;
 
 use super::rigid_body::RigidBodyHandle;
 
@@ -16,7 +17,19 @@ pub enum ColliderShape {
     },
     Sphere {
         radius: f32
-    }
+    },
+    CapsuleX {
+        half_height: f32,
+        radius: f32
+    },
+    CapsuleY {
+        half_height: f32,
+        radius: f32
+    },
+    CapsuleZ {
+        half_height: f32,
+        radius: f32
+    },
 }
 
 /// Component for setting the physical material properties for a collider
@@ -51,13 +64,24 @@ pub(crate) fn add_collider_to_bodies(
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
     query: Query<(Entity, &ColliderShape, &RigidBodyHandle, Option<&ColliderPhysicalProperties>), Without<ColliderHandle>>
 ) {
-    for (entity, collider_comp, rigid_body_handle, material) in query.iter() {
+    for (entity, collider_shape, rigid_body_handle, material) in query.iter() {
 
-        let collider_builder = match collider_comp {
+        let collider_builder = match collider_shape {
             ColliderShape::Cuboid {x_half, y_half, z_half} => {
                 rapier::ColliderBuilder::cuboid(*x_half, *y_half, *z_half)
             },
-            ColliderShape::Sphere {radius} => rapier::ColliderBuilder::ball(*radius)
+            ColliderShape::Sphere {radius} => {
+                rapier::ColliderBuilder::ball(*radius)
+            },
+            ColliderShape::CapsuleX {half_height, radius} => {
+                ColliderBuilder::capsule_x(*half_height, *radius)
+            },
+            ColliderShape::CapsuleY {half_height, radius} => {
+                ColliderBuilder::capsule_y(*half_height, *radius)
+            },
+            ColliderShape::CapsuleZ {half_height, radius} => {
+                ColliderBuilder::capsule_z(*half_height, *radius)
+            },
         };
 
         let collider = if let Some(material) = material {

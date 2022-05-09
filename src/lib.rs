@@ -26,7 +26,7 @@ fn test_scene(
 
     // Spawn ground
     commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane { size: 10.0 })),
+        mesh: meshes.add(Mesh::from(shape::Plane { size: 20.0 })),
         material: materials.add(Color::hex("ECEFF1").unwrap().into()),
         ..Default::default()
     })
@@ -36,7 +36,7 @@ fn test_scene(
     // Spawn cube
     commands.spawn_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0})),
-        material: materials.add(Color::hex("FF0000").unwrap().into()),
+        material: materials.add(Color::hex("FF9800").unwrap().into()),
         transform: Transform::from_xyz(0.0, 3.0, 0.0),
         ..Default::default()
     })
@@ -46,7 +46,7 @@ fn test_scene(
     // Spawn sphere
     commands.spawn_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 0.5, subdivisions: 5})),
-        material: materials.add(Color::hex("00FF00").unwrap().into()),
+        material: materials.add(Color::hex("4CAF50").unwrap().into()),
         transform: Transform::from_xyz(-2.0, 3.0, 0.0),
         ..Default::default()
     })
@@ -54,6 +54,23 @@ fn test_scene(
         .insert(ColliderShape::Sphere { radius: 0.5 })
         .insert(ColliderPhysicalProperties {
             restitution: 1.0,
+            ..Default::default()
+        });
+
+    commands.spawn_bundle(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Capsule {
+            radius: 0.1,
+            depth: 2.0,
+            ..Default::default()
+        })),
+        material: materials.add(Color::hex("E91E63").unwrap().into()),
+        transform: Transform::from_xyz(2.0, 3.0, 0.0).with_rotation(Quat::from_rotation_x(0.1)),
+        ..Default::default()
+    })
+        .insert(RigidBody::Dynamic)
+        .insert(ColliderShape::CapsuleY { half_height: 1.0, radius: 0.1 })
+        .insert(ColliderPhysicalProperties {
+            restitution: 0.7,
             ..Default::default()
         });
 
