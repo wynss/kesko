@@ -33,7 +33,7 @@ impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         app
             .init_resource::<rigid_body::EntityBodyHandleMap>()
-            .init_resource::<collider::EntityColliderHandleMap>()
+            .init_resource::<collider::EntityColliderMap>()
             .init_resource::<rapier::PhysicsPipeline>()         // Runs the complete simulation
             .init_resource::<rapier::RigidBodySet>()            // Holds all the rigid bodies
             .init_resource::<rapier::ColliderSet>()             // Holds all the colliders

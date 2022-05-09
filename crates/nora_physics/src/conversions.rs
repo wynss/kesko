@@ -1,6 +1,6 @@
 use bevy::math::{Vec3, Quat};
-use rapier3d::math::{Translation, Vector, Isometry};
-use nalgebra::{UnitQuaternion, Vector3};
+use rapier3d::math::{Translation, Isometry, Vector};
+use nalgebra::{UnitQuaternion, Vector3, Quaternion};
 
 
 pub trait IntoBevy<T> {
@@ -41,5 +41,23 @@ pub trait IntoRapier<T> {
 impl IntoRapier<Vector3<f32>> for Vec3 {
     fn into_rapier(self) -> Vector3<f32> {
         Vector3::new(self.x, self.y, self.z)
+    }
+}
+
+impl IntoRapier<Translation<f32>> for Vec3 {
+    fn into_rapier(self) -> Translation<f32> {
+        <Vec3 as IntoRapier<Vector<f32>>>::into_rapier(self).into()
+    }
+}
+
+impl IntoRapier<UnitQuaternion<f32>> for Quat {
+    fn into_rapier(self) -> UnitQuaternion<f32> {
+        UnitQuaternion::new_normalize(Quaternion::new(self.w, self.x, self.y, self.z))
+    }
+}
+
+impl IntoRapier<Isometry<f32>> for (Vec3, Quat) {
+    fn into_rapier(self) -> Isometry<f32> {
+        Isometry::from_parts(self.0.into_rapier(), self.1.into_rapier())
     }
 }
