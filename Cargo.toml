@@ -1,5 +1,10 @@
 [workspace]
-members = ["crates/core", "crates/nora_physics", "crates/python"]
+members = [
+    "crates/core",
+    "crates/nora_physics",
+    "crates/nora_raycast",
+    "crates/python"
+]
 
 [package]
 name = "nora"

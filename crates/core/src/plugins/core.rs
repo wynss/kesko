@@ -4,6 +4,7 @@ use bevy::{
     app::{App, Plugin},
     window::WindowDescriptor
 };
+use bevy::window::PresentMode;
 
 
 #[derive(Default)]
@@ -13,6 +14,7 @@ impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
             .insert_resource(WindowDescriptor {
+                present_mode: PresentMode::Mailbox,
                 title: String::from("Nora 0.1-alpha"),
                 width: 1280.0,
                 height: 720.0,
