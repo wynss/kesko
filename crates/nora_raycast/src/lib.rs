@@ -1,26 +1,43 @@
 pub(crate) mod ray;
+pub(crate) mod intersect;
+pub(crate) mod debug;
+pub(crate) mod triangle;
 
 use bevy::prelude::*;
-use bevy::input::mouse::MouseMotion;
-use bevy::math as math;
-
 
 use ray::Ray;
+
+
+#[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
+pub enum RayCastSystems {
+    CreateRays,
+    CalcIntersections,
+    Debug
+}
 
 #[derive(Default)]
 pub struct RayCastPlugin;
 impl Plugin for RayCastPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set_to_stage(
+        app.add_startup_system(debug::spawn_debug_pointer)
+            .add_system_set_to_stage(
             CoreStage::First,
             SystemSet::new()
-                .with_system(create_rays)
+                .with_system(create_rays.label(RayCastSystems::CreateRays))
+                .with_system(intersect::calc_intersections_system
+                    .label(RayCastSystems::CalcIntersections)
+                    .after(RayCastSystems::CreateRays)
+                )
+                .with_system(debug::update_debug_pointer
+                    .label(RayCastSystems::Debug)
+                    .after(RayCastSystems::CreateRays)
+                )
         );
     }
 }
 
 pub enum RayCastMethod {
-    Screenspace,
+    ScreenSpace,
     WorldSpace
 }
 
@@ -28,29 +45,24 @@ pub enum RayCastMethod {
 #[derive(Component)]
 pub struct RayCastSource {
     method: RayCastMethod,
-    ray: Option<Ray>
+    ray: Option<Ray>,
+    intersection: Option<intersect::Intersection>
 }
+
+
 impl RayCastSource {
     pub fn new(method: RayCastMethod) -> Self {
         Self {
             method,
-            ray: None
+            ray: None,
+            intersection: None
         }
     }
 }
 
 /// An entity that are visible to the rays
 #[derive(Component, Default)]
-pub struct RayCastable {
-
-}
-
-struct RayIntersect;
-impl RayIntersect {
-    fn intersections() -> bool {
-        todo!()
-    }
-}
+pub struct RayCastable;
 
 
 fn create_rays(
@@ -61,8 +73,11 @@ fn create_rays(
     let window = windows.get_primary().unwrap();
     for (mut ray_source, camera, camera_transform) in ray_source_query.iter_mut() {
 
+        // todo: Remove this and make a separate reset system that can be triggered
+        ray_source.intersection = None;
+
         match ray_source.method {
-            RayCastMethod::Screenspace => {
+            RayCastMethod::ScreenSpace => {
 
                 let camera = match camera {
                     Some(camera) => camera,
@@ -93,21 +108,6 @@ fn create_rays(
             }
         }
     }
-}
-
-fn calc_intersections(
-    source_query: Query<&RayCastSource>,
-    castable_query: Query<&RayCastable>
-) {
-
-    for source in source_query.iter() {
-        if let Some(ray) = &source.ray {
-            for castable in castable_query.iter() {
-                todo!("Check for intersections here")
-            }
-        }
-    }
-
 }
 
 

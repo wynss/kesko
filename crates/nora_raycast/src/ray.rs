@@ -2,8 +2,8 @@ use bevy::prelude::*;
 
 
 pub(crate) struct Ray {
-    origin: Vec3,
-    direction: Vec3
+    pub(crate) origin: Vec3,
+    pub(crate) direction: Vec3
 }
 impl Ray {
 
@@ -11,6 +11,13 @@ impl Ray {
         Self {
             origin,
             direction: direction.normalize()
+        }
+    }
+
+    pub(crate) fn transform(&self, transform: &Mat4) -> Self {
+        Self {
+            origin: transform.transform_point3(self.origin),
+            direction: transform.transform_point3(self.direction)
         }
     }
 
