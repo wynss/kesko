@@ -29,6 +29,12 @@ pub(crate) struct Triangle {
     pub(crate) v2: Vec3,
 }
 
+impl Triangle {
+    pub(crate) fn new(v0: Vec3, v1: Vec3, v2: Vec3) -> Self {
+        Self { v0, v1, v2 }
+    }
+}
+
 pub(crate) fn triangle_normal(triangle: &Triangle) -> Vec3 {
     (triangle.v1 - triangle.v0).cross(triangle.v2 - triangle.v0)
 }
@@ -62,9 +68,9 @@ pub(crate) fn inside_triangle(triangle: &Triangle, normal: &Vec3, point: &Vec3) 
 mod tests {
     use super::*;
 
-    const V0: [f32; 3] = [1.0, 2.0, -1.0];
-    const V1: [f32; 3] = [-1.0, 2.0, -1.0];
-    const V2: [f32; 3] = [0.0, 2.0, 2.0];
+    const V0: [f32; 3] = [1.0, 5.0, -1.0];
+    const V1: [f32; 3] = [-1.0, 5.0, -1.0];
+    const V2: [f32; 3] = [0.0, 5.0, 2.0];
 
     #[test]
     fn test_triangle_normal() {
@@ -72,6 +78,22 @@ mod tests {
         let triangle: Triangle = [V0, V1, V2].into();
         let normal = triangle_normal(&triangle);
         assert_eq!(normal.normalize(), Vec3::Y);
+    }
 
+    #[test]
+    fn test_inside_triangle() {
+
+        let triangle: Triangle = [V0, V1, V2].into();
+        let normal = Vec3::Y;
+
+        // check inside
+        let inside_point = Vec3::new(0.0, 5.0, 0.0);
+        let res = inside_triangle(&triangle, &normal, &inside_point);
+        assert!(res);
+
+        // check outside
+        let outside_point = Vec3::new(5.0, 5.0, -5.0);
+        let res = inside_triangle(&triangle, &normal, &outside_point);
+        assert!(!res);
     }
 }

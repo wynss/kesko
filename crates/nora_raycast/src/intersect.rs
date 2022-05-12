@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-use bevy::render::mesh::{
-    PrimitiveTopology, VertexAttributeValues
-};
+use bevy::render::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
 
 use crate::{Ray, RayCastable, RayCastSource};
 use crate::triangle::{triangle_normal, Triangle, inside_triangle};
@@ -9,8 +7,8 @@ use crate::triangle::{triangle_normal, Triangle, inside_triangle};
 #[derive(Clone)]
 pub(crate) struct Intersection {
     pub(crate) intersection: Vec3,
-    pub(crate) distance: f32
-    // normal: Vec3,
+    pub(crate) distance: f32,
+    // pub(crate) normal: Vec3,
     // mesh_id: Handle<Mesh>
 }
 
@@ -50,7 +48,6 @@ pub(crate) fn calc_intersections_system(
             }
 
             if let Some(intersection) = closest_intersection {
-                println!("Hit!!!!");
                 source.intersection = Some(intersection);
             }
 
@@ -74,6 +71,53 @@ fn ray_mesh_intersect(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) -> Option<In
         None => panic!("Mesh does not have any vertex positions")
     };
 
+    if let Some(indices) = mesh.indices() {
+        return match indices {
+            Indices::U16(indices) => {
+                run_intersection_with_vertices(
+                    ray,
+                    mesh_to_world,
+                    vertex_positions,
+                    indices
+                )
+            },
+            Indices::U32(indices) => {
+                run_intersection_with_vertices(
+                    ray,
+                    mesh_to_world,
+                    vertex_positions,
+                    indices
+                )
+            }
+        }
+    }
+
+    None
+}
+
+trait IntoUsize: Copy {
+    fn into_usize(self) -> usize;
+}
+
+impl IntoUsize for u16 {
+    fn into_usize(self) -> usize {
+        self as usize
+    }
+}
+
+impl IntoUsize for u32 {
+    fn into_usize(self) -> usize {
+        self as usize
+    }
+}
+
+fn run_intersection_with_vertices(
+    ray: &Ray,
+    mesh_to_world: &Mat4,
+    vertex_positions: &[[f32; 3]],
+    vertex_indices: &[impl IntoUsize]
+) -> Option<Intersection>
+{
 
     let world_to_mesh = mesh_to_world.inverse();
     let ray_mesh = ray.transform(&world_to_mesh);
@@ -81,9 +125,14 @@ fn ray_mesh_intersect(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) -> Option<In
     // loop over triangles
     let mut min_intersection_distance = f32::MAX;
     let mut closest_intersection: Option<Intersection> = None;
-    for triangle_vertices in vertex_positions.chunks(3) {
 
-        let triangle: Triangle = triangle_vertices.into();
+    for indices in vertex_indices.chunks(3) {
+        let triangle = Triangle::new(
+            Vec3::from(vertex_positions[indices[0].into_usize()]),
+            Vec3::from(vertex_positions[indices[1].into_usize()]),
+            Vec3::from(vertex_positions[indices[2].into_usize()]),
+        );
+
         if let Some(intersection) = triangle_intersect(&triangle, &ray_mesh) {
 
             let intersection_world = mesh_to_world.transform_point3(intersection);
@@ -92,7 +141,7 @@ fn ray_mesh_intersect(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) -> Option<In
             if distance < min_intersection_distance {
                 min_intersection_distance = distance;
                 closest_intersection = Some(Intersection {
-                    intersection,
+                    intersection: intersection_world,
                     distance
                 });
             }
@@ -107,9 +156,15 @@ fn ray_mesh_intersect(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) -> Option<In
 fn triangle_intersect(triangle: &Triangle, ray: &Ray) -> Option<Vec3> {
 
     let normal = triangle_normal(triangle);
-    let distance = normal.dot(triangle.v0);
+    let distance = - normal.dot(triangle.v0);
 
     let normal_dot_ray_direction = normal.dot(ray.direction);
+
+    if normal_dot_ray_direction > 0.0 {
+        // the triangle is back-facing
+        return None;
+    }
+
     if normal_dot_ray_direction.abs() < 1e-5 {
         // the ray is parallel with the plane of the triangle
         return None;

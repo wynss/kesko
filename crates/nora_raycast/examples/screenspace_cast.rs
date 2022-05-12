@@ -23,9 +23,10 @@ fn setup(
 
     // ray-castable sphere
     commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 1.0, subdivisions: 1})),
+        //mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 1.0, subdivisions: 1})),
+        mesh: meshes.add(Mesh::from(shape::Icosphere { radius:2.0, subdivisions: 5})),
         material: materials.add(Color::GOLD.into()),
-        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+        transform: Transform::from_xyz(0.0, 0.0, -3.0),
         ..Default::default()
     }).insert(RayCastable::default());
 

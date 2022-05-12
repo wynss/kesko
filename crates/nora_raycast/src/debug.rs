@@ -11,7 +11,7 @@ pub(crate) fn spawn_debug_pointer(
     mut materials: ResMut<Assets<StandardMaterial>>
 ) {
     commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 0.06, subdivisions: 5})),
+        mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 0.1, subdivisions: 5})),
         material: materials.add(StandardMaterial {
             base_color: Color::CRIMSON,
             unlit: true,
@@ -29,7 +29,6 @@ pub(crate) fn update_debug_pointer(
 
     for source in query.iter() {
         if let Some(ray) = &source.ray {
-
             if let Ok(mut transform) = pointer_query.get_single_mut() {
 
                 if let Some(intersection) = &source.intersection {
@@ -38,13 +37,11 @@ pub(crate) fn update_debug_pointer(
 
                 } else {
 
-                    let translation = ray.origin + ray.direction * 5.0;
+                    let translation = ray.origin + ray.direction * 10.0;
                     transform.translation = translation;
 
                 }
-
             }
-
         }
     }
 }

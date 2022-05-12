@@ -30,7 +30,7 @@ impl Plugin for RayCastPlugin {
                 )
                 .with_system(debug::update_debug_pointer
                     .label(RayCastSystems::Debug)
-                    .after(RayCastSystems::CreateRays)
+                    .after(RayCastSystems::CalcIntersections)
                 )
         );
     }
