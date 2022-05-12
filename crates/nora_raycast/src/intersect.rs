@@ -3,6 +3,10 @@ use bevy::render::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
 
 use crate::{Ray, RayCastable, RayCastSource};
 use crate::triangle::{triangle_normal, Triangle, inside_triangle};
+use crate::convert::IntoUsize;
+
+
+const EPSILON: f32 = 1e-8;
 
 #[derive(Clone)]
 pub(crate) struct Intersection {
@@ -28,7 +32,7 @@ pub(crate) fn calc_intersections_system(
 
                     let mesh_to_world = transform.compute_matrix();
 
-                    if let Some(intersection) = ray_mesh_intersect(mesh, ray, &mesh_to_world) {
+                    if let Some(intersection) = mesh_intersection(mesh, ray, &mesh_to_world) {
                         intersections.push(intersection);
                     }
 
@@ -56,7 +60,7 @@ pub(crate) fn calc_intersections_system(
 }
 
 /// Checks if a ray intersects a Mesh, if so the closest point of intersection is returned
-fn ray_mesh_intersect(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) -> Option<Intersection> {
+fn mesh_intersection(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) -> Option<Intersection> {
 
     if mesh.primitive_topology() != PrimitiveTopology::TriangleList {
         error!("Only work with triangle list topology for now");
@@ -74,7 +78,7 @@ fn ray_mesh_intersect(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) -> Option<In
     if let Some(indices) = mesh.indices() {
         return match indices {
             Indices::U16(indices) => {
-                run_intersection_with_vertices(
+                mesh_intersection_with_vertices(
                     ray,
                     mesh_to_world,
                     vertex_positions,
@@ -82,7 +86,7 @@ fn ray_mesh_intersect(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) -> Option<In
                 )
             },
             Indices::U32(indices) => {
-                run_intersection_with_vertices(
+                mesh_intersection_with_vertices(
                     ray,
                     mesh_to_world,
                     vertex_positions,
@@ -95,23 +99,8 @@ fn ray_mesh_intersect(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) -> Option<In
     None
 }
 
-trait IntoUsize: Copy {
-    fn into_usize(self) -> usize;
-}
 
-impl IntoUsize for u16 {
-    fn into_usize(self) -> usize {
-        self as usize
-    }
-}
-
-impl IntoUsize for u32 {
-    fn into_usize(self) -> usize {
-        self as usize
-    }
-}
-
-fn run_intersection_with_vertices(
+fn mesh_intersection_with_vertices(
     ray: &Ray,
     mesh_to_world: &Mat4,
     vertex_positions: &[[f32; 3]],
@@ -133,7 +122,7 @@ fn run_intersection_with_vertices(
             Vec3::from(vertex_positions[indices[2].into_usize()]),
         );
 
-        if let Some(intersection) = triangle_intersect(&triangle, &ray_mesh) {
+        if let Some(intersection) = triangle_intersect_mt(&triangle, &ray_mesh) {
 
             let intersection_world = mesh_to_world.transform_point3(intersection);
             let distance = ray.origin.distance(intersection_world);
@@ -151,38 +140,42 @@ fn run_intersection_with_vertices(
     closest_intersection
 }
 
-/// Checks if a ray intersects a triangle given its vertices. Note that the vertices are in relative to the mesh so
-/// the ray also need to be in the mesh frame
-fn triangle_intersect(triangle: &Triangle, ray: &Ray) -> Option<Vec3> {
+/// Checks if a ray intersects a triangle given its vertices using the Möller-Trumbore algorithm.
+///
+/// Note that the vertices are in relative to the mesh so the ray also need to be in the mesh frame
+fn triangle_intersect_mt(triangle: &Triangle, ray: &Ray) -> Option<Vec3> {
 
-    let normal = triangle_normal(triangle);
-    let distance = - normal.dot(triangle.v0);
+    let v0v1 = triangle.v1 - triangle.v0;
+    let v0v2 = triangle.v2 - triangle.v0;
+    let p = ray.direction.cross(v0v2);
+    let det = v0v1.dot(p);
 
-    let normal_dot_ray_direction = normal.dot(ray.direction);
-
-    if normal_dot_ray_direction > 0.0 {
-        // the triangle is back-facing
+    if det < 0.0 {
         return None;
     }
 
-    if normal_dot_ray_direction.abs() < 1e-5 {
-        // the ray is parallel with the plane of the triangle
+    if det.abs() < EPSILON {
         return None;
     }
 
-    // distance from ray origin to plane intersection
-    let t = - ( normal.dot(ray.origin) + distance ) / normal_dot_ray_direction;
+    let det_inv = 1.0 / det;
 
-    if t < 0.0 {
-        // the triangle is behind the rays origin, ignore
+    let t = ray.origin - triangle.v0;
+    let u = t.dot(p) * det_inv;
+
+    if !(0.0..=1.0).contains(&u) {
         return None;
     }
 
-    let plane_intersection = ray.origin + t * ray.direction;
+    let q = t.cross(v0v1);
+    let v = ray.direction.dot(q) * det_inv;
 
-    if inside_triangle(triangle, &normal, &plane_intersection) {
-        return Some(plane_intersection);
+    if !(0.0..=1.0).contains(&v) {
+        return None;
     }
 
-    None
+    let t = v0v2.dot(q) * det_inv;
+
+    let intersection = ray.origin + t * ray.direction;
+    Some(intersection)
 }

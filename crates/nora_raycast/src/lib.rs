@@ -2,6 +2,7 @@ pub(crate) mod ray;
 pub(crate) mod intersect;
 pub(crate) mod debug;
 pub(crate) mod triangle;
+pub(crate) mod convert;
 
 use bevy::prelude::*;
 
