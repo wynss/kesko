@@ -11,7 +11,7 @@ pub(crate) fn spawn_debug_pointer(
     mut materials: ResMut<Assets<StandardMaterial>>
 ) {
     commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 0.1, subdivisions: 5})),
+        mesh: meshes.add(Mesh::from(shape::Capsule { radius: 0.05, depth: 0.5, ..Default::default()})),
         material: materials.add(StandardMaterial {
             base_color: Color::CRIMSON,
             unlit: true,
@@ -33,12 +33,29 @@ pub(crate) fn update_debug_pointer(
         }
 
         for source in query.iter() {
-            if let Some(ray_hit) = &source.ray_hit {
-                transform.scale = Vec3::ONE;
-                transform.translation = ray_hit.intersection.point;
 
-            } else {
-                transform.scale = Vec3::ZERO;
+            match &source.ray_hit {
+                None => {transform.scale = Vec3::ZERO;},
+                Some(ray_hit) => {
+
+                    // make visible
+                    transform.scale = Vec3::ONE;
+
+                    // rotation
+                    let up = Vec3::Y;
+                    let rotation_axis = up.cross(ray_hit.intersection.normal).normalize();
+                    let angle = up.dot(ray_hit.intersection.normal).acos();
+                    let rotation = if angle.abs() > f32::EPSILON {
+                        Quat::from_axis_angle(rotation_axis, angle)
+                    } else {
+                        Quat::default()
+                    };
+
+                    // Apply transformation
+                    *transform = Transform::from_matrix(
+                        Mat4::from_rotation_translation(rotation, ray_hit.intersection.point)
+                    );
+                }
             }
         }
     }
