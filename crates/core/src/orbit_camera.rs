@@ -27,8 +27,8 @@ pub struct PanOrbitCamera {
     pub orbit_sensitivity: f32,
     pub pan_sensitivity: f32,
     pub zoom_sensitivity: f32,
-    orbit_button: MouseButton,
-    pan_button: MouseButton
+    pub orbit_button: MouseButton,
+    pub pan_button: MouseButton
 }
 
 impl Default for PanOrbitCamera {

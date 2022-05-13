@@ -1,2 +1,2 @@
 pub mod plugins;
-mod orbit_camera;
+pub mod orbit_camera;

@@ -1,6 +1,5 @@
 use std::convert::From;
 use bevy::math::Vec3;
-use crate::{reflect_trait, trace};
 
 
 impl From<&[[f32; 3]]> for Triangle {

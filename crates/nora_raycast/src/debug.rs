@@ -17,7 +17,7 @@ pub(crate) fn spawn_debug_pointer(
             unlit: true,
             ..Default::default()
         }),
-        transform: Transform::from_xyz(0.0, 1.0, 0.0),
+        transform: Transform::from_xyz(0.0, 1.0, 0.0).with_scale(Vec3::ZERO),
         ..Default::default()
     }).insert(DebugPointer);
 }
@@ -27,20 +27,18 @@ pub(crate) fn update_debug_pointer(
     mut pointer_query: Query<&mut Transform, With<DebugPointer>>
 ) {
 
-    for source in query.iter() {
-        if let Some(ray) = &source.ray {
-            if let Ok(mut transform) = pointer_query.get_single_mut() {
+    if let Ok(mut transform) = pointer_query.get_single_mut() {
+        if query.is_empty() {
+            transform.scale = Vec3::ZERO;
+        }
 
-                if let Some(intersection) = &source.intersection {
+        for source in query.iter() {
+            if let Some(ray_hit) = &source.ray_hit {
+                transform.scale = Vec3::ONE;
+                transform.translation = ray_hit.intersection.point;
 
-                    transform.translation = intersection.intersection;
-
-                } else {
-
-                    let translation = ray.origin + ray.direction * 10.0;
-                    transform.translation = translation;
-
-                }
+            } else {
+                transform.scale = Vec3::ZERO;
             }
         }
     }

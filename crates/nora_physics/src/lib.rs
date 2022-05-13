@@ -21,6 +21,14 @@ pub struct PhysicsPlugin {
     pub gravity: Vec3
 }
 
+impl PhysicsPlugin {
+    pub fn gravity() -> Self {
+        Self {
+            gravity: Vec3::new(0.0, -9.81, 0.0)
+        }
+    }
+}
+
 impl Default for PhysicsPlugin {
     fn default() -> Self {
         Self {
