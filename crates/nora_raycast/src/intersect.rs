@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
 
-use crate::{Ray, RayCastable, RayCastSource};
-use crate::triangle::{triangle_normal, Triangle, inside_triangle};
+use crate::Ray;
+use crate::triangle::Triangle;
 use crate::convert::IntoUsize;
 
 
@@ -112,7 +112,7 @@ fn mesh_intersection_with_vertices(
             Vec3::from(vertex_normals[indices[2].into_usize()]),
         ];
 
-        if let Some(intersection) = triangle_intersect_mt(&triangle, &normals, &ray_mesh) {
+        if let Some(intersection) = triangle_intersect(&triangle, &normals, &ray_mesh) {
 
             let intersection_world = intersection.transform(mesh_to_world, &ray.origin);
 
@@ -129,7 +129,7 @@ fn mesh_intersection_with_vertices(
 /// Checks if a ray intersects a triangle given its vertices using the Möller-Trumbore algorithm.
 ///
 /// Note that the vertices are relative to the mesh so the ray also need to be in the mesh frame of reference.
-fn triangle_intersect_mt(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Option<RayIntersection> {
+fn triangle_intersect(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Option<RayIntersection> {
 
     let v0v1 = triangle.v1 - triangle.v0;
     let v0v2 = triangle.v2 - triangle.v0;
@@ -174,4 +174,13 @@ fn triangle_intersect_mt(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Op
         normal,
         distance: ray.origin.distance(intersection)
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const V0: [f32; 3] = [1.0, 5.0, -1.0];
+    const V1: [f32; 3] = [-1.0, 5.0, -1.0];
+    const V2: [f32; 3] = [0.0, 5.0, 2.0];
 }
