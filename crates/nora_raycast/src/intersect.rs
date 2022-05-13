@@ -167,7 +167,7 @@ fn triangle_intersect(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Optio
 
     let intersection = ray.origin + t * ray.direction;
 
-    let normal = u * normals[0] + v * normals[1] + (1.0 - u - v) * normals[2];
+    let normal = u * normals[1] + v * normals[2] + (1.0 - u - v) * normals[0];
 
     Some(RayIntersection {
         point: intersection,
