@@ -6,8 +6,6 @@ use crate::triangle::Triangle;
 use crate::convert::IntoUsize;
 
 
-const EPSILON: f32 = 1e-8;
-
 #[derive(Clone)]
 pub(crate) struct RayHit {
     pub(crate) intersection: RayIntersection,
@@ -21,7 +19,6 @@ pub(crate) struct RayIntersection {
 }
 
 impl RayIntersection {
-
     /// Makes a new ray intersection that is transformed
     fn transform(&self, transform: &Mat4, ray_origin: &Vec3) -> Self {
         let point_transformed = transform.transform_point3(self.point);
@@ -141,7 +138,7 @@ fn triangle_intersect(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Optio
         return None;
     }
 
-    if det.abs() < EPSILON {
+    if det.abs() < f32::EPSILON {
         return None;
     }
 
@@ -162,7 +159,7 @@ fn triangle_intersect(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Optio
     }
 
     let t = v0v2.dot(q) * det_inv;
-    if t < EPSILON {
+    if t < f32::EPSILON {
         return None;
     }
 
@@ -181,7 +178,7 @@ fn triangle_intersect(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Optio
 mod tests {
     use super::*;
 
-    /// Triangle that lies in the XY-plane with Y=5
+    // Triangle that lies in the XY-plane with Y=5
     const V0: [f32; 3] = [1.0, 5.0, -1.0];
     const V1: [f32; 3] = [-1.0, 5.0, -1.0];
     const V2: [f32; 3] = [0.0, 5.0, 2.0];

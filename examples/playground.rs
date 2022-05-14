@@ -32,23 +32,28 @@ fn setup(
         ..Default::default()
     })
         .insert(RigidBody::Fixed)
-        .insert(ColliderShape::Cuboid {x_half: 5.0, y_half: 0.0, z_half: 5.0})
+        .insert(ColliderShape::Cuboid {x_half: 10.0, y_half: 0.0, z_half: 10.0})
         .insert(RayCastable);
 
     // Spawn sphere
-    commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 0.5, subdivisions: 5})),
-        material: materials.add(Color::LIME_GREEN.into()),
-        transform: Transform::from_xyz(-2.0, 30.0, 0.0),
-        ..Default::default()
-    })
-        .insert(RigidBody::Dynamic)
-        .insert(ColliderShape::Sphere { radius: 0.5 })
-        .insert(ColliderPhysicalProperties {
-            restitution: 1.0,
+    for i in 0..10 {
+
+        let x = -5.0 + 1.0*(i as f32);
+        commands.spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 0.5, subdivisions: 5})),
+            material: materials.add(Color::LIME_GREEN.into()),
+            transform: Transform::from_xyz(x, 30.0, 0.0),
             ..Default::default()
         })
-        .insert(RayCastable);
+            .insert(RigidBody::Dynamic)
+            .insert(ColliderShape::Sphere { radius: 0.5 })
+            .insert(ColliderPhysicalProperties {
+                restitution: 0.1*(i as f32),
+                ..Default::default()
+            })
+            .insert(RayCastable);
+
+    }
 
     // camera
     let camera_pos = Vec3::new(-18.0, 8.0, 18.0);

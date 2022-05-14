@@ -6,7 +6,9 @@ pub(crate) mod debug;
 pub(crate) mod triangle;
 pub(crate) mod convert;
 
+use std::sync::{Arc, Mutex};
 use bevy::prelude::*;
+use bevy::tasks::ComputeTaskPool;
 
 use ray::Ray;
 use intersect::{RayHit, mesh_intersection};
@@ -120,33 +122,32 @@ fn create_rays_system(
 
 fn calc_intersections_system(
     meshes: Res<Assets<Mesh>>,
+    task_pool: Res<ComputeTaskPool>,
     mut source_query: Query<&mut RayCastSource>,
     castable_query: Query<(&Handle<Mesh>, &GlobalTransform), With<RayCastable>>
 ) {
     for mut source in source_query.iter_mut() {
         if let Some(ray) = &source.ray {
 
-            let mut ray_hits: Vec<RayHit> = Vec::new();
-            for (mesh_handle, transform) in castable_query.iter() {
+            let ray_hits = Arc::new(Mutex::new(Vec::new()));
 
+            castable_query.par_for_each(&task_pool, num_cpus::get(), | (mesh_handle, transform) | {
                 if let Some(mesh) = meshes.get(mesh_handle) {
 
                     let mesh_to_world = transform.compute_matrix();
                     if let Some(intersection) = mesh_intersection(mesh, ray, &mesh_to_world) {
-                        ray_hits.push(RayHit{intersection});
+                        ray_hits.lock().unwrap().push(RayHit{intersection});
                     }
-
                 } else {
                     error!("No mesh for mesh handle");
-                    continue;
                 }
-            }
+            });
 
             // todo: improve this
             let min_distance = f32::MAX;
             let mut closest_hit: Option<RayHit> = None;
 
-            for hit in ray_hits.iter() {
+            for hit in ray_hits.lock().unwrap().iter() {
                 if hit.intersection.distance < min_distance {
                     closest_hit = Some(hit.clone());
                 }
