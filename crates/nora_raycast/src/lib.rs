@@ -72,7 +72,7 @@ impl RayCastSource {
     }
 }
 
-/// An entity that are visible to the rays
+/// Component that makes an entity visible to rays
 #[derive(Component, Default)]
 pub struct RayCastable;
 
@@ -118,7 +118,7 @@ fn create_rays_system(
     }
 }
 
-pub(crate) fn calc_intersections_system(
+fn calc_intersections_system(
     meshes: Res<Assets<Mesh>>,
     mut source_query: Query<&mut RayCastSource>,
     castable_query: Query<(&Handle<Mesh>, &GlobalTransform), With<RayCastable>>

@@ -21,6 +21,8 @@ pub(crate) struct RayIntersection {
 }
 
 impl RayIntersection {
+
+    /// Makes a new ray intersection that is transformed
     fn transform(&self, transform: &Mat4, ray_origin: &Vec3) -> Self {
         let point_transformed = transform.transform_point3(self.point);
         Self {
@@ -35,7 +37,7 @@ impl RayIntersection {
 pub(crate) fn mesh_intersection(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) -> Option<RayIntersection> {
 
     if mesh.primitive_topology() != PrimitiveTopology::TriangleList {
-        error!("Only work with triangle list topology for now");
+        error!("Ray casting only works with triangle list topology for now");
         return None;
     }
 
@@ -81,7 +83,6 @@ pub(crate) fn mesh_intersection(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) ->
 
     None
 }
-
 
 fn mesh_intersection_with_vertices(
     ray: &Ray,
@@ -180,7 +181,73 @@ fn triangle_intersect(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Optio
 mod tests {
     use super::*;
 
+    /// Triangle that lies in the XY-plane with Y=5
     const V0: [f32; 3] = [1.0, 5.0, -1.0];
     const V1: [f32; 3] = [-1.0, 5.0, -1.0];
     const V2: [f32; 3] = [0.0, 5.0, 2.0];
+    const NORMALS: [[f32; 3]; 3] = [
+        [0.0, 1.0, 0.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 1.0, 0.0],
+    ];
+
+    fn get_triangle() -> (Triangle, [Vec3; 3]) {
+        let triangle: Triangle = [V0, V1, V2].into();
+        let normals = NORMALS.map(Vec3::from);
+
+        (triangle, normals)
+    }
+
+    #[test]
+    fn test_triangle_intersect_inside() {
+        let (triangle, normals) = get_triangle();
+
+        let ray_origin = 8.0 * Vec3::Y;
+        let ray_direction = -Vec3::Y;
+        let ray = Ray::new(ray_origin, ray_direction);
+
+        let intersection = triangle_intersect(&triangle, &normals, &ray);
+        assert!(intersection.is_some());
+
+        let intersection = intersection.unwrap();
+        assert_eq!(intersection.normal, Vec3::Y);
+        assert_eq!(intersection.point, 5.0*Vec3::Y);
+        assert_eq!(intersection.distance, (ray_origin.length() - 5.0).abs());
+    }
+
+    #[test]
+    fn test_triangle_intersect_back_facing() {
+        let (triangle, normals) = get_triangle();
+
+        let ray_origin = Vec3::ZERO;
+        let ray_direction = Vec3::Y;
+        let ray = Ray::new(ray_origin, ray_direction);
+
+        let intersection = triangle_intersect(&triangle, &normals, &ray);
+        assert!(intersection.is_none());
+    }
+
+    #[test]
+    fn test_triangle_intersect_behind() {
+        let (triangle, normals) = get_triangle();
+
+        let ray_origin = Vec3::ZERO;
+        let ray_direction = -Vec3::Y;
+        let ray = Ray::new(ray_origin, ray_direction);
+
+        let intersection = triangle_intersect(&triangle, &normals, &ray);
+        assert!(intersection.is_none());
+    }
+
+    #[test]
+    fn test_triangle_intersect_outside() {
+        let (triangle, normals) = get_triangle();
+
+        let ray_origin = Vec3::new(0.0, 8.0, 5.0);
+        let ray_direction = -Vec3::Y;
+        let ray = Ray::new(ray_origin, ray_direction);
+
+        let intersection = triangle_intersect(&triangle, &normals, &ray);
+        assert!(intersection.is_none());
+    }
 }

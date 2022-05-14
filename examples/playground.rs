@@ -51,7 +51,7 @@ fn setup(
         .insert(RayCastable);
 
     // camera
-    let camera_pos = Vec3::new(-2.0, 7.0, 8.0);
+    let camera_pos = Vec3::new(-18.0, 8.0, 18.0);
     let distance = camera_pos.length();
     let camera_transform = Transform::from_translation(camera_pos)
         .looking_at(Vec3::ZERO, Vec3::Y);

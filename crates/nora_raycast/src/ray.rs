@@ -5,9 +5,10 @@ pub(crate) struct Ray {
     pub(crate) origin: Vec3,
     pub(crate) direction: Vec3
 }
+
 impl Ray {
 
-    fn new(origin: Vec3, direction: Vec3) -> Self {
+    pub(crate) fn new(origin: Vec3, direction: Vec3) -> Self {
         Self {
             origin,
             direction: direction.normalize()
