@@ -1,7 +1,7 @@
 extern crate core;
 
 pub(crate) mod ray;
-pub(crate) mod intersect;
+pub mod intersect;
 pub(crate) mod debug;
 pub(crate) mod triangle;
 pub(crate) mod convert;
@@ -52,7 +52,8 @@ pub enum RayCastMethod {
 pub struct RayCastSource {
     method: RayCastMethod,
     ray: Option<Ray>,
-    ray_hit: Option<RayHit>
+    pub ray_hit: Option<RayHit>,
+    pub prev_ray_hit: Option<RayHit>
 }
 
 
@@ -61,7 +62,8 @@ impl RayCastSource {
         Self {
             method,
             ray: None,
-            ray_hit: None
+            ray_hit: None,
+            prev_ray_hit: None
         }
     }
 
@@ -69,7 +71,8 @@ impl RayCastSource {
         Self {
             method: RayCastMethod::ScreenSpace,
             ray: None,
-            ray_hit: None
+            ray_hit: None,
+            prev_ray_hit: None
         }
     }
 }
@@ -88,6 +91,11 @@ fn create_rays_system(
     for (mut ray_source, camera, camera_transform) in ray_source_query.iter_mut() {
 
         // todo: Remove this and make a separate reset system that can be triggered
+        if let Some(ray_hit) = &ray_source.ray_hit {
+            ray_source.prev_ray_hit = Some(ray_hit.clone());
+        } else {
+            ray_source.prev_ray_hit = None;
+        }
         ray_source.ray_hit = None;
 
         match ray_source.method {
@@ -124,19 +132,22 @@ fn calc_intersections_system(
     meshes: Res<Assets<Mesh>>,
     task_pool: Res<ComputeTaskPool>,
     mut source_query: Query<&mut RayCastSource>,
-    castable_query: Query<(&Handle<Mesh>, &GlobalTransform), With<RayCastable>>
+    castable_query: Query<(Entity, &Handle<Mesh>, &GlobalTransform), With<RayCastable>>
 ) {
     for mut source in source_query.iter_mut() {
         if let Some(ray) = &source.ray {
 
             let ray_hits = Arc::new(Mutex::new(Vec::new()));
 
-            castable_query.par_for_each(&task_pool, num_cpus::get(), | (mesh_handle, transform) | {
+            castable_query.par_for_each(&task_pool, num_cpus::get(), | (entity, mesh_handle, transform) | {
                 if let Some(mesh) = meshes.get(mesh_handle) {
 
                     let mesh_to_world = transform.compute_matrix();
                     if let Some(intersection) = mesh_intersection(mesh, ray, &mesh_to_world) {
-                        ray_hits.lock().unwrap().push(RayHit{intersection});
+                        ray_hits.lock().unwrap().push(RayHit{
+                            entity,
+                            intersection
+                        });
                     }
                 } else {
                     error!("No mesh for mesh handle");

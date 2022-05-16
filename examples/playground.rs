@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
 use nora_core::orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera};
 use nora_physics::{
@@ -6,13 +7,16 @@ use nora_physics::{
     rigid_body::RigidBody,
     collider::{ColliderShape, ColliderPhysicalProperties}
 };
-use nora_raycast::{RayCastable, RayCastSource, RayCastPlugin};
+use nora_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
+
 fn main() {
 
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugin(LogDiagnosticsPlugin::default())
+        .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(PhysicsPlugin::gravity())
-        .add_plugin(RayCastPlugin)
+        .add_plugin(InteractionPlugin)
         .add_plugin(PanOrbitCameraPlugin)
         .add_startup_system(setup)
         .add_system(bevy::input::system::exit_on_esc_system)
@@ -33,7 +37,7 @@ fn setup(
     })
         .insert(RigidBody::Fixed)
         .insert(ColliderShape::Cuboid {x_half: 10.0, y_half: 0.0, z_half: 10.0})
-        .insert(RayCastable);
+        .insert_bundle(InteractiveBundle::default());
 
     // Spawn sphere
     for i in 0..10 {
@@ -51,7 +55,7 @@ fn setup(
                 restitution: 0.1*(i as f32),
                 ..Default::default()
             })
-            .insert(RayCastable);
+            .insert_bundle(InteractiveBundle::default());
 
     }
 
@@ -67,7 +71,7 @@ fn setup(
         distance,
         ..Default::default()
     })
-        .insert(RayCastSource::screen_space());
+        .insert_bundle(InteractorBundle::default());
 
     // Light
     commands.spawn_bundle(PointLightBundle {

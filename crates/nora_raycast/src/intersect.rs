@@ -7,7 +7,8 @@ use crate::convert::IntoUsize;
 
 
 #[derive(Clone)]
-pub(crate) struct RayHit {
+pub struct RayHit {
+    pub entity: Entity,
     pub(crate) intersection: RayIntersection,
 }
 
