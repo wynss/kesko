@@ -5,12 +5,16 @@ mod interaction;
 use bevy::prelude::*;
 use nora_raycast::{RayCastPlugin, RayCastSource, RayCastSystems, RayCastable};
 use crate::event::InteractionEvent;
-use crate::interaction::{Dragging, update_interactions, InteractionState};
+use crate::interaction::{
+    DraggingGlobal, update_interactions,
+    Drag, Hover
+};
 
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
 enum InteractionSystems {
     UpdateInteractions,
+    SendEvents
 }
 
 pub struct InteractionPlugin;
@@ -18,7 +22,7 @@ impl Plugin for InteractionPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<InteractionMaterials>()
             .add_event::<InteractionEvent>()
-            .init_resource::<Dragging>()
+            .init_resource::<DraggingGlobal>()
             .add_plugin(RayCastPlugin)
             .add_system_set_to_stage(
                 CoreStage::First,
@@ -27,6 +31,9 @@ impl Plugin for InteractionPlugin {
                         .label(InteractionSystems::UpdateInteractions)
                         .after(RayCastSystems::CalcIntersections)
                     )
+                    .with_system(event::send_events
+                        .label(InteractionSystems::SendEvents)
+                        .after(InteractionSystems::UpdateInteractions))
                     .with_system(
                         debug::update_interaction_material.after(InteractionSystems::UpdateInteractions),
                     )
@@ -39,7 +46,6 @@ impl Plugin for InteractionPlugin {
 struct OriginalMaterial(Option<Handle<StandardMaterial>>);
 
 struct InteractionMaterials {
-    selected: Handle<StandardMaterial>,
     hovered: Handle<StandardMaterial>,
     pressed: Handle<StandardMaterial>,
 }
@@ -50,7 +56,6 @@ impl FromWorld for InteractionMaterials {
             .get_resource_mut::<Assets<StandardMaterial>>()
             .unwrap();
         Self {
-            selected: materials.add(Color::GOLD.into()),
             hovered: materials.add(Color::GOLD.into()),
             pressed: materials.add(Color::INDIGO.into()),
         }
@@ -67,21 +72,12 @@ fn set_initial_interaction_material(
     }
 }
 
-#[derive(Bundle)]
+#[derive(Bundle, Default)]
 pub struct InteractiveBundle {
     material: OriginalMaterial,
     ray_castable: RayCastable,
-    interaction: InteractionState,
-}
-
-impl Default for InteractiveBundle {
-    fn default() -> Self {
-        Self {
-            material: OriginalMaterial::default(),
-            ray_castable: RayCastable::default(),
-            interaction: InteractionState::None,
-        }
-    }
+    drag: Drag,
+    hover: Hover
 }
 
 #[derive(Bundle)]

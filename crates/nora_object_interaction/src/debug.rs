@@ -1,18 +1,33 @@
 use bevy::prelude::*;
-use crate::{InteractionState, InteractionMaterials, OriginalMaterial};
+use crate::{
+    InteractionMaterials,
+    OriginalMaterial,
+    event::{
+        InteractionEvent, DragEvent, HoverEvent
+    }
+};
 
 
 pub(crate) fn update_interaction_material(
+    mut event_reader: EventReader<InteractionEvent>,
     interaction_materials: Res<InteractionMaterials>,
-    mut interaction_query: Query<(&InteractionState, &OriginalMaterial, &mut Handle<StandardMaterial>), Changed<InteractionState>>,
+    mut material_query: Query<(&mut Handle<StandardMaterial>, &OriginalMaterial), With<OriginalMaterial>>
 ) {
-    for (interaction, original_material, mut current_material) in interaction_query.iter_mut() {
-        match interaction {
-            InteractionState::Dragged => *current_material = interaction_materials.pressed.clone(),
-            InteractionState::Hovered => *current_material = interaction_materials.hovered.clone(),
-            InteractionState::None => {
+
+    for event in event_reader.iter() {
+        match event {
+            InteractionEvent::Drag(drag_event) => if let DragEvent::Started(e)=  drag_event {
+                let (mut current_material, _) = material_query.get_mut(*e).unwrap();
+                *current_material = interaction_materials.pressed.clone();
+            },
+            InteractionEvent::Hover(hover_event) => if let HoverEvent::Started(e) = hover_event {
+                let (mut current_material, _) = material_query.get_mut(*e).unwrap();
+                *current_material = interaction_materials.hovered.clone();
+            },
+            InteractionEvent::NoInteraction(e) => {
+                let (mut current_material, original_material) = material_query.get_mut(*e).unwrap();
                 if let Some(material) = &original_material.0 {
-                   *current_material = material.clone();
+                    *current_material = material.clone();
                 }
             }
         }
