@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 use crate::{
-    InteractionMaterials,
-    OriginalMaterial,
     event::{
         InteractionEvent, DragEvent, HoverEvent
-    }
+    },
+    material::{InteractionMaterials, OriginalMaterial}
 };
 
 
