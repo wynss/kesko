@@ -67,7 +67,8 @@ fn setup(
     commands.spawn_bundle(PerspectiveCameraBundle {
         transform: camera_transform,
         ..Default::default()
-    }).insert(PanOrbitCamera {
+    })
+        .insert(PanOrbitCamera {
         distance,
         ..Default::default()
     })
