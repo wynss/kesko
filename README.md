@@ -1,5 +1,7 @@
 # Nora
 
+[![CI](https://github.com/wynss/nora/actions/workflows/rust.yml/badge.svg)](https://github.com/wynss/nora/actions/workflows/rust.yml)
+
 Experimental project that tries to combine [Bevy](https://bevyengine.org), [Rapier](https://www.rapier.rs) and Python (using [pyo3](https://github.com/PyO3/pyo3)) to create a simple and flexible simulator for Robotics and RL. :robot:
 
 #### ToDo
