@@ -3,7 +3,8 @@ members = [
     "crates/nora_core",
     "crates/nora_physics",
     "crates/nora_raycast",
-    "crates/nora_python"
+    "crates/nora_python",
+    "crates/nora_object_interaction"
 ]
 
 [package]
@@ -27,5 +28,6 @@ features = ["3d"]
 [dependencies]
 nora_physics = { version = "0.1.0", path = "crates/nora_physics" }
 nora_core = { version = "0.1.0", path = "crates/nora_core" }
+nora_object_interaction = { version = "0.1.0", path = "crates/nora_object_interaction"}
 nora_raycast = { version = "0.1.0", path = "crates/nora_raycast"}
 bevy_egui = "0.13"
