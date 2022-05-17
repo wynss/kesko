@@ -4,24 +4,28 @@ use nora_raycast::RayCastSource;
 
 
 #[derive(Default)]
-pub(crate) struct Dragging {
-    is_dragging: bool
+pub(crate) struct DraggingGlobal {
+    dragged: bool
 }
 
-#[derive(Component, PartialEq)]
-pub(crate) enum InteractionState {
-    Dragged,
-    Hovered,
-    None,
+#[derive(Component, Default)]
+pub(crate) struct Drag {
+    pub(crate) dragged: bool
+}
+
+#[derive(Component, Default)]
+pub(crate) struct Hover {
+    pub(crate) hovered: bool
 }
 
 pub(crate) fn update_interactions(
     mut motion_evr: EventReader<MouseMotion>,
     mouse_button_input: Res<Input<MouseButton>>,
     source_query: Query<&RayCastSource, With<Camera>>,
-    mut dragging: Local<Dragging>,
-    mut interaction_query: Query<(Entity, &mut InteractionState)>,
+    mut dragging_global: Local<DraggingGlobal>,
+    mut interaction_query: Query<(Entity, &mut Drag, &mut Hover)>,
 ) {
+
     let mouse_pressed = mouse_button_input.pressed(MouseButton::Left);
     let mouse_just_released = mouse_button_input.just_released(MouseButton::Left);
 
@@ -36,30 +40,36 @@ pub(crate) fn update_interactions(
 
         let hit_entity = source.ray_hit.as_ref().map(|hit| hit.entity);
 
-        if mouse_pressed && cursor_moved && !dragging.is_dragging{
+        if mouse_pressed && cursor_moved && !dragging_global.dragged {
             if let Some(hit_entity) = hit_entity {
-                let (_, mut i) = interaction_query.get_mut(hit_entity).unwrap();
-                if *i != InteractionState::Dragged {
-                    *i = InteractionState::Dragged;
-                    dragging.is_dragging = true;
+                let (_, mut drag, _) = interaction_query.get_mut(hit_entity).unwrap();
+                if !drag.dragged {
+                    drag.dragged = true;
+                    dragging_global.dragged = true;
                 }
             }
         }
         else if mouse_just_released {
-            for (e, mut i) in interaction_query.iter_mut() {
-                if hit_entity == Some(e) && *i == InteractionState::Dragged {
-                    *i = InteractionState::Hovered;
-                } else if hit_entity != Some(e) && *i != InteractionState::None{
-                    *i = InteractionState::None;
+            for (e, mut drag, mut hover) in interaction_query.iter_mut() {
+                if hit_entity == Some(e) && drag.dragged {
+                    hover.hovered = true;
+                    drag.dragged = false;
+                } else if hit_entity != Some(e) {
+                    if drag.dragged {
+                        drag.dragged = false;
+                    }
+                    if hover.hovered {
+                        hover.hovered = false;
+                    }
                 }
-                dragging.is_dragging = false;
+                dragging_global.dragged = false;
             }
         } else {
-            for (e, mut i) in interaction_query.iter_mut() {
-                if hit_entity == Some(e) && *i != InteractionState::Hovered && *i != InteractionState::Dragged {
-                    *i = InteractionState::Hovered;
-                } else if hit_entity != Some(e) && *i == InteractionState::Hovered {
-                    *i = InteractionState::None;
+            for (e, drag, mut hover) in interaction_query.iter_mut() {
+                if hit_entity == Some(e) && !drag.dragged && !hover.hovered {
+                    hover.hovered = true;
+                } else if hit_entity != Some(e) && hover.hovered {
+                    hover.hovered = false;
                 }
             }
         }
