@@ -139,7 +139,7 @@ fn triangle_intersect(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Optio
         return None;
     }
 
-    if det.abs() < f32::EPSILON {
+    if det < f32::EPSILON {
         return None;
     }
 
@@ -155,7 +155,7 @@ fn triangle_intersect(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Optio
     let q = t.cross(v0v1);
     let v = ray.direction.dot(q) * det_inv;
 
-    if !(0.0..=1.0).contains(&v) {
+    if v < 0.0 || u + v > 1.0 {
         return None;
     }
 
