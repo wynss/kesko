@@ -40,6 +40,8 @@ mod tests {
     use bevy::pbr::PbrPlugin;
     use bevy::render::RenderPlugin;
     use bevy::window::WindowPlugin;
+    use bevy::asset::{create_platform_default_asset_io};
+    use bevy::tasks::IoTaskPool;
     use crate::{OriginalMaterial, set_initial_interaction_material};
 
     #[test]
@@ -48,10 +50,7 @@ mod tests {
         let mut app  = App::new();
         app.add_plugin(CorePlugin)
             .add_plugin(AssetPlugin)
-            .add_plugin(WindowPlugin::default())
-            .add_plugin(RenderPlugin)
-            .add_plugin(CorePipelinePlugin)
-            .add_plugin(PbrPlugin);
+            .add_plugin(MaterialPlugin::<StandardMaterial>::default());
 
         let world = &mut app.world;
         let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
