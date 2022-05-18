@@ -36,12 +36,6 @@ mod tests {
     use bevy::prelude::*;
     use bevy::asset::AssetPlugin;
     use bevy::core::CorePlugin;
-    use bevy::core_pipeline::CorePipelinePlugin;
-    use bevy::pbr::PbrPlugin;
-    use bevy::render::RenderPlugin;
-    use bevy::window::WindowPlugin;
-    use bevy::asset::{create_platform_default_asset_io};
-    use bevy::tasks::IoTaskPool;
     use crate::{OriginalMaterial, set_initial_interaction_material};
 
     #[test]
