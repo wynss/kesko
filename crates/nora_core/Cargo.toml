@@ -4,8 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-nora_physics = { version = "0.1.0", path = "../nora_physics" }
 bevy = "0.7.0"
 bevy_egui = "0.13.0"
-heron = {version = "3.0.0", features=["3d"]}
+nora_physics = { version = "0.1.0", path = "../nora_physics" }
+nora_object_interaction = { path = "../nora_object_interaction"}
+nora_raycast = { path = "../nora_raycast"}
 
