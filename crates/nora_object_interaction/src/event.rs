@@ -3,21 +3,11 @@ use bevy::prelude::*;
 use crate::interaction::{Drag, Hover};
 
 #[derive(Debug, PartialEq)]
-pub enum DragEvent {
-    Started(Entity),
-    Stopped(Entity),
-}
-
-#[derive(Debug, PartialEq)]
-pub enum HoverEvent {
-    Started(Entity),
-    Stopped(Entity),
-}
-
-#[derive(Debug, PartialEq)]
 pub enum InteractionEvent {
-    Drag(DragEvent),
-    Hover(HoverEvent),
+    DragStarted(Entity),
+    DragStopped(Entity),
+    HoverStarted(Entity),
+    HoverStopped(Entity),
     NoInteraction(Entity),
 }
 
@@ -35,23 +25,23 @@ pub(crate) fn send_events(
         Or<(Changed<Hover>, Changed<Drag>)>,
     >,
 ) {
-    for (e, hover, drag, hover_track, drag_track) in interaction_query.iter() {
+    for (entity, hover, drag, hover_track, drag_track) in interaction_query.iter() {
 
         if hover_track.is_changed() || drag_track.is_changed() {
             if drag_track.is_changed() && !drag_track.is_added() {
-                event_writer.send(InteractionEvent::Drag(match drag.dragged {
-                    true => DragEvent::Started(e),
-                    false => DragEvent::Stopped(e),
-                }));
+                event_writer.send(match drag.dragged {
+                    true => InteractionEvent::DragStarted(entity),
+                    false => InteractionEvent::DragStopped(entity)
+                });
             }
             if hover_track.is_changed() && !hover_track.is_added() {
-                event_writer.send(InteractionEvent::Hover(match hover.hovered {
-                    true => HoverEvent::Started(e),
-                    false => HoverEvent::Stopped(e),
-                }));
+                event_writer.send(match hover.hovered {
+                    true => InteractionEvent::HoverStarted(entity),
+                    false => InteractionEvent::HoverStopped(entity),
+                });
             }
             if !hover.hovered && !drag.dragged && !drag_track.is_added() && !hover_track.is_added() {
-                event_writer.send(InteractionEvent::NoInteraction(e))
+                event_writer.send(InteractionEvent::NoInteraction(entity))
             }
         }
     }
@@ -59,11 +49,10 @@ pub(crate) fn send_events(
 
 #[cfg(test)]
 mod tests {
-    use super::InteractionEvent;
-    use crate::event::{send_events, HoverEvent, DragEvent};
-    use crate::interaction::{Drag, Hover};
     use bevy::core::CorePlugin;
     use bevy::prelude::*;
+    use crate::event::{send_events, InteractionEvent};
+    use crate::interaction::{Drag, Hover};
 
     #[derive(PartialEq)]
     enum TestStep {
@@ -124,8 +113,8 @@ mod tests {
                     let event1 = iter.next().unwrap();
                     let event2 = iter.next().unwrap();
 
-                    assert_eq!(InteractionEvent::Drag(DragEvent::Started(entity)), *event1);
-                    assert_eq!(InteractionEvent::Hover(HoverEvent::Started(entity)), *event2);
+                    assert_eq!(InteractionEvent::DragStarted(entity), *event1);
+                    assert_eq!(InteractionEvent::HoverStarted(entity), *event2);
                 },
                 TestStep::StoppedEvents => {
                     assert_eq!(events.len(), 3, "Expected {} events got {}", 3, events.len());
@@ -135,8 +124,8 @@ mod tests {
                     let event2 = iter.next().unwrap();
                     let event3 = iter.next().unwrap();
 
-                    assert_eq!(InteractionEvent::Drag(DragEvent::Stopped(entity)), *event1);
-                    assert_eq!(InteractionEvent::Hover(HoverEvent::Stopped(entity)), *event2);
+                    assert_eq!(InteractionEvent::DragStopped(entity), *event1);
+                    assert_eq!(InteractionEvent::HoverStopped(entity), *event2);
                     assert_eq!(InteractionEvent::NoInteraction(entity), *event3);
                 }
                 _ => {}

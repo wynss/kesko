@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use crate::{
-    event::{
-        InteractionEvent, DragEvent, HoverEvent
-    },
+    event::InteractionEvent,
     material::{InteractionMaterials, OriginalMaterial}
 };
 
@@ -15,12 +13,12 @@ pub(crate) fn update_interaction_material(
 
     for event in event_reader.iter() {
         match event {
-            InteractionEvent::Drag(drag_event) => if let DragEvent::Started(e)=  drag_event {
-                let (mut current_material, _) = material_query.get_mut(*e).unwrap();
+            InteractionEvent::DragStarted(entity) =>  {
+                let (mut current_material, _) = material_query.get_mut(*entity).unwrap();
                 *current_material = interaction_materials.pressed.clone();
             },
-            InteractionEvent::Hover(hover_event) => if let HoverEvent::Started(e) = hover_event {
-                let (mut current_material, _) = material_query.get_mut(*e).unwrap();
+            InteractionEvent::HoverStarted(entity) => {
+                let (mut current_material, _) = material_query.get_mut(*entity).unwrap();
                 *current_material = interaction_materials.hovered.clone();
             },
             InteractionEvent::NoInteraction(e) => {
@@ -28,7 +26,8 @@ pub(crate) fn update_interaction_material(
                 if let Some(material) = &original_material.0 {
                     *current_material = material.clone();
                 }
-            }
+            },
+            _ => {}
         }
     }
 }
