@@ -6,8 +6,7 @@ use nora_core::orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera};
 use nora_physics::{
     PhysicsPlugin,
     rigid_body::RigidBody,
-    collider::{ColliderShape, ColliderPhysicalProperties},
-    impulse::Impulse
+    collider::{ColliderShape, ColliderPhysicalProperties}
 };
 use nora_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
 
@@ -61,7 +60,6 @@ fn setup(
                 restitution: 0.1*(i as f32),
                 ..Default::default()
             })
-            .insert(Impulse::default())
             .insert_bundle(InteractiveBundle::default());
 
     }
