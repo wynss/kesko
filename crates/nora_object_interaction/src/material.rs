@@ -15,8 +15,8 @@ impl FromWorld for InteractionMaterials {
             .get_resource_mut::<Assets<StandardMaterial>>()
             .unwrap();
         Self {
-            hovered: materials.add(Color::GOLD.into()),
-            pressed: materials.add(Color::INDIGO.into()),
+            hovered: materials.add(Color::hex("81D4FA").unwrap().into()),
+            pressed: materials.add(Color::hex("FF7043").unwrap().into()),
         }
     }
 }

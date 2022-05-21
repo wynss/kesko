@@ -1,3 +1,4 @@
+use std::f32::consts::PI;
 use bevy::prelude::*;
 use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
@@ -20,6 +21,7 @@ fn main() {
         .add_plugin(PanOrbitCameraPlugin)
         .add_startup_system(setup)
         .add_system(bevy::input::system::exit_on_esc_system)
+        .insert_resource(ClearColor(Color::hex("F5F5F5").unwrap()))
         .run();
 }
 
@@ -40,13 +42,16 @@ fn setup(
         .insert_bundle(InteractiveBundle::default());
 
     // Spawn sphere
+    let radius = 4.0;
     for i in 0..10 {
 
-        let x = -5.0 + 1.0*(i as f32);
+        let y = radius * (2.0 * PI * (i as f32) / 10.0).sin();
+        let x = radius * (2.0 * PI * (i as f32) / 10.0).cos();
+
         commands.spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 0.5, subdivisions: 5})),
-            material: materials.add(Color::LIME_GREEN.into()),
-            transform: Transform::from_xyz(x, 30.0, 0.0),
+            material: materials.add(Color::hex("66BB6A").unwrap().into()),
+            transform: Transform::from_xyz(x, 10.0, y),
             ..Default::default()
         })
             .insert(RigidBody::Dynamic)
@@ -77,10 +82,10 @@ fn setup(
     // Light
     commands.spawn_bundle(PointLightBundle {
         point_light: PointLight {
-            intensity: 4000.0,
+            intensity: 6000.0,
             ..Default::default()
         },
-        transform: Transform::from_xyz(4.0, 8.0, 4.0),
+        transform: Transform::from_xyz(4.0, 6.0, 4.0),
         ..Default::default()
     });
 }
