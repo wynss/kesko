@@ -11,13 +11,11 @@ pub struct Impulse {
 
 pub(crate) fn update_impulse(
     mut rigid_bodies: ResMut<rapier::RigidBodySet>,
-    query: Query<(&RigidBodyHandle, &Impulse), With<Impulse>>
+    query: Query<(&RigidBodyHandle, &Impulse), Changed<Impulse>>
 ) {
     for (body_handle, impulse) in query.iter() {
         if let Some(body) = rigid_bodies.get_mut(body_handle.0) {
-            if impulse.vec != Vec3::ZERO {
-                body.apply_impulse(impulse.vec.into_rapier(), true);
-            }
+            body.apply_impulse(impulse.vec.into_rapier(), true);
         }
     }
 }

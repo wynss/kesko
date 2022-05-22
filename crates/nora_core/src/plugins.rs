@@ -1,7 +1,7 @@
 pub(crate) mod core;
 pub(crate) mod menu;
 pub(crate) mod main_camera;
-pub(crate) mod physics;
+pub mod physics;
 
 use bevy::app::{PluginGroup, PluginGroupBuilder};
 use bevy::math::Vec3;

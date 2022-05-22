@@ -4,11 +4,14 @@ use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
 use nora_core::orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera};
 use nora_physics::{
-    PhysicsPlugin,
     rigid_body::RigidBody,
     collider::{ColliderShape, ColliderPhysicalProperties}
 };
 use nora_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
+use nora_core::plugins::physics::DefaultPhysicsPlugin;
+use nora_physics::impulse::Impulse;
+use nora_physics::gravity::GravityScale;
+
 
 fn main() {
 
@@ -16,7 +19,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_plugin(PhysicsPlugin::gravity())
+        .add_plugin(DefaultPhysicsPlugin::default())
         .add_plugin(InteractionPlugin)
         .add_plugin(PanOrbitCameraPlugin)
         .add_startup_system(setup)
@@ -60,12 +63,14 @@ fn setup(
                 restitution: 0.1*(i as f32),
                 ..Default::default()
             })
+            .insert(Impulse::default())
+            .insert(GravityScale::default())
             .insert_bundle(InteractiveBundle::default());
 
     }
 
     // camera
-    let camera_pos = Vec3::new(-18.0, 8.0, 18.0);
+    let camera_pos = Vec3::new(0.0, 8.0, 18.0);
     let distance = camera_pos.length();
     let camera_transform = Transform::from_translation(camera_pos)
         .looking_at(Vec3::ZERO, Vec3::Y);
