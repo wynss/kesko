@@ -1,7 +1,8 @@
 pub mod rigid_body;
 pub mod collider;
-mod conversions;
 pub mod gravity;
+pub mod impulse;
+mod conversions;
 
 use bevy::prelude::*;
 use bevy::math::Vec3;
@@ -10,6 +11,15 @@ use rapier3d::prelude as rapier;
 use conversions::{IntoRapier, IntoBevy};
 use gravity::Gravity;
 
+#[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
+pub enum PhysicsSystem {
+    AddRigidBodies,
+    AddColliders,
+    UpdateImpulse,
+    UpdateGravityScale,
+    PipelineStep,
+    UpdateBevyWorld
+}
 
 
 enum PhysicState {
@@ -57,10 +67,33 @@ impl Plugin for PhysicsPlugin {
                 CoreStage::PostUpdate,
                 SystemSet::new()
                     .label("physics-systems")
-                    .with_system(rigid_body::add_rigid_bodies.label("add-bodies"))
-                    .with_system(collider::add_collider_to_bodies.label("add-colliders").after("add-bodies"))
-                    .with_system(physics_pipeline_step.label("step").after("add-colliders"))
-                    .with_system(update_bevy_world.after("step"))
+                    .with_system(
+                        rigid_body::add_rigid_bodies
+                        .label(PhysicsSystem::AddRigidBodies)
+                    )
+                    .with_system(
+                        collider::add_collider_to_bodies
+                            .label(PhysicsSystem::AddColliders)
+                            .after(PhysicsSystem::AddRigidBodies))
+                    .with_system(
+                        impulse::update_impulse
+                            .label(PhysicsSystem::UpdateImpulse)
+                            .after(PhysicsSystem::AddColliders)
+                    )
+                    .with_system(gravity::update_gravity_scale_system
+                        .label(PhysicsSystem::UpdateGravityScale)
+                        .after(PhysicsSystem::AddColliders)
+                    )
+                    .with_system(
+                        physics_pipeline_step
+                            .label(PhysicsSystem::PipelineStep)
+                            .after(PhysicsSystem::UpdateImpulse)
+                    )
+                    .with_system(
+                        update_bevy_world
+                            .label(PhysicsSystem::UpdateBevyWorld)
+                            .after(PhysicsSystem::PipelineStep)
+                    )
             );
     }
 }
