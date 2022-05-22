@@ -3,7 +3,7 @@ use nora_physics::PhysicsPlugin;
 
 
 #[derive(Default)]
-pub(crate) struct DefaultPhysicsPlugin;
+pub struct DefaultPhysicsPlugin;
 
 impl Plugin for DefaultPhysicsPlugin {
     fn build(&self, app: &mut App) {
