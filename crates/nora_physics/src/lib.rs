@@ -2,6 +2,7 @@ pub mod rigid_body;
 pub mod collider;
 pub mod gravity;
 pub mod impulse;
+pub mod mass;
 mod conversions;
 
 use bevy::prelude::*;
@@ -68,11 +69,11 @@ impl Plugin for PhysicsPlugin {
                 SystemSet::new()
                     .label("physics-systems")
                     .with_system(
-                        rigid_body::add_rigid_bodies
+                        rigid_body::add_rigid_bodies_system
                         .label(PhysicsSystem::AddRigidBodies)
                     )
                     .with_system(
-                        collider::add_collider_to_bodies
+                        collider::add_collider_to_bodies_system
                             .label(PhysicsSystem::AddColliders)
                             .after(PhysicsSystem::AddRigidBodies))
                     .with_system(

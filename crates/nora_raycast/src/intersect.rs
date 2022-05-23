@@ -9,14 +9,14 @@ use crate::convert::IntoUsize;
 #[derive(Clone)]
 pub struct RayHit {
     pub entity: Entity,
-    pub(crate) intersection: RayIntersection,
+    pub intersection: RayIntersection,
 }
 
 #[derive(Clone)]
-pub(crate) struct RayIntersection {
-    pub(crate) point: Vec3,
-    pub(crate) normal: Vec3,
-    pub(crate) distance: f32
+pub struct RayIntersection {
+    pub point: Vec3,
+    pub normal: Vec3,
+    pub distance: f32
 }
 
 impl RayIntersection {

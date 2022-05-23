@@ -4,6 +4,7 @@ use fnv::FnvHashMap;
 use rapier3d::prelude::ColliderBuilder;
 
 use super::rigid_body::RigidBodyHandle;
+use crate::mass::Mass;
 
 
 pub type EntityColliderMap = FnvHashMap<Entity, rapier::ColliderHandle>;
@@ -57,7 +58,7 @@ impl Default for ColliderPhysicalProperties {
 pub(crate) struct ColliderHandle(rapier::ColliderHandle);
 
 
-pub(crate) fn add_collider_to_bodies(
+pub(crate) fn add_collider_to_bodies_system(
     mut commands: Commands,
     mut entity_collider_map: ResMut<EntityColliderMap>,
     mut collider_set: ResMut<rapier::ColliderSet>,
@@ -104,6 +105,9 @@ pub(crate) fn add_collider_to_bodies(
 
         commands.entity(entity).insert(ColliderHandle(collider_handle));
 
+        let body = rigid_body_set.get(rigid_body_handle.0).expect("Could not get rigid body");
+        commands.entity(entity).insert(Mass {val: body.mass()});
+
     }
 }
 
@@ -113,8 +117,8 @@ mod tests {
 
     use bevy::prelude::*;
     use rapier3d::prelude as rapier;
-    use crate::collider::{EntityColliderMap, ColliderShape, ColliderPhysicalProperties, add_collider_to_bodies, ColliderHandle};
-    use crate::rigid_body::{RigidBody, EntityBodyHandleMap, add_rigid_bodies};
+    use crate::collider::{EntityColliderMap, ColliderShape, ColliderPhysicalProperties, add_collider_to_bodies_system, ColliderHandle};
+    use crate::rigid_body::{RigidBody, EntityBodyHandleMap, add_rigid_bodies_system};
 
     fn setup_world() -> (World, SystemStage) {
 
@@ -126,8 +130,8 @@ mod tests {
         world.init_resource::<rapier::ColliderSet>();
 
         let test_stage = SystemStage::parallel()
-            .with_system(add_rigid_bodies)
-            .with_system(add_collider_to_bodies.after(add_rigid_bodies));
+            .with_system(add_rigid_bodies_system)
+            .with_system(add_collider_to_bodies_system.after(add_rigid_bodies_system));
 
         (world, test_stage)
     }

@@ -14,10 +14,10 @@ pub enum RigidBody {
 }
 
 #[derive(Component)]
-pub(crate) struct RigidBodyHandle(pub(crate) rapier::RigidBodyHandle);
+pub struct RigidBodyHandle(pub rapier::RigidBodyHandle);
 
 
-pub(crate) fn add_rigid_bodies(
+pub(crate) fn add_rigid_bodies_system(
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
     mut entity_body_map: ResMut<EntityBodyHandleMap>,
     mut commands: Commands,
@@ -49,7 +49,7 @@ mod tests {
 
     use bevy::prelude::*;
     use rapier3d::prelude as rapier;
-    use crate::rigid_body::{add_rigid_bodies, EntityBodyHandleMap, RigidBody, RigidBodyHandle};
+    use crate::rigid_body::{add_rigid_bodies_system, EntityBodyHandleMap, RigidBody, RigidBodyHandle};
     use crate::conversions::IntoBevy;
 
     #[test]
@@ -58,7 +58,7 @@ mod tests {
         let mut world = World::default();
 
         let mut test_stage = SystemStage::parallel();
-        test_stage.add_system(add_rigid_bodies);
+        test_stage.add_system(add_rigid_bodies_system);
 
         world.init_resource::<EntityBodyHandleMap>();
         world.init_resource::<rapier3d::prelude::RigidBodySet>();
