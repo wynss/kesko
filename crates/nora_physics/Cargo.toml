@@ -8,3 +8,6 @@ bevy = "0.7.0"
 rapier3d = "0.12.0"
 nalgebra = "0.31.0"
 fnv = "1.0.7"
+
+[profile.dev.package.rapier3d]
+opt-level = 3

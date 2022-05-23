@@ -1,6 +1,6 @@
 extern crate core;
 
-pub(crate) mod ray;
+pub mod ray;
 pub mod intersect;
 pub(crate) mod debug;
 pub(crate) mod triangle;
@@ -51,7 +51,7 @@ pub enum RayCastMethod {
 #[derive(Component)]
 pub struct RayCastSource {
     method: RayCastMethod,
-    ray: Option<Ray>,
+    pub ray: Option<Ray>,
     pub ray_hit: Option<RayHit>,
     pub prev_ray_hit: Option<RayHit>
 }

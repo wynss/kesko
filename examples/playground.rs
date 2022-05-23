@@ -36,29 +36,32 @@ fn setup(
 ) {
     // Spawn ground
     commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane { size: 20.0 })),
+        mesh: meshes.add(Mesh::from(shape::Plane { size: 200.0 })),
         material: materials.add(Color::ALICE_BLUE.into()),
         ..Default::default()
     })
         .insert(RigidBody::Fixed)
-        .insert(ColliderShape::Cuboid {x_half: 10.0, y_half: 0.0, z_half: 10.0})
+        .insert(ColliderShape::Cuboid {x_half: 100.0, y_half: 0.0, z_half: 100.0})
         .insert_bundle(InteractiveBundle::default());
 
     // Spawn sphere
+    let num_sphere = 5.0;
     let radius = 4.0;
-    for i in 0..10 {
+    for i in 0..(num_sphere as i32) {
 
-        let y = radius * (2.0 * PI * (i as f32) / 10.0).sin();
-        let x = radius * (2.0 * PI * (i as f32) / 10.0).cos();
+        let i_f = i as f32;
+        let y = radius * (2.0 * PI * i_f / num_sphere).sin();
+        let x = radius * (2.0 * PI * i_f / num_sphere).cos();
+        let sphere_radius = 0.5 * (1.0 + i_f);
 
         commands.spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 0.5, subdivisions: 5})),
+            mesh: meshes.add(Mesh::from(shape::Icosphere { radius: sphere_radius, subdivisions: 8})),
             material: materials.add(Color::hex("66BB6A").unwrap().into()),
             transform: Transform::from_xyz(x, 10.0, y),
             ..Default::default()
         })
             .insert(RigidBody::Dynamic)
-            .insert(ColliderShape::Sphere { radius: 0.5 })
+            .insert(ColliderShape::Sphere { radius: sphere_radius })
             .insert(ColliderPhysicalProperties {
                 restitution: 0.1*(i as f32),
                 ..Default::default()
@@ -85,12 +88,12 @@ fn setup(
         .insert_bundle(InteractorBundle::default());
 
     // Light
-    commands.spawn_bundle(PointLightBundle {
-        point_light: PointLight {
-            intensity: 6000.0,
+    commands.spawn_bundle(DirectionalLightBundle {
+        directional_light: DirectionalLight {
+            illuminance: 60000.0,
             ..Default::default()
         },
-        transform: Transform::from_xyz(4.0, 6.0, 4.0),
+        transform: Transform::from_xyz(0.0, 40.0, 40.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..Default::default()
     });
 }
