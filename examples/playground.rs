@@ -6,12 +6,15 @@ use nora_core::bundle::{PhysicBodyBundle, Shape};
 use nora_core::orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera};
 use nora_physics::{
     rigid_body::RigidBody,
-    collider::{ColliderShape, ColliderPhysicalProperties}
+    collider::ColliderPhysicalProperties,
+    joint::Joint
 };
 use nora_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
 use nora_core::plugins::physics::DefaultPhysicsPlugin;
-use nora_physics::impulse::Impulse;
+use nora_physics::collider::ColliderShape;
 use nora_physics::gravity::GravityScale;
+use nora_physics::impulse::Impulse;
+use nora_physics::joint::JointType;
 
 
 fn main() {
@@ -19,7 +22,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        //.add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(DefaultPhysicsPlugin::default())
         .add_plugin(InteractionPlugin)
         .add_plugin(PanOrbitCameraPlugin)
@@ -61,6 +64,45 @@ fn setup(
             Transform::from_xyz(x, 10.0, y),
             &mut meshes
         )).insert_bundle(InteractiveBundle::default());
+    }
+
+    // spawn multibody
+    let mut root = commands.spawn_bundle(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Capsule {radius: 0.5, depth: 1.0, ..Default::default()})),
+        material: materials.add(Color::PINK.into()),
+        transform: Transform::from_xyz(0.0, 2.0, 0.0),
+        ..Default::default()
+    })
+        .insert(RigidBody::Dynamic)
+        .insert(ColliderShape::CapsuleY {half_height: 0.5, radius: 0.5})
+        .insert(ColliderPhysicalProperties::default())
+        .insert(GravityScale::default())
+        .insert(Impulse::default())
+        .insert_bundle(InteractiveBundle::default())
+        .id();
+    for i in 1..8 {
+
+        let child = commands.spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Capsule {radius: 0.5, depth: 1.0, ..Default::default()})),
+            material: materials.add(Color::PINK.into()),
+            transform: Transform::from_xyz(0.0, 2.0 + 2.0*(i as f32), 0.0),
+            ..Default::default()
+        })
+            .insert(RigidBody::Dynamic)
+            .insert(ColliderShape::CapsuleY {half_height: 0.5, radius: 0.5})
+            .insert(ColliderPhysicalProperties::default())
+            .insert(GravityScale::default())
+            .insert(Impulse::default())
+            .insert(Joint {
+                joint_type: JointType::Spherical,
+                parent: root,
+                parent_anchor: Vec3::new(0.0, 1.0, 0.0),
+                child_anchor: Vec3::new(0.0, -1.0, 0.0),
+            })
+            .insert_bundle(InteractiveBundle::default())
+            .id();
+
+        root = child;
     }
 
     // camera
