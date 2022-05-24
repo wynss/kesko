@@ -3,6 +3,7 @@ pub mod collider;
 pub mod gravity;
 pub mod impulse;
 pub mod mass;
+pub mod joint;
 mod conversions;
 
 use bevy::prelude::*;
@@ -15,6 +16,7 @@ use gravity::Gravity;
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
 pub enum PhysicsSystem {
     AddRigidBodies,
+    AddJoints,
     AddColliders,
     UpdateImpulse,
     UpdateGravityScale,
@@ -71,6 +73,11 @@ impl Plugin for PhysicsPlugin {
                     .with_system(
                         rigid_body::add_rigid_bodies_system
                         .label(PhysicsSystem::AddRigidBodies)
+                    )
+                    .with_system(
+                        joint::add_joints_system
+                            .label(PhysicsSystem::AddJoints)
+                            .after(PhysicsSystem::AddRigidBodies)
                     )
                     .with_system(
                         collider::add_collider_to_bodies_system
