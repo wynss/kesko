@@ -155,12 +155,13 @@ fn calc_intersections_system(
             });
 
             // todo: improve this
-            let min_distance = f32::MAX;
+            let mut min_distance = f32::MAX;
             let mut closest_hit: Option<RayHit> = None;
 
             for hit in ray_hits.lock().unwrap().iter() {
                 if hit.intersection.distance < min_distance {
                     closest_hit = Some(hit.clone());
+                    min_distance = hit.intersection.distance;
                 }
             }
 
