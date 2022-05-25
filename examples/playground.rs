@@ -1,20 +1,21 @@
 use std::f32::consts::PI;
+
 use bevy::prelude::*;
 use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
-use nora_core::bundle::{PhysicBodyBundle, Shape};
 
-use nora_core::orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera};
-use nora_physics::{
-    rigid_body::RigidBody,
-    collider::ColliderPhysicalProperties,
-    joint::Joint
+use nora_core::{
+    bundle::{PhysicBodyBundle, Shape},
+    orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera},
+    plugins::physics::DefaultPhysicsPlugin,
 };
 use nora_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
-use nora_core::plugins::physics::DefaultPhysicsPlugin;
-use nora_physics::collider::ColliderShape;
-use nora_physics::gravity::GravityScale;
-use nora_physics::impulse::Impulse;
-use nora_physics::joint::JointType;
+use nora_physics::{
+    rigid_body::RigidBody,
+    collider::{ColliderShape, ColliderPhysicalProperties},
+    gravity::GravityScale,
+    impulse::Impulse,
+    joint::{JointType, Joint},
+};
 
 
 fn main() {
@@ -22,7 +23,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(LogDiagnosticsPlugin::default())
-        //.add_plugin(FrameTimeDiagnosticsPlugin::default())
+        .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(DefaultPhysicsPlugin::default())
         .add_plugin(InteractionPlugin)
         .add_plugin(PanOrbitCameraPlugin)
@@ -66,38 +67,39 @@ fn setup(
         )).insert_bundle(InteractiveBundle::default());
     }
 
-    // spawn multibody
+    // spawn multi body
     let mut root = commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Capsule {radius: 0.5, depth: 1.0, ..Default::default()})),
+        mesh: meshes.add(Mesh::from(shape::Capsule {radius: 0.1, depth: 0.3, ..Default::default()})),
         material: materials.add(Color::PINK.into()),
-        transform: Transform::from_xyz(0.0, 2.0, 0.0),
+        transform: Transform::from_xyz(0.0, 1.0, 0.0),
         ..Default::default()
     })
         .insert(RigidBody::Dynamic)
-        .insert(ColliderShape::CapsuleY {half_height: 0.5, radius: 0.5})
+        .insert(ColliderShape::CapsuleY {half_height: 0.15, radius: 0.1})
         .insert(ColliderPhysicalProperties::default())
         .insert(GravityScale::default())
         .insert(Impulse::default())
         .insert_bundle(InteractiveBundle::default())
         .id();
+
     for i in 1..8 {
 
         let child = commands.spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Capsule {radius: 0.5, depth: 1.0, ..Default::default()})),
+            mesh: meshes.add(Mesh::from(shape::Capsule {radius: 0.1, depth: 0.3, ..Default::default()})),
             material: materials.add(Color::PINK.into()),
-            transform: Transform::from_xyz(0.0, 2.0 + 2.0*(i as f32), 0.0),
+            transform: Transform::from_xyz(0.0, 1.0 + 0.5*(i as f32), 0.0),
             ..Default::default()
         })
             .insert(RigidBody::Dynamic)
-            .insert(ColliderShape::CapsuleY {half_height: 0.5, radius: 0.5})
+            .insert(ColliderShape::CapsuleY {half_height: 0.15, radius: 0.1})
             .insert(ColliderPhysicalProperties::default())
             .insert(GravityScale::default())
             .insert(Impulse::default())
             .insert(Joint {
                 joint_type: JointType::Spherical,
                 parent: root,
-                parent_anchor: Vec3::new(0.0, 1.0, 0.0),
-                child_anchor: Vec3::new(0.0, -1.0, 0.0),
+                parent_anchor: Vec3::new(0.0, 0.25, 0.0),
+                child_anchor: Vec3::new(0.0, -0.25, 0.0),
             })
             .insert_bundle(InteractiveBundle::default())
             .id();

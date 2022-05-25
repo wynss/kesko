@@ -4,6 +4,7 @@ use nora_physics::gravity::GravityScale;
 use nora_physics::impulse::Impulse;
 use nora_physics::rigid_body::RigidBody;
 
+
 #[derive(Debug)]
 pub enum Shape {
     Sphere {
@@ -57,7 +58,6 @@ impl PhysicBodyBundle {
                     ColliderShape::Cuboid { x_half: size / 2.0, y_half: size / 2.0, z_half: size / 2.0}
                 )
             }
-            _ => panic!("Shape {:?} not implemented for BodyBundle", shape)
         };
 
         Self {

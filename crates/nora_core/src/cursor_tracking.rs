@@ -4,6 +4,7 @@ use nora_physics::gravity::GravityScale;
 use nora_physics::impulse::Impulse;
 use nora_physics::mass::Mass;
 use nora_raycast::RayCastSource;
+use crate::orbit_camera::PanOrbitCamera;
 
 /// P and D constants for the PD-controller
 const P: f32 = 1.3;
@@ -57,23 +58,30 @@ pub(crate) fn update_tracking_system(
 
 /// System that will update the controller of the object cursor tracking using a PD controller
 pub(crate) fn update_tracking_controller_system(
-    mut track_query: Query<(&mut CursorTrack, &mut Impulse, &Mass, &GlobalTransform)>,
-    ray_query: Query<&RayCastSource>
+    ray_query: Query<&RayCastSource>,
+    camera_query: Query<&Transform, With<PanOrbitCamera>>,
+    mut track_query: Query<(&mut CursorTrack, &mut Impulse, &Mass, &GlobalTransform)>
 ) {
     if let Ok(ray_source) = ray_query.get_single() {
         if let Some(ray) = &ray_source.ray {
-            for (mut track, mut impulse, mass, transform) in track_query.iter_mut() {
 
-                let distance = -(ray.origin - track.plane_point).dot(track.plane_normal) / ray.direction.dot(track.plane_normal);
-                let plane_intersection = ray.origin + distance * ray.direction;
+            if let Ok(camera_transform) = camera_query.get_single() {
+                for (mut track, mut impulse, mass, transform) in track_query.iter_mut() {
 
-                let impulse_vec: Vec3 = plane_intersection - transform.translation;
+                    let plane_normal = camera_transform.compute_matrix().transform_vector3(Vec3::Z).normalize();
 
-                if let Some(prev_impulse) = track.prev_impulse {
-                    impulse.vec = (P * impulse_vec + D * (impulse_vec - prev_impulse) * 60.0) * mass.val;
+                    let distance = (track.plane_point - ray.origin).dot(plane_normal) / ray.direction.dot(plane_normal);
+                    let plane_intersection = ray.origin + distance * ray.direction;
+
+                    let impulse_vec: Vec3 = plane_intersection - transform.translation;
+
+                    if let Some(prev_impulse) = track.prev_impulse {
+                        impulse.vec = (P * impulse_vec + D * (impulse_vec - prev_impulse) * 60.0) * mass.val;
+                    }
+
+                    track.plane_normal = plane_normal;
+                    track.prev_impulse = Some(impulse_vec);
                 }
-
-                track.prev_impulse = Some(impulse_vec);
             }
         }
     }
