@@ -7,6 +7,7 @@ use nora_core::{
     bundle::{PhysicBodyBundle, Shape},
     orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera},
     plugins::physics::DefaultPhysicsPlugin,
+    diagnostic::FPSScreenPlugin
 };
 use nora_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
 use nora_physics::{
@@ -27,6 +28,7 @@ fn main() {
         .add_plugin(DefaultPhysicsPlugin::default())
         .add_plugin(InteractionPlugin)
         .add_plugin(PanOrbitCameraPlugin)
+        .add_plugin(FPSScreenPlugin::default())
         .add_startup_system(setup)
         .add_system(bevy::input::system::exit_on_esc_system)
         .insert_resource(ClearColor(Color::hex("F5F5F5").unwrap()))
