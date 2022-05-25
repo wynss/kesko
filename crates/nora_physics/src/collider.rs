@@ -31,6 +31,10 @@ pub enum ColliderShape {
         half_height: f32,
         radius: f32
     },
+    Cylinder {
+        radius: f32,
+        length: f32
+    }
 }
 
 /// Component for setting the physical material properties for a collider
@@ -83,6 +87,9 @@ pub(crate) fn add_collider_to_bodies_system(
             ColliderShape::CapsuleZ {half_height, radius} => {
                 ColliderBuilder::capsule_z(*half_height, *radius)
             },
+            ColliderShape::Cylinder {radius, length} => {
+                ColliderBuilder::cylinder(length / 2.0, *radius)
+            }
         };
 
         let collider = if let Some(material) = material {

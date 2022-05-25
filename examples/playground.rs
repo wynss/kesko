@@ -4,7 +4,8 @@ use bevy::prelude::*;
 use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
 use nora_core::{
-    bundle::{PhysicBodyBundle, Shape},
+    bundle::PhysicBodyBundle,
+    shape::Shape,
     orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera},
     plugins::physics::DefaultPhysicsPlugin,
     diagnostic::FPSScreenPlugin
@@ -30,6 +31,7 @@ fn main() {
         .add_plugin(PanOrbitCameraPlugin)
         .add_plugin(FPSScreenPlugin::default())
         .add_startup_system(setup)
+        .add_startup_system(spawn_car)
         .add_system(bevy::input::system::exit_on_esc_system)
         .insert_resource(ClearColor(Color::hex("F5F5F5").unwrap()))
         .run();
@@ -133,4 +135,29 @@ fn setup(
         transform: Transform::from_xyz(0.0, 40.0, 40.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..Default::default()
     });
+}
+
+
+fn spawn_car(
+    mut commands: Commands,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>
+) {
+
+    let car_body = commands.spawn_bundle(PhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box {x_length: 0.3, y_length: 0.1, z_length: 0.5},
+        materials.add(Color::BISQUE.into()),
+        Transform::from_xyz(0.0, 0.1, 3.0),
+        &mut meshes
+    )).insert_bundle(InteractiveBundle::default()).id();
+
+    let front_left_wheel = commands.spawn_bundle(PhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Cylinder {length: 1.0, radius: 0.5},
+        materials.add(Color::BISQUE.into()),
+        Transform::from_xyz(3.0, 0.6, 0.0),
+        &mut meshes
+    )).insert_bundle(InteractiveBundle::default()).id();
+
 }
