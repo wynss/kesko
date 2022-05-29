@@ -58,7 +58,7 @@ fn setup(
         let i_f = i as f32;
         let y = radius * (2.0 * PI * i_f / num_sphere).sin();
         let x = radius * (2.0 * PI * i_f / num_sphere).cos();
-        let sphere_radius = 0.5 * (1.0 + i_f);
+        let sphere_radius = 0.2 * (1.0 + i_f);
 
         commands.spawn_bundle(PhysicBodyBundle::from(
             RigidBody::Dynamic,
@@ -84,7 +84,7 @@ fn setup(
         .insert_bundle(InteractiveBundle::default())
         .id();
 
-    for i in 1..8 {
+    for i in 1..4 {
 
         let child = commands.spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Capsule {radius: 0.1, depth: 0.3, ..Default::default()})),

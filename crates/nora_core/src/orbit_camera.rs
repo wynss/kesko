@@ -45,23 +45,6 @@ impl Default for PanOrbitCamera {
     }
 }
 
-pub fn spawn_camera(mut commands: Commands) {
-
-    let camera_pos = Vec3::new(-2.0, 2.5, 5.0);
-    let distance = camera_pos.length();
-
-    let camera_transform = Transform::from_translation(camera_pos)
-        .looking_at(Vec3::ZERO, Vec3::Y);
-
-    commands.spawn_bundle(PerspectiveCameraBundle {
-        transform: camera_transform,
-        ..Default::default()
-    }).insert(PanOrbitCamera {
-        distance,
-        ..Default::default()
-    });
-}
-
 fn handle_camera_mouse_events(
     mut events: EventWriter<PanOrbitCameraEvents>,
     mut mouse_motion_events: EventReader<MouseMotion>,
