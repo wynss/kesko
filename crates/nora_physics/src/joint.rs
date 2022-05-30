@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use nalgebra::Vector3;
 use rapier3d::prelude as rapier;
 use rapier3d::dynamics::GenericJoint;
 use crate::rigid_body::{EntityBodyHandleMap, RigidBodyHandle};

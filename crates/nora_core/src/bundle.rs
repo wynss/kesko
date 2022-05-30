@@ -14,7 +14,7 @@ pub struct PhysicBodyBundle {
     collider_shape: ColliderShape,
     collider_physical_properties: ColliderPhysicalProperties,
     impulse: Impulse,
-    /// How mush the entity will be affected by gravity
+    /// How much the entity will be affected by gravity
     gravity_scale: GravityScale,
 
     #[bundle]
@@ -56,6 +56,12 @@ impl PhysicBodyBundle {
                 (
                     Mesh::from(Cylinder {radius, height: length, ..default()}),
                     ColliderShape::Cylinder {radius, length}
+                )
+            },
+            Shape::Capsule { radius, length} => {
+                (
+                    Mesh::from( shape::Capsule{ radius, depth: length, ..default()}),
+                    ColliderShape::CapsuleY {radius, half_height: length / 2.0}
                 )
             }
         };

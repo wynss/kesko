@@ -1,5 +1,6 @@
-use bevy::prelude::*;
-use bevy::render::mesh::{PrimitiveTopology, Indices};
+use std::f32::consts::PI;
+use bevy::render::mesh::{PrimitiveTopology, Indices, Mesh};
+use bevy::math::Vec3;
 
 
 /// A cylinder which stands on the XZ plane
@@ -41,14 +42,14 @@ impl From<Cylinder> for Mesh {
         // vertex positions
         let mut positions = Vec::with_capacity(num_vertices);
 
-        let rad_step = std::f32::consts::PI * 2.0 / resolution as f32;
+        let rad_step = 2.0 * PI / resolution as f32;
         let mut add_ring = |height, with_center| {
             if with_center {
                 positions.push([0.0, height, 0.0]);
             }
             for j in 0..resolution {
                 let theta = rad_step * j as f32;
-                positions.push([theta.cos() * radius, height, theta.sin() * radius]);
+                positions.push([radius * theta.cos(), height, radius * theta.sin()]);
             }
         };
 
@@ -77,23 +78,20 @@ impl From<Cylinder> for Mesh {
             let base2 = base1 + resolution;
             for j in 0..resolution {
                 let j1 = (j + 1) % resolution;
-                indices.extend([base2 + j, base1 + j1, base1 + j].iter().copied());
-                indices.extend([base2 + j, base2 + j1, base1 + j1].iter().copied());
+                indices.extend([base2 + j, base1 + j, base1 + j1].iter().copied());
+                indices.extend([base2 + j, base1 + j1, base2 + j1].iter().copied());
             }
         }
 
-        // Top circle triangles
+        // Top and bottom circle triangles
         for j in 0..resolution {
             let j1 = (j + 1) % resolution;
-            let base = top_offset + 1;
-            indices.extend([top_offset, base + j, base + j1].iter().copied());
+            let base_top = top_offset + 1;
+            let base_bottom = bottom_offset + 1;
+            indices.extend([top_offset, base_top + j1, base_top + j].iter().copied());
+            indices.extend([bottom_offset, base_bottom + j, base_bottom + j1].iter().copied());
         }
-        // Bottom circle triangles
-        for j in 0..resolution {
-            let j1 = (j + 1) % resolution;
-            let base = bottom_offset + 1;
-            indices.extend([bottom_offset, base + j1, base + j].iter().copied());
-        }
+
         assert_eq!(indices.len(), index_count);
 
         // Shaft normals are their X and Z coordinates normalized
@@ -149,4 +147,8 @@ pub enum Shape {
         radius: f32,
         length: f32,
     },
+    Capsule {
+        radius: f32,
+        length: f32
+    }
 }

@@ -52,8 +52,8 @@ impl Default for ColliderPhysicalProperties {
     fn default() -> Self {
         Self {
             density: 1.0,
-            friction: 0.5,
-            restitution: 0.0
+            friction: 0.7,
+            restitution: 0.3
         }
     }
 }
