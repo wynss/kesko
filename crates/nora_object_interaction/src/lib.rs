@@ -27,7 +27,7 @@ impl Plugin for InteractionPlugin {
         app.init_resource::<InteractionMaterials>()
             .add_event::<InteractionEvent>()
             .init_resource::<DraggingGlobal>()
-            .add_plugin(RayCastPlugin)
+            .add_plugin(RayCastPlugin::default())
             .add_system_set_to_stage(
                 CoreStage::First,
                 SystemSet::new()
