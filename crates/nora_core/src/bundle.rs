@@ -1,23 +1,11 @@
 use bevy::prelude::*;
+
 use nora_physics::collider::{ColliderPhysicalProperties, ColliderShape};
 use nora_physics::gravity::GravityScale;
 use nora_physics::impulse::Impulse;
 use nora_physics::rigid_body::RigidBody;
+use crate::shape::{Shape, Cylinder};
 
-
-#[derive(Debug)]
-pub enum Shape {
-    Sphere {
-        radius: f32,
-        subdivisions: usize
-    },
-    Cube {
-        size: f32
-    },
-    Plane {
-        size: f32
-    }
-}
 
 /// Component bundle for physic enabled Pbr entities
 #[derive(Bundle)]
@@ -26,7 +14,7 @@ pub struct PhysicBodyBundle {
     collider_shape: ColliderShape,
     collider_physical_properties: ColliderPhysicalProperties,
     impulse: Impulse,
-    /// How mush the entity will be affected by gravity
+    /// How much the entity will be affected by gravity
     gravity_scale: GravityScale,
 
     #[bundle]
@@ -56,6 +44,24 @@ impl PhysicBodyBundle {
                 (
                     Mesh::from(shape::Cube {size}),
                     ColliderShape::Cuboid { x_half: size / 2.0, y_half: size / 2.0, z_half: size / 2.0}
+                )
+            },
+            Shape::Box {x_length, y_length, z_length} => {
+                (
+                    Mesh::from(shape::Box::new(x_length, y_length, z_length)),
+                    ColliderShape::Cuboid {x_half: x_length / 2.0, y_half: y_length / 2.0, z_half: z_length / 2.0}
+                )
+            },
+            Shape::Cylinder {radius, length} => {
+                (
+                    Mesh::from(Cylinder {radius, height: length, ..default()}),
+                    ColliderShape::Cylinder {radius, length}
+                )
+            },
+            Shape::Capsule {radius, length} => {
+                (
+                    Mesh::from( shape::Capsule{ radius, depth: length, ..default()}),
+                    ColliderShape::CapsuleY {radius, half_length: length / 2.0}
                 )
             }
         };

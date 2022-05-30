@@ -20,17 +20,21 @@ pub enum ColliderShape {
         radius: f32
     },
     CapsuleX {
-        half_height: f32,
+        half_length: f32,
         radius: f32
     },
     CapsuleY {
-        half_height: f32,
+        half_length: f32,
         radius: f32
     },
     CapsuleZ {
-        half_height: f32,
+        half_length: f32,
         radius: f32
     },
+    Cylinder {
+        radius: f32,
+        length: f32
+    }
 }
 
 /// Component for setting the physical material properties for a collider
@@ -48,8 +52,8 @@ impl Default for ColliderPhysicalProperties {
     fn default() -> Self {
         Self {
             density: 1.0,
-            friction: 0.5,
-            restitution: 0.0
+            friction: 0.7,
+            restitution: 0.3
         }
     }
 }
@@ -74,15 +78,18 @@ pub(crate) fn add_collider_to_bodies_system(
             ColliderShape::Sphere {radius} => {
                 rapier::ColliderBuilder::ball(*radius)
             },
-            ColliderShape::CapsuleX {half_height, radius} => {
+            ColliderShape::CapsuleX { half_length: half_height, radius} => {
                 ColliderBuilder::capsule_x(*half_height, *radius)
             },
-            ColliderShape::CapsuleY {half_height, radius} => {
+            ColliderShape::CapsuleY { half_length: half_height, radius} => {
                 ColliderBuilder::capsule_y(*half_height, *radius)
             },
-            ColliderShape::CapsuleZ {half_height, radius} => {
+            ColliderShape::CapsuleZ { half_length: half_height, radius} => {
                 ColliderBuilder::capsule_z(*half_height, *radius)
             },
+            ColliderShape::Cylinder {radius, length} => {
+                ColliderBuilder::cylinder(length / 2.0, *radius)
+            }
         };
 
         let collider = if let Some(material) = material {

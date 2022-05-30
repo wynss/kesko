@@ -68,7 +68,7 @@ fn test_scene(
         ..Default::default()
     })
         .insert(RigidBody::Dynamic)
-        .insert(ColliderShape::CapsuleY { half_height: 1.0, radius: 0.1 })
+        .insert(ColliderShape::CapsuleY { half_length: 1.0, radius: 0.1 })
         .insert(ColliderPhysicalProperties {
             restitution: 0.7,
             ..Default::default()
