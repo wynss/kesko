@@ -37,28 +37,22 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>
 ) {
-    // Spawn ground
-    commands.spawn_bundle(PhysicBodyBundle::from(
-        RigidBody::Fixed,
-        Shape::Plane {size: 200.0},
-        materials.add(Color::ALICE_BLUE.into()),
-        Transform::default(),
-        &mut meshes
-    ));
+
+    commands.spawn_batch(arena(&mut materials, &mut meshes));
 
     // Spawn spheres
     let num_sphere = 5.0;
     for i in 0..(num_sphere as i32) {
 
         let i_f = i as f32;
-        let sphere_radius = 0.2 * (1.0 + i_f);
-        let z = - 5.0 +  8.0 * sphere_radius;
+        let sphere_radius = 0.05 * (1.0 + i_f);
+        let z = - 1.0 +  8.0 * sphere_radius;
 
         commands.spawn_bundle(PhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere {radius: sphere_radius, subdivisions: 5},
             materials.add(Color::hex("66BB6A").unwrap().into()),
-            Transform::from_xyz(-2.0, 4.0, z),
+            Transform::from_xyz(-1.0, 4.0, z),
             &mut meshes
         )).insert_bundle(InteractiveBundle::default());
     }
@@ -97,9 +91,9 @@ fn setup(
     // spawn cylinder
     commands.spawn_bundle(PhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder {radius: 0.2, length: 1.0},
+        Shape::Cylinder {radius: 0.2, length: 0.2},
         materials.add(Color::hex("9C27B0").unwrap().into()),
-        Transform::from_xyz(1.0, 4.0, 0.0),
+        Transform::from_xyz(1.0, 1.0, 0.0),
         &mut meshes
     )).insert_bundle(InteractiveBundle::default());
 
@@ -121,10 +115,60 @@ fn setup(
     // Light
     commands.spawn_bundle(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 60000.0,
+            illuminance: 50000.0,
             ..Default::default()
         },
-        transform: Transform::from_xyz(0.0, 40.0, 40.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(20.0, 40.0, -40.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..Default::default()
     });
+}
+
+fn arena(materials: &mut ResMut<Assets<StandardMaterial>>, meshes: &mut ResMut<Assets<Mesh>>) -> Vec<PhysicBodyBundle> {
+
+    // Spawn ground
+    let ground = PhysicBodyBundle::from(
+        RigidBody::Fixed,
+        Shape::Box {x_length: 10.0, y_length: 0.5, z_length: 10.0},
+        materials.add(Color::ALICE_BLUE.into()),
+        Transform::from_xyz(0.0, -0.25, 0.0),
+        meshes
+    );
+
+    // left wall
+    let left_wall = PhysicBodyBundle::from(
+        RigidBody::Fixed,
+        Shape::Box {x_length: 0.5, y_length: 1.0, z_length: 10.0},
+        materials.add(Color::ALICE_BLUE.into()),
+        Transform::from_xyz(-4.75, 0.0, 0.0),
+        meshes
+    );
+
+    // right wall
+    let right_wall = PhysicBodyBundle::from(
+        RigidBody::Fixed,
+        Shape::Box {x_length: 0.5, y_length: 1.0, z_length: 10.0},
+        materials.add(Color::ALICE_BLUE.into()),
+        Transform::from_xyz(4.75, 0.0, 0.0),
+        meshes
+    );
+
+    // back wall
+    let back_wall = PhysicBodyBundle::from(
+        RigidBody::Fixed,
+        Shape::Box {x_length: 10.0, y_length: 1.0, z_length: 0.5},
+        materials.add(Color::ALICE_BLUE.into()),
+        Transform::from_xyz(0.0, 0.0, -4.75),
+        meshes
+    );
+
+    // front wall
+    let front_wall = PhysicBodyBundle::from(
+        RigidBody::Fixed,
+        Shape::Box {x_length: 10.0, y_length: 1.0, z_length: 0.5},
+        materials.add(Color::ALICE_BLUE.into()),
+        Transform::from_xyz(0.0, 0.0, 4.75),
+        meshes
+    );
+
+    vec![ground, left_wall, right_wall, front_wall, back_wall]
 }

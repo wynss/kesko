@@ -22,11 +22,22 @@ pub enum RayCastSystems {
 }
 
 #[derive(Default)]
-pub struct RayCastPlugin;
+pub struct RayCastPlugin {
+    debug: bool
+}
+
+impl RayCastPlugin {
+    pub fn with_debug() -> Self {
+        Self {
+            debug: true
+        }
+    }
+}
+
 impl Plugin for RayCastPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(debug::spawn_debug_pointer)
-            .add_system_set_to_stage(
+
+        app.add_system_set_to_stage(
             CoreStage::First,
             SystemSet::new()
                 .with_system(create_rays_system.label(RayCastSystems::CreateRays))
@@ -34,11 +45,12 @@ impl Plugin for RayCastPlugin {
                     .label(RayCastSystems::CalcIntersections)
                     .after(RayCastSystems::CreateRays)
                 )
-                .with_system(debug::update_debug_pointer
-                    .label(RayCastSystems::Debug)
-                    .after(RayCastSystems::CalcIntersections)
-                )
         );
+
+        if self.debug {
+            app.add_startup_system(debug::spawn_debug_pointer);
+            app.add_system_to_stage(CoreStage::First, debug::update_debug_pointer);
+        }
     }
 }
 
