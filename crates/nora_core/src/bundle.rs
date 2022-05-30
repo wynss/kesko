@@ -46,7 +46,7 @@ impl PhysicBodyBundle {
                     ColliderShape::Cuboid { x_half: size / 2.0, y_half: size / 2.0, z_half: size / 2.0}
                 )
             },
-            Shape::Box { x_length, y_length, z_length } => {
+            Shape::Box {x_length, y_length, z_length} => {
                 (
                     Mesh::from(shape::Box::new(x_length, y_length, z_length)),
                     ColliderShape::Cuboid {x_half: x_length / 2.0, y_half: y_length / 2.0, z_half: z_length / 2.0}
@@ -58,10 +58,10 @@ impl PhysicBodyBundle {
                     ColliderShape::Cylinder {radius, length}
                 )
             },
-            Shape::Capsule { radius, length} => {
+            Shape::Capsule {radius, length} => {
                 (
                     Mesh::from( shape::Capsule{ radius, depth: length, ..default()}),
-                    ColliderShape::CapsuleY {radius, half_height: length / 2.0}
+                    ColliderShape::CapsuleY {radius, half_length: length / 2.0}
                 )
             }
         };

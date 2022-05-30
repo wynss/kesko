@@ -20,15 +20,15 @@ pub enum ColliderShape {
         radius: f32
     },
     CapsuleX {
-        half_height: f32,
+        half_length: f32,
         radius: f32
     },
     CapsuleY {
-        half_height: f32,
+        half_length: f32,
         radius: f32
     },
     CapsuleZ {
-        half_height: f32,
+        half_length: f32,
         radius: f32
     },
     Cylinder {
@@ -78,13 +78,13 @@ pub(crate) fn add_collider_to_bodies_system(
             ColliderShape::Sphere {radius} => {
                 rapier::ColliderBuilder::ball(*radius)
             },
-            ColliderShape::CapsuleX {half_height, radius} => {
+            ColliderShape::CapsuleX { half_length: half_height, radius} => {
                 ColliderBuilder::capsule_x(*half_height, *radius)
             },
-            ColliderShape::CapsuleY {half_height, radius} => {
+            ColliderShape::CapsuleY { half_length: half_height, radius} => {
                 ColliderBuilder::capsule_y(*half_height, *radius)
             },
-            ColliderShape::CapsuleZ {half_height, radius} => {
+            ColliderShape::CapsuleZ { half_length: half_height, radius} => {
                 ColliderBuilder::capsule_z(*half_height, *radius)
             },
             ColliderShape::Cylinder {radius, length} => {
