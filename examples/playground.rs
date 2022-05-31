@@ -1,3 +1,5 @@
+use std::f32::consts::FRAC_PI_2;
+
 use bevy::prelude::*;
 use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
@@ -26,6 +28,7 @@ fn main() {
         .add_plugin(PanOrbitCameraPlugin)
         .add_plugin(FPSScreenPlugin::default())
         .add_startup_system(setup)
+        .add_startup_system(spawn_car)
         .add_system(bevy::input::system::exit_on_esc_system)
         .insert_resource(ClearColor(Color::hex("F5F5F5").unwrap()))
         .run();
@@ -79,23 +82,14 @@ fn setup(
             .insert(Joint {
                 joint_type: JointType::Spherical,
                 parent: root,
-                parent_anchor: Vec3::new(0.0, 0.25, 0.0),
-                child_anchor: Vec3::new(0.0, -0.25, 0.0),
+                parent_anchor: (Vec3::new(0.0, 0.25, 0.0), Quat::default()),
+                child_anchor: (Vec3::new(0.0, -0.25, 0.0), Quat::default()),
             })
             .insert_bundle(InteractiveBundle::default())
             .id();
 
         root = child;
     }
-
-    // spawn cylinder
-    commands.spawn_bundle(PhysicBodyBundle::from(
-        RigidBody::Dynamic,
-        Shape::Cylinder {radius: 0.2, length: 0.2},
-        materials.add(Color::hex("9C27B0").unwrap().into()),
-        Transform::from_xyz(1.0, 1.0, 0.0),
-        &mut meshes
-    )).insert_bundle(InteractiveBundle::default());
 
     // camera
     let camera_pos = Vec3::new(9.0, 5.0, 9.0);
@@ -171,4 +165,159 @@ fn arena(materials: &mut ResMut<Assets<StandardMaterial>>, meshes: &mut ResMut<A
     );
 
     vec![ground, left_wall, right_wall, front_wall, back_wall]
+}
+
+
+fn spawn_car(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>
+) {
+
+    let frame_width = 0.5;
+    let frame_height = 0.1;
+    let frame_length = 1.0;
+    let wheel_radius = 0.18;
+    let wheel_width = 0.08;
+    let wheel_base = frame_width + 0.2;
+
+    let wbh = wheel_base / 2.0;
+    let flh = frame_length / 2.0;
+
+
+    // Frame
+    let frame = commands.spawn_bundle( PhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box {x_length: frame_width, y_length: frame_height, z_length: frame_length},
+        materials.add(Color::GOLD.into()),
+        Transform::from_xyz(2.0, 0.2, 0.0),
+        &mut meshes
+    ))
+        .insert_bundle(InteractiveBundle::default())
+        .id();
+
+    // front wall
+    commands.spawn_bundle( PhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box {x_length: frame_width, y_length: 0.2, z_length: 0.1},
+        materials.add(Color::GOLD.into()),
+        Transform::from_xyz(2.0, 0.35, flh - 0.05),
+        &mut meshes
+    ))
+        .insert(Joint {
+            joint_type: JointType::Fixed,
+            parent: frame,
+            parent_anchor: (Vec3::new(0.0, frame_height / 2.0, flh - 0.05), Quat::default()),
+            child_anchor: (Vec3::new(0.0, -0.1, 0.0), Quat::default()),
+        })
+        .insert_bundle(InteractiveBundle::default());
+
+    // back wall
+    commands.spawn_bundle( PhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box {x_length: frame_width, y_length: 0.2, z_length: 0.1},
+        materials.add(Color::GOLD.into()),
+        Transform::from_xyz(2.0, 0.35, -flh + 0.05),
+        &mut meshes
+    ))
+        .insert(Joint {
+            joint_type: JointType::Fixed,
+            parent: frame,
+            parent_anchor: (Vec3::new(0.0, frame_height / 2.0, 0.05 - flh), Quat::default()),
+            child_anchor: (Vec3::new(0.0, -0.1, 0.0), Quat::default()),
+        })
+        .insert_bundle(InteractiveBundle::default());
+
+    // left wall
+    commands.spawn_bundle( PhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box {x_length: 0.1, y_length: 0.2, z_length: frame_length - 0.2},
+        materials.add(Color::GOLD.into()),
+        Transform::from_xyz(2.0 + frame_width / 2.0, 0.35, 0.0),
+        &mut meshes
+    ))
+        .insert(Joint {
+            joint_type: JointType::Fixed,
+            parent: frame,
+            parent_anchor: (Vec3::new(-frame_width / 2.0 + 0.05, frame_height / 2.0, 0.0), Quat::default()),
+            child_anchor: (Vec3::new(0.0, -0.1, 0.0), Quat::default()),
+        })
+        .insert_bundle(InteractiveBundle::default());
+
+    // right wall
+    commands.spawn_bundle( PhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box {x_length: 0.1, y_length: 0.2, z_length: frame_length - 0.2},
+        materials.add(Color::GOLD.into()),
+        Transform::from_xyz(2.0 - frame_width / 2.0, 0.4, 0.0),
+        &mut meshes
+    ))
+        .insert(Joint {
+            joint_type: JointType::Fixed,
+            parent: frame,
+            parent_anchor: (Vec3::new(frame_width / 2.0 - 0.05, frame_height / 2.0, 0.0), Quat::default()),
+            child_anchor: (Vec3::new(0.0, -0.1, 0.0), Quat::default()),
+        })
+        .insert_bundle(InteractiveBundle::default());
+
+    // left front wheel
+    commands.spawn_bundle( PhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width},
+        materials.add(Color::BLACK.into()),
+        Transform::from_xyz(2.0 + wbh, 0.0, flh),
+        &mut meshes
+    ))
+        .insert(Joint {
+            joint_type: JointType::Revolute {axis: Vec3::Y},
+            parent: frame,
+            parent_anchor: (Vec3::new(wbh, 0.0, flh), Quat::default()),
+            child_anchor: (Vec3::ZERO, Quat::from_rotation_z(FRAC_PI_2)),
+        });
+
+    // right front wheel
+    commands.spawn_bundle( PhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Cylinder { radius: 0.16, length: 0.08},
+        materials.add(Color::BLACK.into()),
+        Transform::from_xyz(2.0 - wbh, 0.0, flh),
+        &mut meshes
+    ))
+        .insert(Joint {
+            joint_type: JointType::Revolute {axis: Vec3::Y},
+            parent: frame,
+            parent_anchor: (Vec3::new(-wbh, 0.0, flh), Quat::default()),
+            child_anchor: (Vec3::new(0.0, 0.0, 0.0), Quat::from_rotation_z(FRAC_PI_2)),
+        });
+
+    // left back wheel
+    commands.spawn_bundle( PhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Cylinder { radius: 0.16, length: 0.08},
+        materials.add(Color::BLACK.into()),
+        Transform::from_xyz(2.0 + wbh, 0.0, -flh),
+        &mut meshes
+    ))
+        .insert(Joint {
+            joint_type: JointType::Revolute {axis: Vec3::Y},
+            parent: frame,
+            parent_anchor: (Vec3::new(wbh, 0.0, -flh), Quat::default()),
+            child_anchor: (Vec3::new(0.0, 0.0, 0.0), Quat::from_rotation_z(FRAC_PI_2)),
+        });
+
+    // right back wheel
+    commands.spawn_bundle( PhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Cylinder { radius: 0.16, length: 0.08},
+        materials.add(Color::BLACK.into()),
+        Transform::from_xyz(2.0 - wbh, 0.0, -flh),
+        &mut meshes
+    ))
+        .insert(Joint {
+            joint_type: JointType::Revolute {axis: Vec3::Y},
+            parent: frame,
+            parent_anchor: (Vec3::new(-wbh, 0.0, -flh), Quat::default()),
+            child_anchor: (Vec3::new(0.0, 0.0, 0.0), Quat::from_rotation_z(FRAC_PI_2)),
+        });
+
 }
