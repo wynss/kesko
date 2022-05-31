@@ -14,8 +14,8 @@ pub(crate) struct JointHandle(pub(crate) rapier::ImpulseJointHandle);
 pub struct Joint {
     pub joint_type: JointType,
     pub parent: Entity,
-    pub parent_anchor: Vec3,
-    pub child_anchor: Vec3
+    pub parent_anchor: (Vec3, Quat),
+    pub child_anchor: (Vec3, Quat)
 }
 
 /// Represents a specific joint type and its parameters
@@ -49,32 +49,27 @@ pub(crate) fn add_joints_system(
 ) {
 
     for (entity, joint_comp) in query.iter() {
-        let joint: GenericJoint  = match joint_comp.joint_type {
+        let mut joint: GenericJoint  = match joint_comp.joint_type {
             JointType::Fixed => {
-                rapier::FixedJointBuilder::new()
-                    .local_anchor1(joint_comp.parent_anchor.into_rapier())
-                    .local_anchor2(joint_comp.child_anchor.into_rapier()).into()
-            },
-            JointType::Spherical => {
-                rapier::SphericalJointBuilder::new()
-                    .local_anchor1(joint_comp.parent_anchor.into_rapier())
-                    .local_anchor2(joint_comp.child_anchor.into_rapier()).into()
+                rapier::FixedJointBuilder::new().into()
             },
             JointType::Revolute {axis} => {
-                rapier::RevoluteJointBuilder::new(axis.into_rapier())
-                    .local_anchor1(joint_comp.parent_anchor.into_rapier())
-                    .local_anchor2(joint_comp.child_anchor.into_rapier()).into()
+                rapier::RevoluteJointBuilder::new(axis.into_rapier()).into()
+            },
+            JointType::Spherical => {
+                rapier::SphericalJointBuilder::new().into()
             },
             JointType::Prismatic {axis, limits} => {
-                let mut builder = rapier::PrismaticJointBuilder::new(axis.into_rapier())
-                    .local_anchor1(joint_comp.parent_anchor.into_rapier())
-                    .local_anchor2(joint_comp.child_anchor.into_rapier());
+                let mut builder = rapier::PrismaticJointBuilder::new(axis.into_rapier());
                 if let Some(limits) = limits {
                     builder = builder.limits(limits.into());
                 }
                 builder.into()
             }
         };
+
+        joint.set_local_frame1(joint_comp.parent_anchor.into_rapier());
+        joint.set_local_frame2(joint_comp.child_anchor.into_rapier());
 
         let joint_handle = joint_set.insert(
             *entity_body_map.get(&joint_comp.parent).unwrap(),
@@ -98,8 +93,8 @@ mod tests {
     use crate::rigid_body::{EntityBodyHandleMap, RigidBodyHandle};
     use super::add_joints_system;
 
-    const ANCHOR_PARENT: Vec3 = Vec3::X;
-    const ANCHOR_CHILD: Vec3 = Vec3::X;
+    const ANCHOR_PARENT: (Vec3, Quat) = (Vec3::X, Quat::IDENTITY);
+    const ANCHOR_CHILD: (Vec3, Quat) = (Vec3::X, Quat::IDENTITY);
 
     struct TestCtx {
         child_entity: Entity,
@@ -174,8 +169,8 @@ mod tests {
         assert_eq!(joint.body2, ctx.child_body_handle);
 
         assert!(joint.data.as_fixed().is_some());
-        assert_eq!(joint.data.local_anchor1(), ANCHOR_PARENT.into_rapier());
-        assert_eq!(joint.data.local_anchor2(), ANCHOR_CHILD.into_rapier());
+        assert_eq!(joint.data.local_frame1, ANCHOR_PARENT.into_rapier());
+        assert_eq!(joint.data.local_frame2, ANCHOR_CHILD.into_rapier());
     }
 
     #[test]
@@ -200,8 +195,8 @@ mod tests {
         assert_eq!(joint.body2, ctx.child_body_handle);
 
         assert!(joint.data.as_spherical().is_some());
-        assert_eq!(joint.data.local_anchor1(), ANCHOR_PARENT.into_rapier());
-        assert_eq!(joint.data.local_anchor2(), ANCHOR_CHILD.into_rapier());
+        assert_eq!(joint.data.local_frame1, ANCHOR_PARENT.into_rapier());
+        assert_eq!(joint.data.local_frame2, ANCHOR_CHILD.into_rapier());
     }
 
     #[test]
@@ -232,12 +227,12 @@ mod tests {
         assert!(joint.data.as_revolute().is_some());
 
         // axis of rotation
-        assert_eq!(joint.data.local_axis1(), Vec3::Z.into_rapier());
-        assert_eq!(joint.data.local_axis2(), Vec3::Z.into_rapier());
+        assert_eq!(joint.data.local_axis1(), Vec3::X.into_rapier());
+        assert_eq!(joint.data.local_axis2(), Vec3::X.into_rapier());
 
         // anchor points
-        assert_eq!(joint.data.local_anchor1(), ANCHOR_PARENT.into_rapier());
-        assert_eq!(joint.data.local_anchor2(), ANCHOR_CHILD.into_rapier());
+        assert_eq!(joint.data.local_frame1, ANCHOR_PARENT.into_rapier());
+        assert_eq!(joint.data.local_frame2, ANCHOR_CHILD.into_rapier());
     }
 
     #[test]
@@ -278,7 +273,7 @@ mod tests {
         assert_eq!(joint.data.limits(JointAxis::X).unwrap().min, -2.0);
 
         // anchor points
-        assert_eq!(joint.data.local_anchor1(), ANCHOR_PARENT.into_rapier());
-        assert_eq!(joint.data.local_anchor2(), ANCHOR_CHILD.into_rapier());
+        assert_eq!(joint.data.local_frame1, ANCHOR_PARENT.into_rapier());
+        assert_eq!(joint.data.local_frame2, ANCHOR_CHILD.into_rapier());
     }
 }
