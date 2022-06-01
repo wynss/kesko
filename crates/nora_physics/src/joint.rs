@@ -14,8 +14,8 @@ pub(crate) struct JointHandle(pub(crate) rapier::ImpulseJointHandle);
 pub struct Joint {
     pub joint_type: JointType,
     pub parent: Entity,
-    pub parent_anchor: (Vec3, Quat),
-    pub child_anchor: (Vec3, Quat)
+    pub parent_anchor: Transform,
+    pub child_anchor: Transform
 }
 
 /// Represents a specific joint type and its parameters
@@ -93,14 +93,16 @@ mod tests {
     use crate::rigid_body::{EntityBodyHandleMap, RigidBodyHandle};
     use super::add_joints_system;
 
-    const ANCHOR_PARENT: (Vec3, Quat) = (Vec3::X, Quat::IDENTITY);
-    const ANCHOR_CHILD: (Vec3, Quat) = (Vec3::X, Quat::IDENTITY);
-
     struct TestCtx {
         child_entity: Entity,
         parent_body_handle: rapier::RigidBodyHandle,
         child_body_handle: rapier::RigidBodyHandle
     }
+
+    fn get_expected_transform() -> Transform {
+        Transform::from_translation(Vec3::X)
+    }
+
 
     fn setup(world: &mut World, joint_type: JointType) -> TestCtx {
 
@@ -115,8 +117,8 @@ mod tests {
         let joint = Joint {
             joint_type,
             parent: parent_entity,
-            parent_anchor: ANCHOR_PARENT,
-            child_anchor: ANCHOR_CHILD
+            parent_anchor: get_expected_transform(),
+            child_anchor: get_expected_transform()
         };
 
         let child_body_handle = rapier::RigidBodyHandle::from_raw_parts(2, 0);
@@ -169,8 +171,8 @@ mod tests {
         assert_eq!(joint.body2, ctx.child_body_handle);
 
         assert!(joint.data.as_fixed().is_some());
-        assert_eq!(joint.data.local_frame1, ANCHOR_PARENT.into_rapier());
-        assert_eq!(joint.data.local_frame2, ANCHOR_CHILD.into_rapier());
+        assert_eq!(joint.data.local_frame1, get_expected_transform().into_rapier());
+        assert_eq!(joint.data.local_frame2, get_expected_transform().into_rapier());
     }
 
     #[test]
@@ -195,8 +197,8 @@ mod tests {
         assert_eq!(joint.body2, ctx.child_body_handle);
 
         assert!(joint.data.as_spherical().is_some());
-        assert_eq!(joint.data.local_frame1, ANCHOR_PARENT.into_rapier());
-        assert_eq!(joint.data.local_frame2, ANCHOR_CHILD.into_rapier());
+        assert_eq!(joint.data.local_frame1, get_expected_transform().into_rapier());
+        assert_eq!(joint.data.local_frame2, get_expected_transform().into_rapier());
     }
 
     #[test]
@@ -231,8 +233,8 @@ mod tests {
         assert_eq!(joint.data.local_axis2(), Vec3::X.into_rapier());
 
         // anchor points
-        assert_eq!(joint.data.local_frame1, ANCHOR_PARENT.into_rapier());
-        assert_eq!(joint.data.local_frame2, ANCHOR_CHILD.into_rapier());
+        assert_eq!(joint.data.local_frame1, get_expected_transform().into_rapier());
+        assert_eq!(joint.data.local_frame2, get_expected_transform().into_rapier());
     }
 
     #[test]
@@ -273,7 +275,7 @@ mod tests {
         assert_eq!(joint.data.limits(JointAxis::X).unwrap().min, -2.0);
 
         // anchor points
-        assert_eq!(joint.data.local_frame1, ANCHOR_PARENT.into_rapier());
-        assert_eq!(joint.data.local_frame2, ANCHOR_CHILD.into_rapier());
+        assert_eq!(joint.data.local_frame1, get_expected_transform().into_rapier());
+        assert_eq!(joint.data.local_frame2, get_expected_transform().into_rapier());
     }
 }
