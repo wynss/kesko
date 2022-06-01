@@ -1,4 +1,5 @@
 use bevy::math::{Vec3, Quat};
+use bevy::prelude::Transform;
 use rapier3d::math::{Translation, Isometry, Vector};
 use nalgebra::{UnitQuaternion, Vector3, Quaternion, Point3, UnitVector3};
 
@@ -71,5 +72,11 @@ impl IntoRapier<UnitQuaternion<f32>> for Quat {
 impl IntoRapier<Isometry<f32>> for (Vec3, Quat) {
     fn into_rapier(self) -> Isometry<f32> {
         Isometry::from_parts(self.0.into_rapier(), self.1.into_rapier())
+    }
+}
+
+impl IntoRapier<Isometry<f32>> for Transform {
+    fn into_rapier(self) -> Isometry<f32> {
+        Isometry::from_parts(self.translation.into_rapier(), self.rotation.into_rapier())
     }
 }
