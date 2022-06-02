@@ -13,7 +13,12 @@ use nora_core::{
 use nora_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
 use nora_physics::{
     rigid_body::RigidBody,
-    joint::{JointType, Joint},
+    joint::{
+        Joint,
+        spherical::SphericalJoint,
+        fixed::FixedJoint,
+        revolute::RevoluteJoint
+    },
 };
 
 
@@ -80,12 +85,11 @@ fn setup(
             Transform::from_xyz(0.0, 1.0 + 0.5*(i as f32), 0.0),
             &mut meshes
         ))
-            .insert(Joint {
-                joint_type: JointType::Spherical,
-                parent: root,
+            .insert(Joint::new(root, SphericalJoint {
                 parent_anchor: Transform::from_translation(Vec3::new(0.0, 0.25, 0.0)),
                 child_anchor: Transform::from_translation(Vec3::new(0.0, -0.25, 0.0)),
-            })
+                ..default()
+            }))
             .insert_bundle(InteractiveBundle::default())
             .id();
 
@@ -205,12 +209,10 @@ fn spawn_car(
         Transform::from_xyz(2.0, 0.35, flh - 0.05),
         &mut meshes
     ))
-        .insert(Joint {
-            joint_type: JointType::Fixed,
-            parent: frame,
+        .insert(Joint::new(frame, FixedJoint {
             parent_anchor: Transform::from_translation(Vec3::new(0.0, frame_height / 2.0, flh - 0.05)),
             child_anchor: Transform::from_translation(Vec3::new(0.0, -0.1, 0.0)),
-        })
+        }))
         .insert_bundle(InteractiveBundle::default());
 
     // back wall
@@ -221,12 +223,10 @@ fn spawn_car(
         Transform::from_xyz(2.0, 0.35, -flh + 0.05),
         &mut meshes
     ))
-        .insert(Joint {
-            joint_type: JointType::Fixed,
-            parent: frame,
+        .insert(Joint::new(frame, FixedJoint {
             parent_anchor: Transform::from_translation(Vec3::new(0.0, frame_height / 2.0, 0.05 - flh)),
             child_anchor: Transform::from_translation(Vec3::new(0.0, -0.1, 0.0)),
-        })
+        }))
         .insert_bundle(InteractiveBundle::default());
 
     // left wall
@@ -237,12 +237,10 @@ fn spawn_car(
         Transform::from_xyz(2.0 + frame_width / 2.0, 0.35, 0.0),
         &mut meshes
     ))
-        .insert(Joint {
-            joint_type: JointType::Fixed,
-            parent: frame,
+        .insert(Joint::new(frame, FixedJoint {
             parent_anchor: Transform::from_translation(Vec3::new(-frame_width / 2.0 + 0.05, frame_height / 2.0, 0.0)),
             child_anchor: Transform::from_translation(Vec3::new(0.0, -0.1, 0.0)),
-        })
+        }))
         .insert_bundle(InteractiveBundle::default());
 
     // right wall
@@ -253,12 +251,10 @@ fn spawn_car(
         Transform::from_xyz(2.0 - frame_width / 2.0, 0.4, 0.0),
         &mut meshes
     ))
-        .insert(Joint {
-            joint_type: JointType::Fixed,
-            parent: frame,
+        .insert(Joint::new(frame, FixedJoint {
             parent_anchor: Transform::from_translation(Vec3::new(frame_width / 2.0 - 0.05, frame_height / 2.0, 0.0)),
             child_anchor: Transform::from_translation(Vec3::new(0.0, -0.1, 0.0)),
-        })
+        }))
         .insert_bundle(InteractiveBundle::default());
 
     // left front wheel
@@ -269,12 +265,12 @@ fn spawn_car(
         Transform::from_xyz(2.0 + wbh, 0.0, flh),
         &mut meshes
     ))
-        .insert(Joint {
-            joint_type: JointType::Revolute {axis: Vec3::Y},
-            parent: frame,
+        .insert(Joint::new(frame, RevoluteJoint {
             parent_anchor: Transform::from_translation(Vec3::new(wbh, 0.0, flh)),
             child_anchor: Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2)),
-        });
+            axis: Vec3::Y,
+            ..default()
+        }));
 
     // right front wheel
     commands.spawn_bundle( PhysicBodyBundle::from(
@@ -284,12 +280,12 @@ fn spawn_car(
         Transform::from_xyz(2.0 - wbh, 0.0, flh),
         &mut meshes
     ))
-        .insert(Joint {
-            joint_type: JointType::Revolute {axis: Vec3::Y},
-            parent: frame,
+        .insert(Joint::new(frame, RevoluteJoint {
             parent_anchor: Transform::from_translation(Vec3::new(-wbh, 0.0, flh)),
             child_anchor: Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2)),
-        });
+            axis: Vec3::Y,
+            ..default()
+        }));
 
     // left back wheel
     commands.spawn_bundle( PhysicBodyBundle::from(
@@ -299,12 +295,12 @@ fn spawn_car(
         Transform::from_xyz(2.0 + wbh, 0.0, -flh),
         &mut meshes
     ))
-        .insert(Joint {
-            joint_type: JointType::Revolute {axis: Vec3::Y},
-            parent: frame,
+        .insert(Joint::new(frame, RevoluteJoint {
             parent_anchor: Transform::from_translation(Vec3::new(wbh, 0.0, -flh)),
             child_anchor: Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2)),
-        });
+            axis: Vec3::Y,
+            ..default()
+        }));
 
     // right back wheel
     commands.spawn_bundle( PhysicBodyBundle::from(
@@ -314,12 +310,12 @@ fn spawn_car(
         Transform::from_xyz(2.0 - wbh, 0.0, -flh),
         &mut meshes
     ))
-        .insert(Joint {
-            joint_type: JointType::Revolute {axis: Vec3::Y},
-            parent: frame,
+        .insert(Joint::new(frame, RevoluteJoint {
             parent_anchor: Transform::from_translation(Vec3::new(-wbh, 0.0, -flh)),
             child_anchor: Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2)),
-        });
+            axis: Vec3::Y,
+            ..default()
+        }));
 }
 
 
@@ -356,13 +352,11 @@ fn spawn_spider(
             .with_translation(Vec3::new(1.0, 0.0, 1.0).normalize() + body_radius + alh + arm_radius + gap),
         &mut meshes
     ))
-        .insert(Joint {
-            joint_type: JointType::Fixed,
-            parent: body,
+        .insert(Joint::new(body, FixedJoint {
             parent_anchor: Transform::from_translation(body_radius * Vec3::new(1.0, 0.0, 1.0).normalize()),
             child_anchor: Transform::from_translation(Vec3::new(0.0, alh + arm_radius + gap, 0.0))
                 .with_rotation(Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0), -FRAC_PI_4)),
-        })
+        }))
         .insert_bundle(InteractiveBundle::default());
 
     // right_front_leg
@@ -374,12 +368,10 @@ fn spawn_spider(
             .with_translation(Vec3::new(-1.0, 0.0, 1.0).normalize() * (body_radius + alh + arm_radius + gap)),
         &mut meshes
     ))
-        .insert(Joint {
-            joint_type: JointType::Fixed,
-            parent: body,
+        .insert(Joint::new(body, FixedJoint {
             parent_anchor: Transform::from_translation(body_radius * Vec3::new(-1.0, 0.0, 1.0).normalize()),
             child_anchor: Transform::from_translation(Vec3::new(0.0, alh + arm_radius + gap, 0.0)).with_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0), FRAC_PI_4)),
-        })
+        }))
         .insert_bundle(InteractiveBundle::default());
 
     // right_back_leg
@@ -391,12 +383,10 @@ fn spawn_spider(
             .with_translation((body_radius + alh + arm_radius + gap) * Vec3::new(-1.0, 0.0, -1.0).normalize()),
         &mut meshes
     ))
-        .insert(Joint {
-            joint_type: JointType::Fixed,
-            parent: body,
+        .insert(Joint::new(body, FixedJoint {
             parent_anchor: Transform::from_translation(body_radius * Vec3::new(-1.0, 0.0, -1.0).normalize()),
             child_anchor: Transform::from_translation(Vec3::new(0.0, alh + arm_radius + gap, 0.0)).with_rotation(Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0), FRAC_PI_4)),
-        })
+        }))
         .insert_bundle(InteractiveBundle::default());
 
     // left_back_leg
@@ -408,11 +398,9 @@ fn spawn_spider(
             .with_translation((body_radius + alh + arm_radius + gap) * Vec3::new(1.0, 0.0, -1.0).normalize()),
         &mut meshes
     ))
-        .insert(Joint {
-            joint_type: JointType::Fixed,
-            parent: body,
+        .insert(Joint::new(body, FixedJoint {
             parent_anchor: Transform::from_translation(body_radius * Vec3::new(1.0, 0.0, -1.0).normalize()),
             child_anchor: Transform::from_translation(Vec3::new(0.0, alh + arm_radius + gap, 0.0)).with_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0), -FRAC_PI_4)),
-        })
+        }))
         .insert_bundle(InteractiveBundle::default());
 }
