@@ -20,7 +20,6 @@ impl Plugin for CorePlugin {
                 height: 720.0,
                 ..Default::default()
             })
-            .insert_resource(Msaa { samples: 4 })
-            .add_system(bevy::input::system::exit_on_esc_system);
+            .insert_resource(Msaa { samples: 4 });
     }
 }

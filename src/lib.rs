@@ -1,18 +1,20 @@
 use bevy::prelude::*;
-use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
 use nora_core::plugins::CorePlugins;
 use nora_physics::{
     collider::{ColliderShape, ColliderPhysicalProperties},
-    rigid_body::RigidBody
+    rigid_body::RigidBody,
+    gravity::GravityScale,
+    impulse::Impulse
+};
+use nora_object_interaction::{
+    InteractiveBundle
 };
 
 
 pub fn start() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugins(CorePlugins)
         .add_startup_system(test_scene)
         .run();
@@ -41,7 +43,10 @@ fn test_scene(
         ..Default::default()
     })
         .insert(RigidBody::Dynamic)
-        .insert(ColliderShape::Cuboid {x_half: 0.5, y_half: 0.5, z_half: 0.5});
+        .insert(ColliderShape::Cuboid {x_half: 0.5, y_half: 0.5, z_half: 0.5})
+        .insert(GravityScale::default())
+        .insert(Impulse::default())
+        .insert_bundle(InteractiveBundle::default());
 
     // Spawn sphere
     commands.spawn_bundle(PbrBundle {
@@ -55,7 +60,10 @@ fn test_scene(
         .insert(ColliderPhysicalProperties {
             restitution: 1.0,
             ..Default::default()
-        });
+        })
+        .insert(GravityScale::default())
+        .insert(Impulse::default())
+        .insert_bundle(InteractiveBundle::default());
 
     commands.spawn_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Capsule {
@@ -72,7 +80,10 @@ fn test_scene(
         .insert(ColliderPhysicalProperties {
             restitution: 0.7,
             ..Default::default()
-        });
+        })
+        .insert(GravityScale::default())
+        .insert(Impulse::default())
+        .insert_bundle(InteractiveBundle::default());
 
     // Light
     commands.spawn_bundle(PointLightBundle {
