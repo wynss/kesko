@@ -1,7 +1,16 @@
+# rust
 /target
 Cargo.lock
 
+# python
 /venv
 
+# vscode
 .idea
 .vscode
+
+# trunk
+dist/
+
+# mac
+.DS_Store
