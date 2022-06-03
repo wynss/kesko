@@ -1,4 +1,4 @@
-use std::f32::consts::{FRAC_PI_2, FRAC_PI_4};
+use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_6, FRAC_PI_8};
 
 use bevy::prelude::*;
 use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
@@ -34,7 +34,7 @@ fn main() {
         .add_plugin(FPSScreenPlugin::default())
         .add_startup_system(setup)
         .add_startup_system(spawn_car)
-        .add_startup_system(spawn_spider)
+        .add_startup_system(spawn_spider_system)
         .add_system(bevy::input::system::exit_on_esc_system)
         .insert_resource(ClearColor(Color::hex("F5F5F5").unwrap()))
         .run();
@@ -97,7 +97,7 @@ fn setup(
     }
 
     // camera
-    let camera_pos = Vec3::new(9.0, 5.0, 9.0);
+    let camera_pos = Vec3::new(-9.0, 5.0, 9.0);
     let distance = camera_pos.length();
     let camera_transform = Transform::from_translation(camera_pos)
         .looking_at(Vec3::ZERO, Vec3::Y);
@@ -179,15 +179,25 @@ fn spawn_car(
     mut materials: ResMut<Assets<StandardMaterial>>
 ) {
 
+    let origin = Transform::from_translation(Vec3::new(2.0, 1.0, 0.0));
+
     let frame_width = 0.5;
     let frame_height = 0.1;
     let frame_length = 1.0;
+
+    let half_frame_length = frame_length / 2.0;
+    let half_frame_width = frame_width / 2.0;
+    let half_frame_height = frame_height / 2.0;
+
     let wheel_radius = 0.18;
     let wheel_width = 0.08;
     let wheel_base = frame_width + 0.2;
-
     let wbh = wheel_base / 2.0;
-    let flh = frame_length / 2.0;
+
+    let wall_thickness = 0.05;
+    let wall_height = 0.2;
+    let half_wall_height = wall_height / 2.0;
+    let half_wall_thick = wall_thickness / 2.0;
 
 
     // Frame
@@ -195,124 +205,144 @@ fn spawn_car(
         RigidBody::Dynamic,
         Shape::Box {x_length: frame_width, y_length: frame_height, z_length: frame_length},
         materials.add(Color::GOLD.into()),
-        Transform::from_xyz(2.0, 0.2, 0.0),
+        origin,
         &mut meshes
     ))
         .insert_bundle(InteractiveBundle::default())
         .id();
 
     // front wall
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, half_frame_height, half_frame_length - half_wall_thick));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_wall_height, 0.0));
+    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
     commands.spawn_bundle( PhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Box {x_length: frame_width, y_length: 0.2, z_length: 0.1},
+        Shape::Box {x_length: frame_width, y_length: wall_height, z_length: wall_thickness},
         materials.add(Color::GOLD.into()),
-        Transform::from_xyz(2.0, 0.35, flh - 0.05),
+        world_transform,
         &mut meshes
     ))
         .insert(Joint::new(frame, FixedJoint {
-            parent_anchor: Transform::from_translation(Vec3::new(0.0, frame_height / 2.0, flh - 0.05)),
-            child_anchor: Transform::from_translation(Vec3::new(0.0, -0.1, 0.0)),
+            parent_anchor,
+            child_anchor
         }))
         .insert_bundle(InteractiveBundle::default());
 
     // back wall
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, frame_height / 2.0, -(half_frame_length - half_wall_thick)));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_wall_height, 0.0));
+    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
     commands.spawn_bundle( PhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Box {x_length: frame_width, y_length: 0.2, z_length: 0.1},
+        Shape::Box {x_length: frame_width, y_length: wall_height, z_length: wall_thickness},
         materials.add(Color::GOLD.into()),
-        Transform::from_xyz(2.0, 0.35, -flh + 0.05),
+        world_transform,
         &mut meshes
     ))
         .insert(Joint::new(frame, FixedJoint {
-            parent_anchor: Transform::from_translation(Vec3::new(0.0, frame_height / 2.0, 0.05 - flh)),
-            child_anchor: Transform::from_translation(Vec3::new(0.0, -0.1, 0.0)),
+            parent_anchor,
+            child_anchor
         }))
         .insert_bundle(InteractiveBundle::default());
 
     // left wall
+    let parent_anchor = Transform::from_translation(Vec3::new(half_frame_width - half_wall_thick, frame_height / 2.0, 0.0));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_wall_height, 0.0));
+    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
     commands.spawn_bundle( PhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Box {x_length: 0.1, y_length: 0.2, z_length: frame_length - 0.2},
+        Shape::Box {x_length: wall_thickness, y_length: wall_height, z_length: frame_length - 2.0 * wall_thickness},
         materials.add(Color::GOLD.into()),
-        Transform::from_xyz(2.0 + frame_width / 2.0, 0.35, 0.0),
+        world_transform,
         &mut meshes
     ))
         .insert(Joint::new(frame, FixedJoint {
-            parent_anchor: Transform::from_translation(Vec3::new(-frame_width / 2.0 + 0.05, frame_height / 2.0, 0.0)),
-            child_anchor: Transform::from_translation(Vec3::new(0.0, -0.1, 0.0)),
+            parent_anchor,
+            child_anchor
         }))
         .insert_bundle(InteractiveBundle::default());
 
     // right wall
+    let parent_anchor = Transform::from_translation(Vec3::new(-half_frame_width + half_wall_thick, frame_height / 2.0, 0.0));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_wall_height, 0.0));
+    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
     commands.spawn_bundle( PhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Box {x_length: 0.1, y_length: 0.2, z_length: frame_length - 0.2},
+        Shape::Box {x_length: wall_thickness, y_length: wall_height, z_length: frame_length - 2.0 * wall_thickness},
         materials.add(Color::GOLD.into()),
-        Transform::from_xyz(2.0 - frame_width / 2.0, 0.4, 0.0),
+        world_transform,
         &mut meshes
     ))
         .insert(Joint::new(frame, FixedJoint {
-            parent_anchor: Transform::from_translation(Vec3::new(frame_width / 2.0 - 0.05, frame_height / 2.0, 0.0)),
-            child_anchor: Transform::from_translation(Vec3::new(0.0, -0.1, 0.0)),
+            parent_anchor,
+            child_anchor
         }))
         .insert_bundle(InteractiveBundle::default());
 
     // left front wheel
+    let parent_anchor = Transform::from_translation(Vec3::new(wbh, 0.0, half_frame_length));
+    let child_anchor = Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2));
     commands.spawn_bundle( PhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Cylinder { radius: wheel_radius, length: wheel_width},
         materials.add(Color::BLACK.into()),
-        Transform::from_xyz(2.0 + wbh, 0.0, flh),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
         &mut meshes
     ))
         .insert(Joint::new(frame, RevoluteJoint {
-            parent_anchor: Transform::from_translation(Vec3::new(wbh, 0.0, flh)),
-            child_anchor: Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2)),
+            parent_anchor,
+            child_anchor,
             axis: Vec3::Y,
             ..default()
         }));
 
     // right front wheel
+    let parent_anchor = Transform::from_translation(Vec3::new(-wbh, 0.0, half_frame_length));
+    let child_anchor = Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2));
     commands.spawn_bundle( PhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: 0.16, length: 0.08},
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width},
         materials.add(Color::BLACK.into()),
-        Transform::from_xyz(2.0 - wbh, 0.0, flh),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
         &mut meshes
     ))
         .insert(Joint::new(frame, RevoluteJoint {
-            parent_anchor: Transform::from_translation(Vec3::new(-wbh, 0.0, flh)),
-            child_anchor: Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2)),
+            parent_anchor,
+            child_anchor,
             axis: Vec3::Y,
             ..default()
         }));
 
     // left back wheel
+    let parent_anchor = Transform::from_translation(Vec3::new(wbh, 0.0, -half_frame_length));
+    let child_anchor = Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2));
     commands.spawn_bundle( PhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: 0.16, length: 0.08},
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width},
         materials.add(Color::BLACK.into()),
-        Transform::from_xyz(2.0 + wbh, 0.0, -flh),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
         &mut meshes
     ))
         .insert(Joint::new(frame, RevoluteJoint {
-            parent_anchor: Transform::from_translation(Vec3::new(wbh, 0.0, -flh)),
-            child_anchor: Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2)),
+            parent_anchor,
+            child_anchor,
             axis: Vec3::Y,
             ..default()
         }));
 
     // right back wheel
+    let parent_anchor = Transform::from_translation(Vec3::new(-wbh, 0.0, -half_frame_length));
+    let child_anchor = Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2));
     commands.spawn_bundle( PhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: 0.16, length: 0.08},
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width},
         materials.add(Color::BLACK.into()),
-        Transform::from_xyz(2.0 - wbh, 0.0, -flh),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
         &mut meshes
     ))
         .insert(Joint::new(frame, RevoluteJoint {
-            parent_anchor: Transform::from_translation(Vec3::new(-wbh, 0.0, -flh)),
-            child_anchor: Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2)),
+            parent_anchor,
+            child_anchor,
             axis: Vec3::Y,
             ..default()
         }));
@@ -320,87 +350,100 @@ fn spawn_car(
 
 
 fn spawn_spider(
+    commands: &mut Commands,
+    material: Handle<StandardMaterial>,
+    origin: Transform,
+    meshes: &mut Assets<Mesh>
+) {
+
+    let body_radius = 0.2;
+    let leg_length = 0.3;
+    let leg_radius = 0.06;
+    let leg_angle = FRAC_PI_4;
+
+    let half_leg = leg_length / 2.0 + leg_radius;
+
+    // Frame
+    let body = commands.spawn_bundle(PhysicBodyBundle::from(RigidBody::Dynamic,
+        Shape::Sphere { radius: body_radius, subdivisions: 7 }, material.clone(), origin, meshes
+    )).insert_bundle(InteractiveBundle::default()).id();
+
+    // left_front_leg
+    let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(1.0, 0.0, 1.0).normalize());
+    let child_anchor = Transform::from_translation(half_leg * Vec3::Y).with_rotation(Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0).normalize(), -leg_angle));
+    let leg_world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
+    commands.spawn_bundle(PhysicBodyBundle::from(RigidBody::Dynamic,
+        Shape::Capsule { radius: leg_radius, length: leg_length }, material.clone(),
+        leg_world_transform,
+        meshes
+    )).insert_bundle(InteractiveBundle::default())
+    .insert(Joint::new(body, FixedJoint {
+        parent_anchor,
+        child_anchor
+    }));
+
+    // right front leg
+    let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(-1.0, 0.0, 1.0).normalize());
+    let child_anchor = Transform::from_translation(half_leg * Vec3::Y).with_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0).normalize(), leg_angle));
+    let leg_world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
+    commands.spawn_bundle(PhysicBodyBundle::from(RigidBody::Dynamic,
+        Shape::Capsule { radius: leg_radius, length: leg_length }, material.clone(),
+        leg_world_transform,
+        meshes
+    )).insert_bundle(InteractiveBundle::default())
+    .insert(Joint::new(body, FixedJoint {
+        parent_anchor,
+        child_anchor
+    }));
+
+    // left back leg
+    let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(1.0, 0.0, -1.0).normalize());
+    let child_anchor = Transform::from_translation(half_leg * Vec3::Y).with_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0).normalize(), -leg_angle));
+    let leg_world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
+    commands.spawn_bundle(PhysicBodyBundle::from(RigidBody::Dynamic,
+        Shape::Capsule { radius: leg_radius, length: leg_length }, material.clone(),
+        leg_world_transform,
+        meshes
+    )).insert_bundle(InteractiveBundle::default())
+    .insert(Joint::new(body, FixedJoint {
+        parent_anchor,
+        child_anchor
+    }));
+
+    // right back leg
+    let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(-1.0, 0.0, -1.0).normalize());
+    let child_anchor = Transform::from_translation(half_leg * Vec3::Y).with_rotation(Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0).normalize(), leg_angle));
+    let leg_world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
+    commands.spawn_bundle(PhysicBodyBundle::from(RigidBody::Dynamic,
+        Shape::Capsule { radius: leg_radius, length: leg_length }, material.clone(),
+        leg_world_transform,
+        meshes
+    )).insert_bundle(InteractiveBundle::default())
+    .insert(Joint::new(body, FixedJoint {
+        parent_anchor,
+        child_anchor
+    }));
+
+}
+
+
+fn spawn_spider_system(
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>
 ) {
-    let body_radius = 0.2;
-    let arm_length = 0.3;
-    let arm_radius = 0.06;
-    let alh = arm_length / 2.0;
-    let gap = 0.01;
-
+    let material = materials.add(Color::ORANGE_RED.into());
     let origin = Transform::from_xyz(0.0, 2.0, 2.0);
+    spawn_spider(&mut commands, material, origin, &mut meshes);
+}
 
-    // Frame
-    let body = commands.spawn_bundle(PhysicBodyBundle::from(
-        RigidBody::Dynamic,
-        Shape::Sphere { radius: body_radius, subdivisions: 7 },
-        materials.add(Color::ORANGE_RED.into()),
-        origin,
-        &mut meshes
-    ))
-        .insert_bundle(InteractiveBundle::default())
-        .id();
 
-    // left_front_leg
-    commands.spawn_bundle(PhysicBodyBundle::from(
-        RigidBody::Dynamic,
-        Shape::Capsule { radius: arm_radius, length: arm_length },
-        materials.add(Color::ORANGE_RED.into()),
-        Transform::from_rotation(Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0), -FRAC_PI_4))
-            .with_translation(Vec3::new(1.0, 0.0, 1.0).normalize() + body_radius + alh + arm_radius + gap),
-        &mut meshes
-    ))
-        .insert(Joint::new(body, FixedJoint {
-            parent_anchor: Transform::from_translation(body_radius * Vec3::new(1.0, 0.0, 1.0).normalize()),
-            child_anchor: Transform::from_translation(Vec3::new(0.0, alh + arm_radius + gap, 0.0))
-                .with_rotation(Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0), -FRAC_PI_4)),
-        }))
-        .insert_bundle(InteractiveBundle::default());
-
-    // right_front_leg
-    commands.spawn_bundle(PhysicBodyBundle::from(
-        RigidBody::Dynamic,
-        Shape::Capsule { radius: arm_radius, length: arm_length },
-        materials.add(Color::ORANGE_RED.into()),
-        Transform::from_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0), FRAC_PI_4))
-            .with_translation(Vec3::new(-1.0, 0.0, 1.0).normalize() * (body_radius + alh + arm_radius + gap)),
-        &mut meshes
-    ))
-        .insert(Joint::new(body, FixedJoint {
-            parent_anchor: Transform::from_translation(body_radius * Vec3::new(-1.0, 0.0, 1.0).normalize()),
-            child_anchor: Transform::from_translation(Vec3::new(0.0, alh + arm_radius + gap, 0.0)).with_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0), FRAC_PI_4)),
-        }))
-        .insert_bundle(InteractiveBundle::default());
-
-    // right_back_leg
-    commands.spawn_bundle(PhysicBodyBundle::from(
-        RigidBody::Dynamic,
-        Shape::Capsule { radius: arm_radius, length: arm_length },
-        materials.add(Color::ORANGE_RED.into()),
-        Transform::from_rotation(Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0), FRAC_PI_4))
-            .with_translation((body_radius + alh + arm_radius + gap) * Vec3::new(-1.0, 0.0, -1.0).normalize()),
-        &mut meshes
-    ))
-        .insert(Joint::new(body, FixedJoint {
-            parent_anchor: Transform::from_translation(body_radius * Vec3::new(-1.0, 0.0, -1.0).normalize()),
-            child_anchor: Transform::from_translation(Vec3::new(0.0, alh + arm_radius + gap, 0.0)).with_rotation(Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0), FRAC_PI_4)),
-        }))
-        .insert_bundle(InteractiveBundle::default());
-
-    // left_back_leg
-    commands.spawn_bundle(PhysicBodyBundle::from(
-        RigidBody::Dynamic,
-        Shape::Capsule { radius: arm_radius, length: arm_length },
-        materials.add(Color::ORANGE_RED.into()),
-        Transform::from_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0), -FRAC_PI_4))
-            .with_translation((body_radius + alh + arm_radius + gap) * Vec3::new(1.0, 0.0, -1.0).normalize()),
-        &mut meshes
-    ))
-        .insert(Joint::new(body, FixedJoint {
-            parent_anchor: Transform::from_translation(body_radius * Vec3::new(1.0, 0.0, -1.0).normalize()),
-            child_anchor: Transform::from_translation(Vec3::new(0.0, alh + arm_radius + gap, 0.0)).with_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0), -FRAC_PI_4)),
-        }))
-        .insert_bundle(InteractiveBundle::default());
+fn get_world_transform(
+    origin: &Transform, 
+    parent_anchor: &Transform, 
+    child_anchor: &Transform
+) -> Transform {
+    let translation = origin.translation + parent_anchor.translation - child_anchor.rotation.inverse().mul_vec3(child_anchor.translation);
+    let transform = Transform::from_translation(translation).with_rotation(child_anchor.rotation.inverse());
+    transform
 }
