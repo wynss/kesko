@@ -4,3 +4,4 @@ pub(crate) mod cursor_tracking;
 pub mod bundle;
 pub mod diagnostic;
 pub mod shape;
+pub mod transform;
