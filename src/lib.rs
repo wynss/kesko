@@ -21,7 +21,7 @@ fn test_scene(
     commands.spawn_batch(models::arena(
         materials.add(Color::ALICE_BLUE.into()), 
         &mut meshes, 
-        10.0, 10.0, 2.0
+        10.0, 10.0, 1.0
     ));
 
     models::spawn_car(
