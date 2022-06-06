@@ -7,7 +7,7 @@ use nora_core::{
     shape::Shape,
     orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera},
     plugins::physics::DefaultPhysicsPlugin,
-    diagnostic::FPSScreenPlugin,
+    diagnostic::fps_screen::FPSScreenPlugin,
 };
 use nora_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
 use nora_physics::{
