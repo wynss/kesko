@@ -5,10 +5,14 @@ use bevy::{
     window::WindowDescriptor
 };
 use bevy::window::PresentMode;
+use crate::interaction::{
+    update_vertical_marker_pos_system,
+    handle_vertical_marker_spawning
+};
 
 
 #[derive(Default)]
-pub(crate) struct CorePlugin;
+pub struct CorePlugin;
 
 impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
@@ -21,6 +25,8 @@ impl Plugin for CorePlugin {
                 ..Default::default()
             })
             .insert_resource(Msaa { samples: 4 })
+            .add_system(handle_vertical_marker_spawning)
+            .add_system(update_vertical_marker_pos_system)
             .add_system(bevy::input::system::exit_on_esc_system);
     }
 }

@@ -16,6 +16,7 @@ use nora_core::{
     transform::get_world_transform
 };
 use nora_object_interaction::InteractiveBundle;
+use nora_raycast::RayCastSource;
 
 
 pub fn arena(
@@ -94,7 +95,10 @@ pub fn spawn_spider(
     // Frame
     let body = commands.spawn_bundle(PhysicBodyBundle::from(RigidBody::Dynamic,
         Shape::Sphere { radius: body_radius, subdivisions: 7 }, material.clone(), origin, meshes
-    )).insert_bundle(InteractiveBundle::default()).id();
+    ))
+    .insert_bundle(InteractiveBundle::default())
+    //.insert(RayCastSource::world_space())
+    .id();
 
     // left_front_leg
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(1.0, 0.0, 1.0).normalize());
@@ -227,7 +231,6 @@ pub fn spawn_car(
     let wall_height = 0.2;
     let half_wall_height = wall_height / 2.0;
     let half_wall_thick = wall_thickness / 2.0;
-
 
     // Frame
     let frame = commands.spawn_bundle( PhysicBodyBundle::from(

@@ -29,10 +29,8 @@ pub(crate) fn update_tracking_system(
     mut commands: Commands,
     mut interaction_events: EventReader<InteractionEvent>,
     mut entity_query: Query<(&mut GravityScale, &GlobalTransform)>,
-    ray_query: Query<&GlobalTransform, With<RayCastSource>>
+    ray_query: Query<&GlobalTransform, (With<RayCastSource>, With<PanOrbitCamera>)>
 ) {
-    // TODO: Also update existing tracking with new camera transform since the camera can move and then the plane
-    // normal needs to be updated as well, maybe should be a separate system
 
     for event in interaction_events.iter() {
         if let InteractionEvent::DragStarted(entity) = event {
@@ -55,33 +53,28 @@ pub(crate) fn update_tracking_system(
     }
 }
 
-
 /// System that will update the controller of the object cursor tracking using a PD controller
 pub(crate) fn update_tracking_controller_system(
-    ray_query: Query<&RayCastSource>,
-    camera_query: Query<&Transform, With<PanOrbitCamera>>,
+    ray_query: Query<(&RayCastSource, &Transform), With<PanOrbitCamera>>,
     mut track_query: Query<(&mut CursorTrack, &mut Impulse, &Mass, &GlobalTransform)>
 ) {
-    if let Ok(ray_source) = ray_query.get_single() {
+    if let Ok((ray_source, camera_transform)) = ray_query.get_single() {
         if let Some(ray) = &ray_source.ray {
+            for (mut track, mut impulse, mass, transform) in track_query.iter_mut() {
 
-            if let Ok(camera_transform) = camera_query.get_single() {
-                for (mut track, mut impulse, mass, transform) in track_query.iter_mut() {
+                let plane_normal = camera_transform.compute_matrix().transform_vector3(Vec3::Z).normalize();
 
-                    let plane_normal = camera_transform.compute_matrix().transform_vector3(Vec3::Z).normalize();
+                let distance = (track.plane_point - ray.origin).dot(plane_normal) / ray.direction.dot(plane_normal);
+                let plane_intersection = ray.origin + distance * ray.direction;
 
-                    let distance = (track.plane_point - ray.origin).dot(plane_normal) / ray.direction.dot(plane_normal);
-                    let plane_intersection = ray.origin + distance * ray.direction;
+                let impulse_vec: Vec3 = plane_intersection - transform.translation;
 
-                    let impulse_vec: Vec3 = plane_intersection - transform.translation;
-
-                    if let Some(prev_impulse) = track.prev_impulse {
-                        impulse.vec = (P * impulse_vec + D * (impulse_vec - prev_impulse) * 60.0) * mass.val;
-                    }
-
-                    track.plane_normal = plane_normal;
-                    track.prev_impulse = Some(impulse_vec);
+                if let Some(prev_impulse) = track.prev_impulse {
+                    impulse.vec = (P * impulse_vec + D * (impulse_vec - prev_impulse) * 60.0) * mass.val;
                 }
+
+                track.plane_normal = plane_normal;
+                track.prev_impulse = Some(impulse_vec);
             }
         }
     }

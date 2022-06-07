@@ -79,6 +79,15 @@ impl RayCastSource {
         }
     }
 
+    pub fn world_space() -> Self {
+        Self {
+            method: RayCastMethod::WorldSpace,
+            ray: None,
+            ray_hit: None,
+            prev_ray_hit: None
+        }
+    }
+
     pub fn screen_space() -> Self {
         Self {
             method: RayCastMethod::ScreenSpace,
@@ -100,7 +109,7 @@ fn create_rays_system(
 ) {
 
     let window = windows.get_primary().unwrap();
-    for (mut ray_source, camera, camera_transform) in ray_source_query.iter_mut() {
+    for (mut ray_source, camera, transform) in ray_source_query.iter_mut() {
 
         // todo: Remove this and make a separate reset system that can be triggered
         if let Some(ray_hit) = &ray_source.ray_hit {
@@ -110,33 +119,34 @@ fn create_rays_system(
         }
         ray_source.ray_hit = None;
 
-        match ray_source.method {
-            RayCastMethod::ScreenSpace => {
+        match transform {
+            Some(transform) => {
+                match ray_source.method {
+                    RayCastMethod::ScreenSpace => {
 
-                let camera = match camera {
-                    Some(camera) => camera,
-                    None => {
-                        error!("Ray cast source with method screen space has no camera component");
-                        return;
+                        let camera = match camera {
+                            Some(camera) => camera,
+                            None => {
+                                error!("Ray cast source with method screen space has no camera component");
+                                return;
+                            }
+                        };
+
+                        if let Some(cursor_position) = window.cursor_position() {
+                            ray_source.ray = Some(Ray::from_screen_space(window, camera, transform, cursor_position));
+                        }
+                    },
+                    RayCastMethod::WorldSpace => {
+                        ray_source.ray = Some(Ray::from_world_space(transform.translation, -Vec3::Y));
                     }
-                };
-
-                let camera_transform = match camera_transform {
-                    Some(camera_transform) => camera_transform,
-                    None => {
-                        error!("Camera has not global transform");
-                        return;
-                    }
-                };
-
-                if let Some(cursor_position) = window.cursor_position() {
-                    ray_source.ray = Some(Ray::from_screen_space(window, camera, camera_transform, cursor_position));
                 }
+
             },
-            RayCastMethod::WorldSpace => {
-                todo!();
+            None => {
+                error!("Camera has no global transform");
+                return;
             }
-        }
+        };
     }
 }
 
@@ -152,8 +162,8 @@ fn calc_intersections_system(
             let ray_hits = Arc::new(Mutex::new(Vec::new()));
 
             castable_query.par_for_each(&task_pool, num_cpus::get(), | (entity, mesh_handle, transform) | {
+                
                 if let Some(mesh) = meshes.get(mesh_handle) {
-
                     let mesh_to_world = transform.compute_matrix();
                     if let Some(intersection) = mesh_intersection(mesh, ray, &mesh_to_world) {
                         ray_hits.lock().unwrap().push(RayHit{
