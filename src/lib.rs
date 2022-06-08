@@ -34,14 +34,12 @@ fn test_scene(
     );
 
 
-    for i in 1..=1 {
     models::spawn_spider(
         &mut commands,
         materials.add(Color::ORANGE_RED.into()),
-        Transform::from_xyz(0.0, 1.0, i as f32),
+        Transform::from_xyz(0.0, 1.0, 0.0),
         &mut meshes
     );
-}
 
     models::spawn_worm(
         &mut commands,

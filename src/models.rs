@@ -16,7 +16,7 @@ use nora_core::{
     transform::get_world_transform
 };
 use nora_object_interaction::InteractiveBundle;
-use nora_raycast::{RayCastable, RayCastSource};
+use nora_raycast::RayCastable;
 
 
 pub fn arena(
