@@ -18,11 +18,12 @@ fn test_scene(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
 
-    commands.spawn_batch(models::arena(
+    models::arena(
+        &mut commands,
         materials.add(Color::ALICE_BLUE.into()), 
         &mut meshes, 
         10.0, 10.0, 1.0
-    ));
+    );
 
     models::spawn_car(
         &mut commands,

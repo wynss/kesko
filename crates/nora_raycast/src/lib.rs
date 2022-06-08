@@ -56,7 +56,9 @@ impl Plugin for RayCastPlugin {
 
 pub enum RayCastMethod {
     ScreenSpace,
-    WorldSpace
+    FromEntity {
+        direction: Vec3
+    }
 }
 
 /// Source that will cast rays
@@ -79,9 +81,9 @@ impl RayCastSource {
         }
     }
 
-    pub fn world_space() -> Self {
+    pub fn from_entity(direction: Vec3) -> Self {
         Self {
-            method: RayCastMethod::WorldSpace,
+            method: RayCastMethod::FromEntity { direction },
             ray: None,
             ray_hit: None,
             prev_ray_hit: None
@@ -136,8 +138,8 @@ fn create_rays_system(
                             ray_source.ray = Some(Ray::from_screen_space(window, camera, transform, cursor_position));
                         }
                     },
-                    RayCastMethod::WorldSpace => {
-                        ray_source.ray = Some(Ray::from_world_space(transform.translation, -Vec3::Y));
+                    RayCastMethod::FromEntity { direction } => {
+                        ray_source.ray = Some(Ray::from_world_space(transform.translation, direction));
                     }
                 }
 
