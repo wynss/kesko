@@ -7,7 +7,7 @@ use nora_core::{
     shape::Shape,
     orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera},
     plugins::physics::DefaultPhysicsPlugin,
-    diagnostic::fps_screen::FPSScreenPlugin,
+    diagnostic::{fps_screen::FPSScreenPlugin, event::DebugEventPlugin},
 };
 use nora_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
 use nora_physics::{
@@ -19,12 +19,13 @@ fn main() {
 
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(LogDiagnosticsPlugin::default())
+        //.add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(DefaultPhysicsPlugin::default())
         .add_plugin(InteractionPlugin)
         .add_plugin(PanOrbitCameraPlugin)
         .add_plugin(FPSScreenPlugin::default())
+        .add_plugin(DebugEventPlugin)
         .add_startup_system(setup)
         .add_system(bevy::input::system::exit_on_esc_system)
         .insert_resource(ClearColor(Color::hex("F5F5F5").unwrap()))
@@ -38,11 +39,12 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>
 ) {
 
-    commands.spawn_batch(models::arena(
+    models::arena(
+        &mut commands,
         materials.add(Color::ALICE_BLUE.into()), 
         &mut meshes,
         10.0, 10.0, 1.0
-    ));
+    );
 
     models::spawn_car(
         &mut commands,

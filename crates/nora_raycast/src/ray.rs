@@ -50,7 +50,7 @@ impl Ray {
         Self::new(cursor_position_near, cursor_position_near - camera_transform.translation)
     }
 
-    fn from_world_space() -> Self {
-        todo!()
+    pub(crate) fn from_world_space(origin: Vec3, direction: Vec3) -> Self {
+        Self::new(origin, direction)
     }
 }

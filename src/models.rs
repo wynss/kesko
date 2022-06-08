@@ -16,65 +16,65 @@ use nora_core::{
     transform::get_world_transform
 };
 use nora_object_interaction::InteractiveBundle;
+use nora_raycast::RayCastable;
 
 
 pub fn arena(
-    material: Handle<StandardMaterial>, 
+    commands: &mut Commands,
+    material: Handle<StandardMaterial>,
     meshes: &mut ResMut<Assets<Mesh>>,
     width: f32,
     length: f32,
     wall_height: f32
-) -> Vec<PhysicBodyBundle> {
+) {
 
     let wall_width = 0.2;
     let half_wall_width = wall_width / 2.0;
 
     // Spawn ground
-    let ground = PhysicBodyBundle::from(
+    commands.spawn_bundle(PhysicBodyBundle::from(
         RigidBody::Fixed,
         Shape::Box {x_length: width, y_length: 0.5, z_length: length},
         material.clone(),
         Transform::from_xyz(0.0, -0.25, 0.0),
         meshes
-    );
+    )).insert(RayCastable);
 
     // right wall
-    let left_wall = PhysicBodyBundle::from(
+    commands.spawn_bundle(PhysicBodyBundle::from(
         RigidBody::Fixed,
         Shape::Box {x_length: wall_width, y_length: wall_height, z_length: length},
         material.clone(),
         Transform::from_xyz(-(width / 2.0 + half_wall_width), wall_height / 2.0, 0.0),
         meshes
-    );
+    ));
 
     // left wall
-    let right_wall = PhysicBodyBundle::from(
+    commands.spawn_bundle(PhysicBodyBundle::from(
         RigidBody::Fixed,
         Shape::Box {x_length: wall_width, y_length: wall_height, z_length: length},
         material.clone(),
         Transform::from_xyz(width / 2.0 + half_wall_width, wall_height / 2.0, 0.0),
         meshes
-    );
+    ));
 
     // back wall
-    let back_wall = PhysicBodyBundle::from(
+    commands.spawn_bundle(PhysicBodyBundle::from(
         RigidBody::Fixed,
         Shape::Box {x_length: length, y_length: wall_height, z_length: wall_width},
         material.clone(),
         Transform::from_xyz(0.0, wall_height / 2.0, -(width / 2.0 + half_wall_width)),
         meshes
-    );
+    ));
 
     // front wall
-    let front_wall = PhysicBodyBundle::from(
+    commands.spawn_bundle(PhysicBodyBundle::from(
         RigidBody::Fixed,
         Shape::Box {x_length: length, y_length: wall_height, z_length: wall_width},
         material.clone(),
         Transform::from_xyz(0.0, wall_height / 2.0, width / 2.0 + half_wall_width),
         meshes
-    );
-
-    vec![ground, left_wall, right_wall, front_wall, back_wall]
+    ));
 }
 
 pub fn spawn_spider(
@@ -94,7 +94,9 @@ pub fn spawn_spider(
     // Frame
     let body = commands.spawn_bundle(PhysicBodyBundle::from(RigidBody::Dynamic,
         Shape::Sphere { radius: body_radius, subdivisions: 7 }, material.clone(), origin, meshes
-    )).insert_bundle(InteractiveBundle::default()).id();
+    ))
+    .insert_bundle(InteractiveBundle::default())
+    .id();
 
     // left_front_leg
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(1.0, 0.0, 1.0).normalize());
@@ -227,7 +229,6 @@ pub fn spawn_car(
     let wall_height = 0.2;
     let half_wall_height = wall_height / 2.0;
     let half_wall_thick = wall_thickness / 2.0;
-
 
     // Frame
     let frame = commands.spawn_bundle( PhysicBodyBundle::from(
