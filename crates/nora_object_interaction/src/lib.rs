@@ -3,8 +3,10 @@ pub mod event;
 pub mod material;
 mod interaction;
 
+use std::marker::PhantomData;
+
 use bevy::prelude::*;
-use nora_raycast::{RayCastPlugin, RayCastSource, RayCastSystems, RayCastable};
+use nora_raycast::{RayCastSource, RayCastSystems, RayCastable, RayCastPlugin};
 use crate::{
     interaction::{
         DraggingGlobal, update_interactions,
@@ -21,17 +23,24 @@ enum InteractionSystems {
     SendEvents
 }
 
-pub struct InteractionPlugin;
-impl Plugin for InteractionPlugin {
+#[derive(Default)]
+pub struct InteractionPlugin<T>
+where T: Component + Default 
+{
+    _marker: PhantomData<T>
+}
+impl<T> Plugin for InteractionPlugin<T> 
+where T: Component + Default
+{
     fn build(&self, app: &mut App) {
         app.init_resource::<InteractionMaterials>()
             .add_event::<InteractionEvent>()
             .init_resource::<DraggingGlobal>()
-            .add_plugin(RayCastPlugin::default())
+            .add_plugin(RayCastPlugin::<T>::default())
             .add_system_set_to_stage(
                 CoreStage::First,
                 SystemSet::new()
-                    .with_system(update_interactions
+                    .with_system(update_interactions::<T>
                         .label(InteractionSystems::UpdateInteractions)
                         .after(RayCastSystems::CalcIntersections)
                     )
@@ -47,22 +56,23 @@ impl Plugin for InteractionPlugin {
 }
 
 #[derive(Bundle, Default)]
-pub struct InteractiveBundle {
+pub struct InteractiveBundle<T: Component + Default> {
     material: OriginalMaterial,
-    ray_castable: RayCastable,
+    ray_castable: RayCastable::<T>,
     drag: Drag,
     hover: Hover
 }
 
 #[derive(Bundle)]
-pub struct InteractorBundle {
-    source: RayCastSource,
+pub struct InteractorBundle<T: Component + Default> {
+    source: RayCastSource<T>,
 }
 
-impl Default for InteractorBundle {
+impl<T> Default for InteractorBundle<T> 
+where T: Component + Default {
     fn default() -> Self {
         Self {
-            source: RayCastSource::screen_space(),
+            source: RayCastSource::<T>::screen_space(),
         }
     }
 }

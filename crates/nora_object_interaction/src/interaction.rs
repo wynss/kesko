@@ -18,10 +18,10 @@ pub(crate) struct Hover {
     pub(crate) hovered: bool
 }
 
-pub(crate) fn update_interactions(
+pub(crate) fn update_interactions<T: Component + Default>(
     mut motion_evr: EventReader<MouseMotion>,
     mouse_button_input: Res<Input<MouseButton>>,
-    source_query: Query<&RayCastSource, With<Camera>>,
+    source_query: Query<&RayCastSource<T>, With<Camera>>,
     mut dragging_global: Local<DraggingGlobal>,
     mut interaction_query: Query<(Entity, &mut Drag, &mut Hover)>,
 ) {

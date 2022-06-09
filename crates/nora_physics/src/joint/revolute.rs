@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::prelude::{GenericJoint, JointAxis, RevoluteJointBuilder};
+use rapier3d::prelude::{GenericJoint, RevoluteJointBuilder};
 use crate::conversions::IntoRapier;
 
 

@@ -22,8 +22,8 @@ pub(crate) fn spawn_debug_pointer(
     }).insert(DebugPointer);
 }
 
-pub(crate) fn update_debug_pointer(
-    query: Query<&RayCastSource>,
+pub(crate) fn update_debug_pointer<T: Component + Default>(
+    query: Query<&RayCastSource<T>>,
     mut pointer_query: Query<&mut Transform, With<DebugPointer>>
 ) {
 

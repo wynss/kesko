@@ -6,8 +6,11 @@ use bevy::{
 };
 use bevy::window::PresentMode;
 use crate::interaction::{
-    update_vertical_marker_pos_system,
-    handle_vertical_marker_spawning
+    groups::GroupStatic,
+    vertical_marker::{
+        update_vertical_marker_pos_system,
+        handle_vertical_marker_spawning
+    }
 };
 
 
@@ -25,8 +28,8 @@ impl Plugin for CorePlugin {
                 ..Default::default()
             })
             .insert_resource(Msaa { samples: 4 })
-            .add_system(handle_vertical_marker_spawning)
-            .add_system(update_vertical_marker_pos_system)
+            .add_system(handle_vertical_marker_spawning::<GroupStatic>)
+            .add_system(update_vertical_marker_pos_system::<GroupStatic>)
             .add_system(bevy::input::system::exit_on_esc_system);
     }
 }

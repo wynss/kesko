@@ -3,12 +3,15 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use nora_raycast::{RayCastPlugin, RayCastSource, RayCastMethod, RayCastable};
 
 
+#[derive(Component, Default)]
+struct RayCastGroup;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(RayCastPlugin::default())
+        .add_plugin(RayCastPlugin::<RayCastGroup>::default())
         .insert_resource(Msaa { samples: 4 })
         .add_startup_system(setup)
         .add_system(bevy::input::system::exit_on_esc_system)
@@ -28,7 +31,7 @@ fn setup(
         material: materials.add(Color::GOLD.into()),
         transform: Transform::from_xyz(0.0, 0.0, -3.0),
         ..Default::default()
-    }).insert(RayCastable::default());
+    }).insert(RayCastable::<RayCastGroup>::default());
 
     // camera that can cast rays from screen space
     let camera_pos = Vec3::new(0.0, 0.0, 5.0);
@@ -38,7 +41,7 @@ fn setup(
         transform: camera_transform,
         ..Default::default()
     })
-    .insert(RayCastSource::new(RayCastMethod::ScreenSpace));
+    .insert(RayCastSource::<RayCastGroup>::new(RayCastMethod::ScreenSpace));
 
     // Light
     commands.spawn_bundle(PointLightBundle {
