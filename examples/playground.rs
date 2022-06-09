@@ -41,7 +41,7 @@ fn setup(
         &mut commands,
         materials.add(Color::ALICE_BLUE.into()), 
         &mut meshes,
-        10.0, 10.0, 1.0
+        10.0, 10.0, 0.5
     );
 
     models::car::Car::spawn_car(
