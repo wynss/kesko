@@ -8,6 +8,7 @@ use nora_core::{
     orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera},
     plugins::physics::DefaultPhysicsPlugin,
     diagnostic::{fps_screen::FPSScreenPlugin, event::DebugEventPlugin},
+    interaction::groups::GroupDynamic
 };
 use nora_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
 use nora_physics::{
@@ -19,10 +20,10 @@ fn main() {
 
     App::new()
         .add_plugins(DefaultPlugins)
-        //.add_plugin(LogDiagnosticsPlugin::default())
+        .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(DefaultPhysicsPlugin::default())
-        .add_plugin(InteractionPlugin)
+        .add_plugin(InteractionPlugin::<GroupDynamic>::default())
         .add_plugin(PanOrbitCameraPlugin)
         .add_plugin(FPSScreenPlugin::default())
         .add_plugin(DebugEventPlugin)
@@ -82,7 +83,7 @@ fn setup(
             materials.add(Color::hex("66BB6A").unwrap().into()),
             Transform::from_xyz(-1.0, 4.0, z),
             &mut meshes
-        )).insert_bundle(InteractiveBundle::default());
+        )).insert_bundle(InteractiveBundle::<GroupDynamic>::default());
     }
 
     // camera
@@ -98,7 +99,7 @@ fn setup(
         distance,
         ..Default::default()
     })
-        .insert_bundle(InteractorBundle::default());
+        .insert_bundle(InteractorBundle::<GroupDynamic>::default());
 
     // Light
     commands.spawn_bundle(DirectionalLightBundle {

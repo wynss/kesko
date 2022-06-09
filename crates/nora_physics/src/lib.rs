@@ -24,12 +24,6 @@ pub enum PhysicsSystem {
     UpdateBevyWorld
 }
 
-
-enum PhysicState {
-    Run,
-    Pause
-}
-
 pub struct PhysicsPlugin {
     pub gravity: Vec3
 }
