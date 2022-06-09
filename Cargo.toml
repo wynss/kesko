@@ -7,13 +7,21 @@ members = [
     "crates/kesko_models",
     "crates/kesko_plugins",
     "crates/kesko_ui",
-    "crates/kesko_diagnostic"
+    "crates/kesko_diagnostic",
+    "crates/kesko_tcp",
 ]
 
 [package]
 name = "kesko"
 version = "0.1.0"
 edition = "2021"
+
+[[bin]]
+name = "kesko"
+src = "src/main.rs"
+
+[[bin]]
+name = "kesko_tcp"
 
 [dependencies]
 bevy = "0.8.0"
@@ -24,3 +32,4 @@ kesko_raycast = { version = "0.1.0", path = "crates/kesko_raycast"}
 kesko_models = { version = "0.1.0", path = "crates/kesko_models"}
 kesko_plugins = { version = "0.1.0", path="crates/kesko_plugins"}
 kesko_diagnostic = { version = "0.1.0", path="crates/kesko_diagnostic"}
+kesko_tcp = { version = "0.1.0", path = "crates/kesko_tcp"}
