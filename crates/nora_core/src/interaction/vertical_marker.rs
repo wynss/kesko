@@ -37,7 +37,7 @@ pub(crate) fn handle_vertical_marker_spawning<T: Component + Default>(
 
                 for (marker_entity, marker) in marker_query.iter() {
                     if *entity == marker.0 {
-                       commands.entity(marker_entity).despawn();
+                        commands.entity(marker_entity).despawn();
                     }
                 }
             },

@@ -2,12 +2,14 @@ pub mod models;
 
 use bevy::prelude::*;
 use nora_core::plugins::CorePlugins;
+use nora_core::diagnostic::event::DebugEventPlugin;
 
 
 pub fn start() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(CorePlugins)
+        .add_plugin(DebugEventPlugin)
         .add_startup_system(test_scene)
         .run();
 }

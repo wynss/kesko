@@ -12,17 +12,17 @@ pub enum InteractionEvent {
 }
 
 #[allow(clippy::type_complexity)]
-pub(crate) fn send_events(
+pub(crate) fn send_events<T: Component + Default>(
     mut event_writer: EventWriter<InteractionEvent>,
     interaction_query: Query<
         (
             Entity,
-            &Hover,
-            &Drag,
-            ChangeTrackers<Hover>,
-            ChangeTrackers<Drag>,
+            &Hover<T>,
+            &Drag<T>,
+            ChangeTrackers<Hover<T>>,
+            ChangeTrackers<Drag<T>>,
         ),
-        Or<(Changed<Hover>, Changed<Drag>)>,
+        Or<(Changed<Hover<T>>, Changed<Drag<T>>)>,
     >,
 ) {
     for (entity, hover, drag, hover_track, drag_track) in interaction_query.iter() {
@@ -54,6 +54,9 @@ mod tests {
     use crate::event::{send_events, InteractionEvent};
     use crate::interaction::{Drag, Hover};
 
+    #[derive(Component, Default)]
+    struct TestGroup;
+
     #[derive(PartialEq)]
     enum TestStep {
         // This is needed to ignore the first run when the components are being considered 'added'
@@ -73,8 +76,8 @@ mod tests {
         let mut world = app.world;
         let entity = world
             .spawn()
-            .insert(Hover::default())
-            .insert(Drag::default())
+            .insert(Hover::<TestGroup>::default())
+            .insert(Drag::<TestGroup>::default())
             .id();
 
         (world, entity)
@@ -88,7 +91,7 @@ mod tests {
         }
     }
 
-    fn trigger_events(mut query: Query<(&mut Hover, &mut Drag)>, test_step: Res<TestStep>) {
+    fn trigger_events(mut query: Query<(&mut Hover<TestGroup>, &mut Drag<TestGroup>)>, test_step: Res<TestStep>) {
         if *test_step != TestStep::Initial {
             for (mut hover, mut drag) in query.iter_mut() {
                 hover.hovered = !hover.hovered;
@@ -136,8 +139,8 @@ mod tests {
         stage.add_system_set(
             SystemSet::new()
                 .with_system(trigger_events)
-                .with_system(send_events.after(trigger_events))
-                .with_system(read_and_assert.after(send_events))
+                .with_system(send_events::<TestGroup>.after(trigger_events))
+                .with_system(read_and_assert.after(send_events::<TestGroup>))
                 .with_system(propagate_test.after(read_and_assert))
         );
 
