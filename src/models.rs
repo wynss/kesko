@@ -13,7 +13,8 @@ use nora_physics::{
 use nora_core::{
     bundle::PhysicBodyBundle,
     shape::Shape,
-    transform::get_world_transform
+    transform::get_world_transform,
+    interaction::groups::{GroupStatic, GroupDynamic}
 };
 use nora_object_interaction::InteractiveBundle;
 use nora_raycast::RayCastable;
@@ -38,7 +39,7 @@ pub fn arena(
         material.clone(),
         Transform::from_xyz(0.0, -0.25, 0.0),
         meshes
-    )).insert(RayCastable);
+    )).insert(RayCastable::<GroupStatic>::default());
 
     // right wall
     commands.spawn_bundle(PhysicBodyBundle::from(
@@ -47,7 +48,7 @@ pub fn arena(
         material.clone(),
         Transform::from_xyz(-(width / 2.0 + half_wall_width), wall_height / 2.0, 0.0),
         meshes
-    ));
+    )).insert(RayCastable::<GroupStatic>::default());
 
     // left wall
     commands.spawn_bundle(PhysicBodyBundle::from(
@@ -56,7 +57,7 @@ pub fn arena(
         material.clone(),
         Transform::from_xyz(width / 2.0 + half_wall_width, wall_height / 2.0, 0.0),
         meshes
-    ));
+    )).insert(RayCastable::<GroupStatic>::default());
 
     // back wall
     commands.spawn_bundle(PhysicBodyBundle::from(
@@ -65,7 +66,7 @@ pub fn arena(
         material.clone(),
         Transform::from_xyz(0.0, wall_height / 2.0, -(width / 2.0 + half_wall_width)),
         meshes
-    ));
+    )).insert(RayCastable::<GroupStatic>::default());
 
     // front wall
     commands.spawn_bundle(PhysicBodyBundle::from(
@@ -74,7 +75,7 @@ pub fn arena(
         material.clone(),
         Transform::from_xyz(0.0, wall_height / 2.0, width / 2.0 + half_wall_width),
         meshes
-    ));
+    )).insert(RayCastable::<GroupStatic>::default());
 }
 
 pub fn spawn_spider(
@@ -95,7 +96,7 @@ pub fn spawn_spider(
     let body = commands.spawn_bundle(PhysicBodyBundle::from(RigidBody::Dynamic,
         Shape::Sphere { radius: body_radius, subdivisions: 7 }, material.clone(), origin, meshes
     ))
-    .insert_bundle(InteractiveBundle::default())
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .id();
 
     // left_front_leg
@@ -106,7 +107,7 @@ pub fn spawn_spider(
         Shape::Capsule { radius: leg_radius, length: leg_length }, material.clone(),
         leg_world_transform,
         meshes
-    )).insert_bundle(InteractiveBundle::default())
+    )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(Joint::new(body, FixedJoint {
         parent_anchor,
         child_anchor
@@ -120,7 +121,7 @@ pub fn spawn_spider(
         Shape::Capsule { radius: leg_radius, length: leg_length }, material.clone(),
         leg_world_transform,
         meshes
-    )).insert_bundle(InteractiveBundle::default())
+    )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(Joint::new(body, FixedJoint {
         parent_anchor,
         child_anchor
@@ -134,7 +135,7 @@ pub fn spawn_spider(
         Shape::Capsule { radius: leg_radius, length: leg_length }, material.clone(),
         leg_world_transform,
         meshes
-    )).insert_bundle(InteractiveBundle::default())
+    )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(Joint::new(body, FixedJoint {
         parent_anchor,
         child_anchor
@@ -148,7 +149,7 @@ pub fn spawn_spider(
         Shape::Capsule { radius: leg_radius, length: leg_length }, material.clone(),
         leg_world_transform,
         meshes
-    )).insert_bundle(InteractiveBundle::default())
+    )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(Joint::new(body, FixedJoint {
         parent_anchor,
         child_anchor
@@ -176,7 +177,7 @@ pub fn spawn_worm(
         new_origin,
         meshes
     ))
-        .insert_bundle(InteractiveBundle::default())
+        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .id();
 
     for _ in 1..4 {
@@ -197,7 +198,7 @@ pub fn spawn_worm(
                 child_anchor,
                 ..default()
             }))
-            .insert_bundle(InteractiveBundle::default())
+            .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
             .id();
         
         new_origin = world_transform;
@@ -238,7 +239,7 @@ pub fn spawn_car(
         origin,
         meshes
     ))
-        .insert_bundle(InteractiveBundle::default())
+        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .id();
 
     // front wall
@@ -256,7 +257,7 @@ pub fn spawn_car(
             parent_anchor,
             child_anchor
         }))
-        .insert_bundle(InteractiveBundle::default());
+        .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
     // back wall
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, frame_height / 2.0, -(half_frame_length - half_wall_thick)));
@@ -273,7 +274,7 @@ pub fn spawn_car(
             parent_anchor,
             child_anchor
         }))
-        .insert_bundle(InteractiveBundle::default());
+        .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
     // left wall
     let parent_anchor = Transform::from_translation(Vec3::new(half_frame_width - half_wall_thick, frame_height / 2.0, 0.0));
@@ -290,7 +291,7 @@ pub fn spawn_car(
             parent_anchor,
             child_anchor
         }))
-        .insert_bundle(InteractiveBundle::default());
+        .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
     // right wall
     let parent_anchor = Transform::from_translation(Vec3::new(-half_frame_width + half_wall_thick, frame_height / 2.0, 0.0));
@@ -307,7 +308,7 @@ pub fn spawn_car(
             parent_anchor,
             child_anchor
         }))
-        .insert_bundle(InteractiveBundle::default());
+        .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
     // left front wheel
     let parent_anchor = Transform::from_translation(Vec3::new(wbh, 0.0, half_frame_length));

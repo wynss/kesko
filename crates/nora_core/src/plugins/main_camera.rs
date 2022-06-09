@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use nora_object_interaction::InteractorBundle;
 
 use crate::orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera};
+use crate::interaction::groups::GroupDynamic;
 
 
 pub(crate) struct MainCameraPlugin;
@@ -31,5 +32,5 @@ pub fn spawn_camera(mut commands: Commands) {
     }).insert(PanOrbitCamera {
         distance,
         ..Default::default()
-    }).insert_bundle(InteractorBundle::default());
+    }).insert_bundle(InteractorBundle::<GroupDynamic>::default());
 }

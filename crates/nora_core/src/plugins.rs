@@ -5,12 +5,15 @@ pub mod physics;
 
 use bevy::app::{PluginGroup, PluginGroupBuilder};
 use nora_object_interaction::InteractionPlugin;
-use crate::plugins::{
-    core::CorePlugin,
-    menu::MenuPlugin,
-    main_camera::MainCameraPlugin,
+use crate::{
+    interaction::groups::{GroupDynamic, GroupStatic},
+    plugins::{
+        core::CorePlugin,
+        menu::MenuPlugin,
+        main_camera::MainCameraPlugin,
+        physics::DefaultPhysicsPlugin
+    }
 };
-use crate::plugins::physics::DefaultPhysicsPlugin;
 
 
 pub struct CorePlugins;
@@ -21,6 +24,7 @@ impl PluginGroup for CorePlugins {
         group.add(MenuPlugin);
         group.add(MainCameraPlugin);
         group.add(DefaultPhysicsPlugin);
-        group.add(InteractionPlugin);
+        group.add(InteractionPlugin::<GroupDynamic>::default());
+        group.add(InteractionPlugin::<GroupStatic>::default());
     }
 }

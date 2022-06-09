@@ -25,11 +25,11 @@ pub(crate) struct CursorTrack {
 /// Updates the object that should track the cursor and when it should stop
 /// The object will track the cursor on a plane perpendicular to the camera direction places at the objects origin
 /// While an object is tracking the cursor the gravity scale will be set to 0.0
-pub(crate) fn update_tracking_system(
+pub(crate) fn update_tracking_system<T: Component + Default>(
     mut commands: Commands,
     mut interaction_events: EventReader<InteractionEvent>,
     mut entity_query: Query<(&mut GravityScale, &GlobalTransform)>,
-    ray_query: Query<&GlobalTransform, (With<RayCastSource>, With<PanOrbitCamera>)>
+    ray_query: Query<&GlobalTransform, (With<RayCastSource<T>>, With<PanOrbitCamera>)>
 ) {
 
     for event in interaction_events.iter() {
@@ -54,8 +54,8 @@ pub(crate) fn update_tracking_system(
 }
 
 /// System that will update the controller of the object cursor tracking using a PD controller
-pub(crate) fn update_tracking_controller_system(
-    ray_query: Query<(&RayCastSource, &Transform), With<PanOrbitCamera>>,
+pub(crate) fn update_tracking_controller_system<T: Component + Default>(
+    ray_query: Query<(&RayCastSource<T>, &Transform), With<PanOrbitCamera>>,
     mut track_query: Query<(&mut CursorTrack, &mut Impulse, &Mass, &GlobalTransform)>
 ) {
     if let Ok((ray_source, camera_transform)) = ray_query.get_single() {

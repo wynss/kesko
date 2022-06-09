@@ -6,7 +6,7 @@ pub(crate) mod debug;
 pub(crate) mod triangle;
 pub(crate) mod convert;
 
-use std::sync::{Arc, Mutex};
+use std::{sync::{Arc, Mutex}, marker::PhantomData};
 use bevy::prelude::*;
 use bevy::tasks::ComputeTaskPool;
 
@@ -22,26 +22,32 @@ pub enum RayCastSystems {
 }
 
 #[derive(Default)]
-pub struct RayCastPlugin {
-    debug: bool
+pub struct RayCastPlugin<T: Component> {
+    debug: bool,
+    phantom: PhantomData<T>
 }
 
-impl RayCastPlugin {
+impl<T> RayCastPlugin<T> 
+where T: Component 
+{
     pub fn with_debug() -> Self {
         Self {
-            debug: true
+            debug: true,
+            phantom: PhantomData
         }
     }
 }
 
-impl Plugin for RayCastPlugin {
+impl<T> Plugin for RayCastPlugin<T> 
+where T: Component + Default
+{
     fn build(&self, app: &mut App) {
 
         app.add_system_set_to_stage(
             CoreStage::First,
             SystemSet::new()
-                .with_system(create_rays_system.label(RayCastSystems::CreateRays))
-                .with_system(calc_intersections_system
+                .with_system(create_rays_system::<T>.label(RayCastSystems::CreateRays))
+                .with_system(calc_intersections_system::<T>
                     .label(RayCastSystems::CalcIntersections)
                     .after(RayCastSystems::CreateRays)
                 )
@@ -49,7 +55,7 @@ impl Plugin for RayCastPlugin {
 
         if self.debug {
             app.add_startup_system(debug::spawn_debug_pointer);
-            app.add_system_to_stage(CoreStage::First, debug::update_debug_pointer);
+            app.add_system_to_stage(CoreStage::First, debug::update_debug_pointer::<T>);
         }
     }
 }
@@ -63,21 +69,27 @@ pub enum RayCastMethod {
 
 /// Source that will cast rays
 #[derive(Component)]
-pub struct RayCastSource {
+pub struct RayCastSource<T> 
+where T: Component + Default
+{
     method: RayCastMethod,
     pub ray: Option<Ray>,
     pub ray_hit: Option<RayHit>,
-    pub prev_ray_hit: Option<RayHit>
+    pub prev_ray_hit: Option<RayHit>,
+    _phantom: PhantomData<T>
 }
 
 
-impl RayCastSource {
+impl<T> RayCastSource<T> 
+where T: Component + Default
+{
     pub fn new(method: RayCastMethod) -> Self {
         Self {
             method,
             ray: None,
             ray_hit: None,
-            prev_ray_hit: None
+            prev_ray_hit: None,
+            _phantom: PhantomData
         }
     }
 
@@ -86,7 +98,8 @@ impl RayCastSource {
             method: RayCastMethod::FromEntity { direction },
             ray: None,
             ray_hit: None,
-            prev_ray_hit: None
+            prev_ray_hit: None,
+            _phantom: PhantomData
         }
     }
 
@@ -95,19 +108,22 @@ impl RayCastSource {
             method: RayCastMethod::ScreenSpace,
             ray: None,
             ray_hit: None,
-            prev_ray_hit: None
+            prev_ray_hit: None,
+            _phantom: PhantomData
         }
     }
 }
 
 /// Component that makes an entity visible to rays
 #[derive(Component, Default)]
-pub struct RayCastable;
+pub struct RayCastable<T> {
+    _marker: PhantomData<T>
+}
 
 
-fn create_rays_system(
+fn create_rays_system<T: Component + Default>(
     windows: Res<Windows>,
-    mut ray_source_query: Query<(&mut RayCastSource, Option<&Camera>, Option<&GlobalTransform>)>
+    mut ray_source_query: Query<(&mut RayCastSource<T>, Option<&Camera>, Option<&GlobalTransform>)>
 ) {
 
     let window = windows.get_primary().unwrap();
@@ -152,11 +168,11 @@ fn create_rays_system(
     }
 }
 
-fn calc_intersections_system(
+fn calc_intersections_system<T: Component + Default> (
     meshes: Res<Assets<Mesh>>,
     task_pool: Res<ComputeTaskPool>,
-    mut source_query: Query<&mut RayCastSource>,
-    castable_query: Query<(Entity, &Handle<Mesh>, &GlobalTransform), With<RayCastable>>
+    mut source_query: Query<&mut RayCastSource<T>>,
+    castable_query: Query<(Entity, &Handle<Mesh>, &GlobalTransform), With<RayCastable<T>>>
 ) {
     for mut source in source_query.iter_mut() {
         if let Some(ray) = &source.ray {
