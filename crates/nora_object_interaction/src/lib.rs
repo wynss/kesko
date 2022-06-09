@@ -27,7 +27,7 @@ enum InteractionSystems {
 pub struct InteractionPlugin<T>
 where T: Component + Default 
 {
-    _marker: PhantomData<T>
+    _phantom: PhantomData<fn() -> T>
 }
 impl<T> Plugin for InteractionPlugin<T> 
 where T: Component + Default
