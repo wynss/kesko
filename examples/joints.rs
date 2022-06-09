@@ -20,7 +20,6 @@ use kesko_core::{
     transform::get_world_transform,
     interaction::groups::GroupDynamic
 };
-
 use kesko_models::arena::spawn_arena;
 use kesko_plugins::CorePlugins;
 

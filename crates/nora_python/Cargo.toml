@@ -1,0 +1,15 @@
+[package]
+name = "nora_python"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "nora_python"
+crate-type = ["cdylib"]
+
+
+[dependencies]
+nora = { path= "../.." }
+nora_core = { path= "../nora_core" }
+pyo3 = { version = "0.16.5", features = ["extension-module"] }
+bevy = "0.7.0"
