@@ -24,7 +24,7 @@ pub enum RayCastSystems {
 #[derive(Default)]
 pub struct RayCastPlugin<T: Component> {
     debug: bool,
-    phantom: PhantomData<T>
+    _phantom: PhantomData<fn() -> T>
 }
 
 impl<T> RayCastPlugin<T> 
@@ -33,7 +33,7 @@ where T: Component
     pub fn with_debug() -> Self {
         Self {
             debug: true,
-            phantom: PhantomData
+            _phantom: PhantomData
         }
     }
 }
@@ -76,7 +76,7 @@ where T: Component + Default
     pub ray: Option<Ray>,
     pub ray_hit: Option<RayHit>,
     pub prev_ray_hit: Option<RayHit>,
-    _phantom: PhantomData<T>
+    _phantom: PhantomData<fn() -> T>
 }
 
 
@@ -117,7 +117,7 @@ where T: Component + Default
 /// Component that makes an entity visible to rays
 #[derive(Component, Default)]
 pub struct RayCastable<T> {
-    _marker: PhantomData<T>
+    _marker: PhantomData<fn() -> T>
 }
 
 
