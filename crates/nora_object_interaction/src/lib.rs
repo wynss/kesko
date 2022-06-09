@@ -44,7 +44,7 @@ where T: Component + Default
                         .label(InteractionSystems::UpdateInteractions)
                         .after(RayCastSystems::CalcIntersections)
                     )
-                    .with_system(event::send_events
+                    .with_system(event::send_events::<T>
                         .label(InteractionSystems::SendEvents)
                         .after(InteractionSystems::UpdateInteractions))
                     .with_system(
@@ -59,8 +59,8 @@ where T: Component + Default
 pub struct InteractiveBundle<T: Component + Default> {
     material: OriginalMaterial,
     ray_castable: RayCastable::<T>,
-    drag: Drag,
-    hover: Hover
+    drag: Drag<T>,
+    hover: Hover<T>
 }
 
 #[derive(Bundle)]

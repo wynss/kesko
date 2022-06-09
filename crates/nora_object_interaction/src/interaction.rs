@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use bevy::prelude::*;
 use bevy::input::mouse::MouseMotion;
 use nora_raycast::RayCastSource;
@@ -9,21 +11,23 @@ pub(crate) struct DraggingGlobal {
 }
 
 #[derive(Component, Default)]
-pub(crate) struct Drag {
-    pub(crate) dragged: bool
+pub(crate) struct Drag<T: Component + Default> {
+    pub(crate) dragged: bool,
+    _phantom: PhantomData<fn() -> T>
 }
 
 #[derive(Component, Default)]
-pub(crate) struct Hover {
-    pub(crate) hovered: bool
+pub(crate) struct Hover<T: Component + Default> {
+    pub(crate) hovered: bool,
+    _phantom: PhantomData<fn() -> T>
 }
 
 pub(crate) fn update_interactions<T: Component + Default>(
     mut motion_evr: EventReader<MouseMotion>,
     mouse_button_input: Res<Input<MouseButton>>,
     source_query: Query<&RayCastSource<T>, With<Camera>>,
-    mut dragging_global: Local<DraggingGlobal>,
-    mut interaction_query: Query<(Entity, &mut Drag, &mut Hover)>,
+    mut dragging_global: ResMut<DraggingGlobal>,
+    mut interaction_query: Query<(Entity, &mut Drag<T>, &mut Hover<T>)>,
 ) {
 
     let mouse_pressed = mouse_button_input.pressed(MouseButton::Left);
