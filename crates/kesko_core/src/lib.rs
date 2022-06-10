@@ -5,6 +5,7 @@ pub mod shape;
 pub mod transform;
 pub mod interaction;
 pub mod controller;
+pub mod event;
 
 use bevy::prelude::*;
 
