@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 use bevy::diagnostic::LogDiagnosticsPlugin;
-use nora_core::plugins::CorePlugins;
-use nora_tcp::TCPPlugin;
-use nora_lib::test_scene;
+use kesko_plugins::CorePlugins;
+use kesko_tcp::TCPPlugin;
 
 
 fn main() {
@@ -11,6 +10,5 @@ fn main() {
         .add_plugins(CorePlugins)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(TCPPlugin)
-        .add_startup_system(test_scene)
         .run();
 }
