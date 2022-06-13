@@ -33,6 +33,9 @@ impl RayIntersection {
 }
 
 /// Checks if ray intersects with a specific Aabb
+/// NOTE: The function cann not handle when the ray is lying on any of the faces of the box. Then false will always be returned
+/// 
+/// Check https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection for technicals 
 pub(crate) fn aabb_intersection(ray: &Ray, aabb: &Aabb, mesh_to_world: &Mat4) -> bool {
 
     let world_to_mesh = mesh_to_world.inverse();
