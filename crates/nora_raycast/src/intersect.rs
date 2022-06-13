@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
+use bevy::render::primitives::Aabb;
 
 use crate::Ray;
 use crate::triangle::Triangle;
@@ -29,6 +30,45 @@ impl RayIntersection {
             distance: ray_origin.distance(point_transformed)
         }
     }
+}
+
+/// Checks if ray intersects with a specific Aabb
+pub(crate) fn aabb_intersection(ray: &Ray, aabb: &Aabb, mesh_to_world: &Mat4) -> bool {
+
+    let world_to_mesh = mesh_to_world.inverse();
+    let ray_mesh = ray.transform(&world_to_mesh);
+
+    let t_0: Vec3 = (Vec3::from(aabb.min()) - ray_mesh.origin) / ray_mesh.direction;
+    let t_1: Vec3 = (Vec3::from(aabb.max()) - ray_mesh.origin) / ray_mesh.direction;
+
+    let t_min: Vec3 = t_0.min(t_1);
+    let t_max: Vec3 = t_0.max(t_1);
+
+    if t_min.x > t_max.y || t_min.y > t_max.x {
+        return false;
+    }
+
+    let mut near = { if t_min.x > t_min.y { t_min.x } else { t_min.y }};
+    let mut far = {if t_max.x < t_max.y { t_max.x } else { t_max.y }};
+
+    if near > t_max.z || t_min.z > far {
+        return false;
+    }
+
+    if t_max.z < far {
+        far = t_max.z;
+    }
+
+    if t_min.z > near {
+        near = t_min.z;
+    }
+
+    if near < 0.0 && far < 0.0 {
+        // aabb behind the ray
+        return false;
+    }
+
+    true
 }
 
 /// Checks if a ray intersects a Mesh, if so the closest point of intersection is returned
@@ -178,6 +218,7 @@ fn triangle_intersect(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Optio
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bevy::math::Vec3A;
 
     // Triangle that lies in the XY-plane with Y=5
     const V0: [f32; 3] = [1.0, 5.0, -1.0];
@@ -247,5 +288,39 @@ mod tests {
 
         let intersection = triangle_intersect(&triangle, &normals, &ray);
         assert!(intersection.is_none());
+    }
+
+    #[test]
+    fn test_aabb_intersection() {
+        
+        // unit cube
+        let aabb = Aabb {center: Vec3A::ZERO, half_extents: 0.5*Vec3A::ONE};
+        
+        // identity transform
+        let world_to_mesh = Mat4::IDENTITY;
+
+        // should intersect
+        let ray = Ray::new(Vec3::new(2.0, 0.0, 0.0), -Vec3::X);
+        assert!(aabb_intersection(&ray, &aabb, &world_to_mesh));
+        
+        // cube behind ray
+        let ray = Ray::new(Vec3::new(2.0, 0.0, 0.0), Vec3::X);
+        assert!(!aabb_intersection(&ray, &aabb, &world_to_mesh));
+
+        // ray beside the cube +Z
+        let ray = Ray::new(Vec3::new(2.0, 0.0, 2.0), -Vec3::X);
+        assert!(!aabb_intersection(&ray, &aabb, &world_to_mesh));
+
+        // ray beside the cube -Z
+        let ray = Ray::new(Vec3::new(2.0, 0.0, -2.0), -Vec3::X);
+        assert!(!aabb_intersection(&ray, &aabb, &world_to_mesh));
+
+        // ray beside the cube +Y
+        let ray = Ray::new(Vec3::new(2.0, 2.0, 0.0), -Vec3::X);
+        assert!(!aabb_intersection(&ray, &aabb, &world_to_mesh));
+
+        // ray beside the cube -Y
+        let ray = Ray::new(Vec3::new(2.0, -2.0, 0.0), -Vec3::X);
+        assert!(!aabb_intersection(&ray, &aabb, &world_to_mesh));
     }
 }

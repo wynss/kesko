@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
-use nora_raycast::{RayCastPlugin, RayCastSource, RayCastMethod, RayCastable};
+use nora_raycast::{RayCastPlugin, RayCastSource, RayCastMethod, RayVisible};
 
 
 #[derive(Component, Default)]
@@ -31,7 +31,7 @@ fn setup(
         material: materials.add(Color::GOLD.into()),
         transform: Transform::from_xyz(0.0, 0.0, -3.0),
         ..Default::default()
-    }).insert(RayCastable::<RayCastGroup>::default());
+    }).insert(RayVisible::<RayCastGroup>::default());
 
     // camera that can cast rays from screen space
     let camera_pos = Vec3::new(0.0, 0.0, 5.0);
