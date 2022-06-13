@@ -6,7 +6,7 @@ mod interaction;
 use std::marker::PhantomData;
 
 use bevy::prelude::*;
-use nora_raycast::{RayCastSource, RayCastSystems, RayCastable, RayCastPlugin};
+use nora_raycast::{RayCastSource, RayCastSystems, RayVisible, RayCastPlugin};
 use crate::{
     interaction::{
         DraggingGlobal, update_interactions,
@@ -58,7 +58,7 @@ where T: Component + Default
 #[derive(Bundle, Default)]
 pub struct InteractiveBundle<T: Component + Default> {
     material: OriginalMaterial,
-    ray_castable: RayCastable::<T>,
+    ray_castable: RayVisible::<T>,
     drag: Drag<T>,
     hover: Hover<T>
 }

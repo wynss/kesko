@@ -17,7 +17,7 @@ use nora_core::{
     interaction::groups::{GroupStatic, GroupDynamic}
 };
 use nora_object_interaction::InteractiveBundle;
-use nora_raycast::RayCastable;
+use nora_raycast::RayVisible;
 
 
 pub fn arena(
@@ -39,7 +39,7 @@ pub fn arena(
         material.clone(),
         Transform::from_xyz(0.0, -0.25, 0.0),
         meshes
-    )).insert(RayCastable::<GroupStatic>::default());
+    )).insert(RayVisible::<GroupStatic>::default());
 
     // right wall
     commands.spawn_bundle(PhysicBodyBundle::from(
@@ -48,7 +48,7 @@ pub fn arena(
         material.clone(),
         Transform::from_xyz(-(width / 2.0 + half_wall_width), wall_height / 2.0, 0.0),
         meshes
-    )).insert(RayCastable::<GroupStatic>::default());
+    )).insert(RayVisible::<GroupStatic>::default());
 
     // left wall
     commands.spawn_bundle(PhysicBodyBundle::from(
@@ -57,7 +57,7 @@ pub fn arena(
         material.clone(),
         Transform::from_xyz(width / 2.0 + half_wall_width, wall_height / 2.0, 0.0),
         meshes
-    )).insert(RayCastable::<GroupStatic>::default());
+    )).insert(RayVisible::<GroupStatic>::default());
 
     // back wall
     commands.spawn_bundle(PhysicBodyBundle::from(
@@ -66,7 +66,7 @@ pub fn arena(
         material.clone(),
         Transform::from_xyz(0.0, wall_height / 2.0, -(width / 2.0 + half_wall_width)),
         meshes
-    )).insert(RayCastable::<GroupStatic>::default());
+    )).insert(RayVisible::<GroupStatic>::default());
 
     // front wall
     commands.spawn_bundle(PhysicBodyBundle::from(
@@ -75,7 +75,7 @@ pub fn arena(
         material.clone(),
         Transform::from_xyz(0.0, wall_height / 2.0, width / 2.0 + half_wall_width),
         meshes
-    )).insert(RayCastable::<GroupStatic>::default());
+    )).insert(RayVisible::<GroupStatic>::default());
 }
 
 pub fn spawn_spider(

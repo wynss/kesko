@@ -7,11 +7,13 @@ pub(crate) mod triangle;
 pub(crate) mod convert;
 
 use std::{sync::{Arc, Mutex}, marker::PhantomData};
+
 use bevy::prelude::*;
 use bevy::tasks::ComputeTaskPool;
+use bevy::render::primitives::Aabb;
 
 use ray::Ray;
-use intersect::{RayHit, mesh_intersection};
+use intersect::{RayHit, mesh_intersection, aabb_intersection};
 
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
@@ -46,7 +48,8 @@ where T: Component + Default
         app.add_system_set_to_stage(
             CoreStage::First,
             SystemSet::new()
-                .with_system(create_rays_system::<T>.label(RayCastSystems::CreateRays))
+                .with_system(create_rays_system::<T>
+                    .label(RayCastSystems::CreateRays))
                 .with_system(calc_intersections_system::<T>
                     .label(RayCastSystems::CalcIntersections)
                     .after(RayCastSystems::CreateRays)
@@ -116,7 +119,7 @@ where T: Component + Default
 
 /// Component that makes an entity visible to rays
 #[derive(Component, Default)]
-pub struct RayCastable<T> {
+pub struct RayVisible<T> {
     _marker: PhantomData<fn() -> T>
 }
 
@@ -168,30 +171,62 @@ fn create_rays_system<T: Component + Default>(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn calc_intersections_system<T: Component + Default> (
     meshes: Res<Assets<Mesh>>,
     task_pool: Res<ComputeTaskPool>,
+    culling_query: Query<(Entity, Option<&Aabb>, &Visibility, &ComputedVisibility, &GlobalTransform), With<RayVisible<T>>>,
     mut source_query: Query<&mut RayCastSource<T>>,
-    castable_query: Query<(Entity, &Handle<Mesh>, &GlobalTransform), With<RayCastable<T>>>
+    visible_query: Query<(Entity, &Handle<Mesh>, &GlobalTransform), With<RayVisible<T>>>
 ) {
+
+
     for mut source in source_query.iter_mut() {
+
         if let Some(ray) = &source.ray {
+
+            // first test intersection for the entities that has a aabb
+            let culled_entities = culling_query.iter().filter_map(
+                |(entity, aabb, visibility, computed_visibility, transform)| {
+
+                    // check visibility, both user defined and computed
+                    match source.method {
+                        RayCastMethod::ScreenSpace => {
+                            if !visibility.is_visible && !computed_visibility.is_visible { return None }
+                        },
+                        _ => {
+                            if !visibility.is_visible { return None }
+                        }
+                    }
+
+                    let mesh_to_world = transform.compute_matrix();
+                    match aabb {
+                        Some(aabb) => {
+                            if aabb_intersection(ray, aabb, &mesh_to_world) { Some(entity) }
+                            else { None }
+                        },
+                        None => Some(entity)
+                    }
+            }).collect::<Vec<Entity>>();
 
             let ray_hits = Arc::new(Mutex::new(Vec::new()));
 
-            castable_query.par_for_each(&task_pool, num_cpus::get(), | (entity, mesh_handle, transform) | {
-                
-                if let Some(mesh) = meshes.get(mesh_handle) {
-                    let mesh_to_world = transform.compute_matrix();
-                    if let Some(intersection) = mesh_intersection(mesh, ray, &mesh_to_world) {
-                        ray_hits.lock().unwrap().push(RayHit{
-                            entity,
-                            intersection
-                        });
+            visible_query.par_for_each(
+                &task_pool, num_cpus::get(), 
+                | (entity, mesh_handle, transform) | {
+                    if culled_entities.contains(&entity) {
+                        if let Some(mesh) = meshes.get(mesh_handle) {
+                            let mesh_to_world = transform.compute_matrix();
+                            if let Some(intersection) = mesh_intersection(mesh, ray, &mesh_to_world) {
+                                ray_hits.lock().unwrap().push(RayHit{
+                                    entity,
+                                    intersection
+                                });
+                            }
+                        } else {
+                            error!("No mesh for mesh handle");
+                        }
                     }
-                } else {
-                    error!("No mesh for mesh handle");
-                }
             });
 
             // todo: improve this
