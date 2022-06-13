@@ -4,6 +4,7 @@ pub mod gravity;
 pub mod impulse;
 pub mod mass;
 pub mod joint;
+pub mod event;
 mod conversions;
 
 use bevy::prelude::*;
@@ -59,6 +60,7 @@ impl Plugin for PhysicsPlugin {
             .init_resource::<rapier::ImpulseJointSet>()
             .init_resource::<rapier::MultibodyJointSet>()
             .init_resource::<rapier::CCDSolver>()
+            .add_event::<event::CollisionEvent>()
             .insert_resource(Gravity::new(self.gravity))
             .add_system_set_to_stage(
                 CoreStage::PostUpdate,
