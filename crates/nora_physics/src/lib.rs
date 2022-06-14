@@ -4,6 +4,7 @@ pub mod gravity;
 pub mod impulse;
 pub mod mass;
 pub mod joint;
+pub mod event;
 mod conversions;
 
 use bevy::prelude::*;
@@ -12,6 +13,8 @@ use rapier3d::prelude as rapier;
 
 use conversions::{IntoRapier, IntoBevy};
 use gravity::Gravity;
+use event::send_collision_events_system;
+
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
 pub enum PhysicsSystem {
@@ -21,7 +24,8 @@ pub enum PhysicsSystem {
     UpdateImpulse,
     UpdateGravityScale,
     PipelineStep,
-    UpdateBevyWorld
+    UpdateBevyWorld,
+    SendCollisionEvents
 }
 
 pub struct PhysicsPlugin {
@@ -59,7 +63,12 @@ impl Plugin for PhysicsPlugin {
             .init_resource::<rapier::ImpulseJointSet>()
             .init_resource::<rapier::MultibodyJointSet>()
             .init_resource::<rapier::CCDSolver>()
+
+            .insert_resource(event::CollisionEventHandler::new())
+            .add_event::<event::CollisionEvent>()
+
             .insert_resource(Gravity::new(self.gravity))
+            
             .add_system_set_to_stage(
                 CoreStage::PostUpdate,
                 SystemSet::new()
@@ -96,6 +105,11 @@ impl Plugin for PhysicsPlugin {
                             .label(PhysicsSystem::UpdateBevyWorld)
                             .after(PhysicsSystem::PipelineStep)
                     )
+                    .with_system(
+                        send_collision_events_system
+                            .label(PhysicsSystem::SendCollisionEvents)
+                            .after(PhysicsSystem::PipelineStep)
+                    )
             );
     }
 }
@@ -113,6 +127,7 @@ fn physics_pipeline_step(
     mut impulse_joints: ResMut<rapier::ImpulseJointSet>,
     mut multibody_joints: ResMut<rapier::MultibodyJointSet>,
     mut ccd_solver: ResMut<rapier::CCDSolver>,
+    collision_event_handler: Res<event::CollisionEventHandler>
 ) {
 
     let gravity = gravity.get().into_rapier();
@@ -129,7 +144,7 @@ fn physics_pipeline_step(
         &mut multibody_joints,
         &mut ccd_solver,
         &(),
-        &()
+        &*collision_event_handler
     );
 }
 
