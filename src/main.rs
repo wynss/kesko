@@ -16,7 +16,6 @@ use nora_physics::{
 use nora_object_interaction::InteractiveBundle;
 
 
-#[bevy_main]
 fn main() {
     App::new()
     .add_plugins(DefaultPlugins)
