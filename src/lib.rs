@@ -1,8 +1,21 @@
 pub mod models;
 
 use bevy::prelude::*;
-use nora_core::plugins::CorePlugins;
-use nora_core::diagnostic::event::DebugEventPlugin;
+use nora_object_interaction::{
+    InteractiveBundle,
+};
+use nora_physics::{
+    rigid_body::RigidBody, 
+    collider::ColliderShape, 
+    impulse::Impulse, 
+    gravity::GravityScale,
+    event::GenerateCollisionEvents
+};
+use nora_core::{
+    plugins::CorePlugins,
+    diagnostic::event::DebugEventPlugin,
+    interaction::groups::GroupDynamic
+};
 
 
 pub fn start() {
@@ -49,6 +62,21 @@ fn test_scene(
         Transform::from_xyz(0.0, 1.0, 0.0),
         &mut meshes
     );
+
+    // spawn sphere that will generate collision events
+    commands.spawn_bundle(PbrBundle {
+        material: materials.add(Color::VIOLET.into()),
+        mesh: meshes.add(Mesh::from(shape::Icosphere {radius: 0.5, subdivisions: 5})),
+        transform: Transform::from_translation(Vec3::new(0.0, 1.0, 2.0)),
+        ..default()
+    })
+    .insert(RigidBody::Dynamic)
+    .insert(ColliderShape::Sphere { radius: 0.5 })
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(Impulse::default())
+    .insert(GravityScale::default())
+    .insert(GenerateCollisionEvents);
+
 
     // Light
     commands.spawn_bundle(DirectionalLightBundle {

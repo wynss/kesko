@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 use rapier3d::prelude as rapier;
 use fnv::FnvHashMap;
-use rapier3d::prelude::ColliderBuilder;
 
 use super::rigid_body::RigidBodyHandle;
-use crate::mass::Mass;
+use crate::{mass::Mass, event::GenerateCollisionEvents};
 
 
 pub type EntityColliderMap = FnvHashMap<Entity, rapier::ColliderHandle>;
@@ -67,11 +66,17 @@ pub(crate) fn add_collider_to_bodies_system(
     mut entity_collider_map: ResMut<EntityColliderMap>,
     mut collider_set: ResMut<rapier::ColliderSet>,
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
-    query: Query<(Entity, &ColliderShape, &RigidBodyHandle, Option<&ColliderPhysicalProperties>), Without<ColliderHandle>>
+    query: Query<(
+        Entity, 
+        &ColliderShape, 
+        &RigidBodyHandle, 
+        Option<&ColliderPhysicalProperties>, 
+        Option<&GenerateCollisionEvents>), 
+        Without<ColliderHandle>>
 ) {
-    for (entity, collider_shape, rigid_body_handle, material) in query.iter() {
+    for (entity, collider_shape, rigid_body_handle, physical_props, gen_events) in query.iter() {
 
-        let collider_builder = match collider_shape {
+        let mut collider_builder = match collider_shape {
             ColliderShape::Cuboid {x_half, y_half, z_half} => {
                 rapier::ColliderBuilder::cuboid(*x_half, *y_half, *z_half)
             },
@@ -79,31 +84,35 @@ pub(crate) fn add_collider_to_bodies_system(
                 rapier::ColliderBuilder::ball(*radius)
             },
             ColliderShape::CapsuleX { half_length: half_height, radius} => {
-                ColliderBuilder::capsule_x(*half_height, *radius)
+                rapier::ColliderBuilder::capsule_x(*half_height, *radius)
             },
             ColliderShape::CapsuleY { half_length: half_height, radius} => {
-                ColliderBuilder::capsule_y(*half_height, *radius)
+                rapier::ColliderBuilder::capsule_y(*half_height, *radius)
             },
             ColliderShape::CapsuleZ { half_length: half_height, radius} => {
-                ColliderBuilder::capsule_z(*half_height, *radius)
+                rapier::ColliderBuilder::capsule_z(*half_height, *radius)
             },
             ColliderShape::Cylinder {radius, length} => {
-                ColliderBuilder::cylinder(length / 2.0, *radius)
+                rapier::ColliderBuilder::cylinder(length / 2.0, *radius)
             }
         };
 
-        let collider = if let Some(material) = material {
-            collider_builder
-                .density(material.density)
-                .friction(material.friction)
-                .restitution(material.restitution)
-                .build()
-        } else {
-            collider_builder.build()
-        };
+        if let Some(physical_props) = physical_props {
+            collider_builder = collider_builder
+            .density(physical_props.density)
+            .friction(physical_props.friction)
+            .restitution(physical_props.restitution);
+        }
+
+        if gen_events.is_some() {
+            collider_builder = collider_builder.active_events(rapier::ActiveEvents::COLLISION_EVENTS);
+        }
+
+        // store entity as user data
+        collider_builder = collider_builder.user_data(entity.to_bits().into());
 
         let collider_handle = collider_set.insert_with_parent(
-            collider,
+            collider_builder.build(),
             rigid_body_handle.0,
             &mut rigid_body_set
         );
