@@ -16,12 +16,10 @@ edition = "2021"
 name = "nora_lib"
 path = "src/lib.rs"
 
-[dependencies.bevy]
-version = "0.7.0"
-
 [dependencies]
+bevy = "0.7.0"
+bevy_egui = "0.14.0"
 nora_physics = { version = "0.1.0", path = "crates/nora_physics" }
 nora_core = { version = "0.1.0", path = "crates/nora_core" }
 nora_object_interaction = { version = "0.1.0", path = "crates/nora_object_interaction"}
 nora_raycast = { version = "0.1.0", path = "crates/nora_raycast"}
-bevy_egui = "0.14.0"
