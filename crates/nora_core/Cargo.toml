@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.7.0"
-bevy_egui = "0.13.0"
+bevy_egui = "0.14.0"
 nora_physics = { version = "0.1.0", path = "../nora_physics" }
 nora_object_interaction = { path = "../nora_object_interaction"}
 nora_raycast = { path = "../nora_raycast"}

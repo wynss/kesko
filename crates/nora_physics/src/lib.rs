@@ -18,14 +18,20 @@ use event::send_collision_events_system;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
 pub enum PhysicsSystem {
+
     AddRigidBodies,
     AddJoints,
     AddColliders,
+    
     UpdateImpulse,
     UpdateGravityScale,
+    UpdateJointMotors,
+    
     PipelineStep,
+
+    SendCollisionEvents,
+    
     UpdateBevyWorld,
-    SendCollisionEvents
 }
 
 pub struct PhysicsPlugin {
@@ -68,6 +74,8 @@ impl Plugin for PhysicsPlugin {
             .add_event::<event::CollisionEvent>()
 
             .insert_resource(Gravity::new(self.gravity))
+
+            .add_event::<joint::JointEvent>()
             
             .add_system_set_to_stage(
                 CoreStage::PostUpdate,
@@ -95,19 +103,23 @@ impl Plugin for PhysicsPlugin {
                         .label(PhysicsSystem::UpdateGravityScale)
                         .after(PhysicsSystem::AddColliders)
                     )
+                    .with_system(joint::update_joint_motors_system
+                        .label(PhysicsSystem::UpdateJointMotors)
+                        .after(PhysicsSystem::AddColliders)
+                    )
                     .with_system(
                         physics_pipeline_step
                             .label(PhysicsSystem::PipelineStep)
                             .after(PhysicsSystem::UpdateImpulse)
                     )
                     .with_system(
-                        update_bevy_world
-                            .label(PhysicsSystem::UpdateBevyWorld)
+                        send_collision_events_system
+                            .label(PhysicsSystem::SendCollisionEvents)
                             .after(PhysicsSystem::PipelineStep)
                     )
                     .with_system(
-                        send_collision_events_system
-                            .label(PhysicsSystem::SendCollisionEvents)
+                        update_bevy_world
+                            .label(PhysicsSystem::UpdateBevyWorld)
                             .after(PhysicsSystem::PipelineStep)
                     )
             );
