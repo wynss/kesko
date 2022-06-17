@@ -2,7 +2,11 @@ use bevy::prelude::*;
 use rapier3d::prelude as rapier;
 use fnv::FnvHashMap;
 
-use crate::conversions::IntoRapier;
+use crate::{
+    conversions::IntoRapier, 
+    mass::Mass, 
+    gravity::GravityScale
+};
 
 
 pub type EntityBodyHandleMap = FnvHashMap<Entity, rapier::RigidBodyHandle>;
@@ -21,15 +25,23 @@ pub(crate) fn add_rigid_bodies_system(
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
     mut entity_body_map: ResMut<EntityBodyHandleMap>,
     mut commands: Commands,
-    query: Query<(Entity, &RigidBody, &Transform), Without<RigidBodyHandle>>
+    query: Query<(Entity, &RigidBody, &Transform, Option<&Mass>, Option<&GravityScale>), Without<RigidBodyHandle>>
 ) {
 
-    for (entity, rigid_body_comp, transform) in query.iter() {
+    for (entity, rigid_body_comp, transform, mass, gravity_scale) in query.iter() {
 
-        let rigid_body_builder = match rigid_body_comp {
+        let mut rigid_body_builder = match rigid_body_comp {
             RigidBody::Fixed => rapier::RigidBodyBuilder::fixed(),
             RigidBody::Dynamic => rapier::RigidBodyBuilder::dynamic()
         };
+
+        if let Some(mass) = mass {
+            rigid_body_builder = rigid_body_builder.additional_mass(mass.val);
+        }
+        
+        if let Some(gravity_scale) = gravity_scale {
+            rigid_body_builder = rigid_body_builder.gravity_scale(gravity_scale.val);
+        }
 
         let rigid_body = rigid_body_builder
             .position((transform.translation, transform.rotation).into_rapier())
