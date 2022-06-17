@@ -3,12 +3,22 @@ use rapier3d::prelude::{GenericJoint, RevoluteJointBuilder};
 use crate::conversions::IntoRapier;
 
 
-#[derive(Default)]
 pub struct RevoluteJoint {
     pub parent_anchor: Transform,
     pub child_anchor: Transform,
     pub axis: Vec3,
     pub limits: Option<Vec2>
+}
+
+impl Default for RevoluteJoint {
+    fn default() -> Self {
+        Self { 
+            parent_anchor: Transform::default(), 
+            child_anchor: Transform::default(), 
+            axis: Vec3::X, 
+            limits: None 
+        }
+    }
 }
 
 impl From<RevoluteJoint> for GenericJoint {
@@ -32,7 +42,9 @@ impl From<RevoluteJoint> for GenericJoint {
 
 #[cfg(test)]
 mod tests {
-    use bevy::math::Vec2;
+    use std::f32::consts::FRAC_PI_2;
+
+    use bevy::math::{Vec2, Quat};
     use bevy::prelude::{Transform, Vec3};
     use rapier3d::dynamics::JointAxis;
     use rapier3d::prelude::GenericJoint;
@@ -48,14 +60,15 @@ mod tests {
         let fixed_joint = RevoluteJoint {
             parent_anchor: expected_parent_transform,
             child_anchor: expected_child_transform,
+            axis: Vec3::X,
             ..default()
         };
 
         let generic: GenericJoint = fixed_joint.into();
 
         assert!(generic.as_revolute().is_some());
-        assert_eq!(generic.local_frame1, expected_parent_transform.into_rapier());
-        assert_eq!(generic.local_frame2, expected_child_transform.into_rapier());
+        assert_eq!(generic.local_anchor1(), expected_parent_transform.translation.into_rapier());
+        assert_eq!(generic.local_anchor2(), expected_child_transform.translation.into_rapier());
     }
 
     #[test]
@@ -85,9 +98,6 @@ mod tests {
         let joint = RevoluteJoint::default();
 
         let generic: GenericJoint = joint.into();
-
-        assert_eq!(generic.local_frame1, Transform::default().into_rapier());
-        assert_eq!(generic.local_frame2, Transform::default().into_rapier());
 
         assert!(generic.limits(JointAxis::AngX).is_none());
         assert!(generic.limits(JointAxis::AngY).is_none());
