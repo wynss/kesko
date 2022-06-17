@@ -46,7 +46,7 @@ pub(crate) fn update_tracking_system<T: Component + Default>(
             }
         } else if let InteractionEvent::DragStopped(entity) = event {
             if let Ok((mut gravity_scale, _)) = entity_query.get_mut(*entity) {
-                gravity_scale.val = 1.0;
+                gravity_scale.reset();
             }
             commands.entity(*entity).remove::<CursorTrack>();
         }

@@ -22,12 +22,23 @@ impl Default for Gravity {
 
 #[derive(Component)]
 pub struct GravityScale {
-    pub val: f32
+    pub val: f32,
+    pub initial_val: f32
 }
 
 impl Default for GravityScale {
     fn default() -> Self {
-        GravityScale { val: 1.0 }
+        GravityScale { val: 1.0 , initial_val: 1.0}
+    }
+}
+
+impl GravityScale {
+    pub fn new(val: f32) -> Self {
+        Self { val, initial_val: val }
+    }
+
+    pub fn reset(&mut self) {
+        self.val = self.initial_val;
     }
 }
 
