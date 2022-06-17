@@ -13,16 +13,19 @@ pub struct RevoluteJoint {
 
 impl From<RevoluteJoint> for GenericJoint {
     fn from(joint: RevoluteJoint) -> GenericJoint {
-        let mut builder = RevoluteJointBuilder::new(joint.axis.into_rapier());
+        
+        let mut builder = RevoluteJointBuilder::new(joint.axis.into_rapier())
+            .local_anchor1(joint.parent_anchor.translation.into_rapier())
+            .local_anchor2(joint.child_anchor.translation.into_rapier());
 
         if let Some(limits) = joint.limits {
             builder = builder.limits(limits.into());
         }
 
         let mut generic: GenericJoint = builder.into();
-        *generic
-            .set_local_frame1(joint.parent_anchor.into_rapier())
-            .set_local_frame2(joint.child_anchor.into_rapier())
+        generic.local_frame1.rotation = joint.parent_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
+        generic.local_frame2.rotation = joint.child_anchor.rotation.into_rapier() * generic.local_frame2.rotation;
+        generic
     }
 }
 
