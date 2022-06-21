@@ -1,10 +1,12 @@
 use bevy::prelude::*;
+
 use nora_object_interaction::event::InteractionEvent;
 use nora_physics::gravity::GravityScale;
 use nora_physics::impulse::Impulse;
 use nora_physics::mass::Mass;
 use nora_raycast::RayCastSource;
 use crate::orbit_camera::PanOrbitCamera;
+use crate::controller::{PID, Controller};
 
 /// P and D constants for the PD-controller
 const P: f32 = 1.3;
@@ -12,14 +14,14 @@ const D: f32 = 0.30;
 
 /// Component that will keep track of quantities of object cursor tracking. The object tracking the cursor
 /// will move on the plane perpendicular to the camera direction
-#[derive(Component, Default)]
+#[derive(Component)]
 pub(crate) struct CursorTrack {
     /// Point on the plane where the object will move
     plane_point: Vec3,
     /// Normal of the plane
     plane_normal: Vec3,
-    /// Previous applied impulse vector
-    prev_impulse: Option<Vec3>
+    /// PID controller
+    controller: PID<Vec3>
 }
 
 /// Updates the object that should track the cursor and when it should stop
@@ -69,12 +71,8 @@ pub(crate) fn update_tracking_controller_system<T: Component + Default>(
 
                 let impulse_vec: Vec3 = plane_intersection - transform.translation;
 
-                if let Some(prev_impulse) = track.prev_impulse {
-                    impulse.vec = (P * impulse_vec + D * (impulse_vec - prev_impulse) * 60.0) * mass.val;
-                }
-
+                impulse.vec = track.controller.act(impulse_vec) * mass.val;
                 track.plane_normal = plane_normal;
-                track.prev_impulse = Some(impulse_vec);
             }
         }
     }
@@ -82,7 +80,8 @@ pub(crate) fn update_tracking_controller_system<T: Component + Default>(
 
 fn create_track_comp(camera_view_transform: &Mat4, object_translation: &Vec3) -> CursorTrack {
     let plane_normal = camera_view_transform.transform_vector3(Vec3::Z).normalize();
-    CursorTrack { plane_point: *object_translation, plane_normal, prev_impulse: None}
+    let pid = PID::<Vec3>::new(P, 0.0, D);
+    CursorTrack { plane_point: *object_translation, plane_normal, controller: pid}
 }
 
 
@@ -104,6 +103,6 @@ mod tests {
 
         assert_eq!(res.plane_point, object_translation);
         assert_eq!(res.plane_normal, Vec3::Z);
-        assert!(res.prev_impulse.is_none());
+        assert!(res.controller.prev_val.is_none());
     }
 }

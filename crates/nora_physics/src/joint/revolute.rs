@@ -42,9 +42,8 @@ impl From<RevoluteJoint> for GenericJoint {
 
 #[cfg(test)]
 mod tests {
-    use std::f32::consts::FRAC_PI_2;
 
-    use bevy::math::{Vec2, Quat};
+    use bevy::math::Vec2;
     use bevy::prelude::{Transform, Vec3};
     use rapier3d::dynamics::JointAxis;
     use rapier3d::prelude::GenericJoint;

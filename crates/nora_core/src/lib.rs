@@ -6,3 +6,4 @@ pub mod diagnostic;
 pub mod shape;
 pub mod transform;
 pub mod interaction;
+pub mod controller;
