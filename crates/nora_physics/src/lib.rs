@@ -1,6 +1,7 @@
 pub mod rigid_body;
 pub mod collider;
 pub mod gravity;
+pub mod force;
 pub mod impulse;
 pub mod mass;
 pub mod joint;
@@ -24,7 +25,9 @@ pub enum PhysicsSystem {
     AddColliders,
     
     UpdateImpulse,
+    UpdateForce,
     UpdateGravityScale,
+    UpdateMultibodyMass,
     UpdateJointMotors,
     
     PipelineStep,
@@ -86,7 +89,7 @@ impl Plugin for PhysicsPlugin {
                         .label(PhysicsSystem::AddRigidBodies)
                     )
                     .with_system(
-                        joint::add_joints_system
+                        joint::add_multibody_joints_system
                             .label(PhysicsSystem::AddJoints)
                             .after(PhysicsSystem::AddRigidBodies)
                     )
@@ -99,14 +102,23 @@ impl Plugin for PhysicsPlugin {
                             .label(PhysicsSystem::UpdateImpulse)
                             .after(PhysicsSystem::AddColliders)
                     )
+                    .with_system(
+                        force::update_force_system
+                            .label(PhysicsSystem::UpdateForce)
+                            .after(PhysicsSystem::AddColliders)
+                    )
                     .with_system(gravity::update_gravity_scale_system
                         .label(PhysicsSystem::UpdateGravityScale)
                         .after(PhysicsSystem::AddColliders)
                     )
-                    .with_system(joint::update_joint_motors_system
-                        .label(PhysicsSystem::UpdateJointMotors)
+                    .with_system(mass::update_multibody_mass_system
+                        .label(PhysicsSystem::UpdateMultibodyMass)
                         .after(PhysicsSystem::AddColliders)
                     )
+                    // .with_system(joint::update_joint_motors_system
+                    //     .label(PhysicsSystem::UpdateJointMotors)
+                    //     .after(PhysicsSystem::AddColliders)
+                    // )
                     .with_system(
                         physics_pipeline_step
                             .label(PhysicsSystem::PipelineStep)

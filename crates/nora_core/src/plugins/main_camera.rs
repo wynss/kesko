@@ -20,7 +20,7 @@ impl Plugin for MainCameraPlugin {
 
 pub fn spawn_camera(mut commands: Commands) {
 
-    let camera_pos = Vec3::new(-2.0, 2.5, 5.0);
+    let camera_pos = Vec3::new(-8.0, 10.0, 20.0);
     let distance = camera_pos.length();
 
     let camera_transform = Transform::from_translation(camera_pos)
