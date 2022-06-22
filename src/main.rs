@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
 use nora_lib::models;
 use nora_core::{
@@ -8,7 +9,7 @@ use nora_core::{
 };
 use nora_physics::{
     rigid_body::RigidBody,
-    impulse::Impulse,
+    force::Force,
     gravity::GravityScale,
     collider::ColliderShape,
     event::GenerateCollisionEvents
@@ -20,6 +21,8 @@ fn main() {
     App::new()
     .add_plugins(DefaultPlugins)
     .add_plugins(CorePlugins)
+    .add_plugin(LogDiagnosticsPlugin::default())
+    .add_plugin(FrameTimeDiagnosticsPlugin)
     .add_plugin(DebugEventPlugin)
     .add_startup_system(test_scene)
     .run();
@@ -70,7 +73,7 @@ fn test_scene(
     .insert(RigidBody::Dynamic)
     .insert(ColliderShape::Sphere { radius: 0.5 })
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(Impulse::default())
+    .insert(Force::default())
     .insert(GravityScale::default())
     .insert(GenerateCollisionEvents);
 

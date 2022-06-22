@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use nora_physics::collider::{ColliderPhysicalProperties, ColliderShape};
+use nora_physics::force::Force;
 use nora_physics::gravity::GravityScale;
 use nora_physics::impulse::Impulse;
 use nora_physics::rigid_body::RigidBody;
@@ -14,6 +15,7 @@ pub struct PhysicBodyBundle {
     collider_shape: ColliderShape,
     collider_physical_properties: ColliderPhysicalProperties,
     impulse: Impulse,
+    force: Force,
     /// How much the entity will be affected by gravity
     gravity_scale: GravityScale,
 
@@ -71,6 +73,7 @@ impl PhysicBodyBundle {
             collider_shape,
             collider_physical_properties: ColliderPhysicalProperties::default(),
             impulse: Impulse::default(),
+            force: Force::default(),
             gravity_scale: GravityScale::default(),
 
             pbr_bundle: PbrBundle {
