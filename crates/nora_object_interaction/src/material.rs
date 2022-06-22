@@ -16,7 +16,7 @@ impl FromWorld for InteractionMaterials {
             .unwrap();
         Self {
             hovered: materials.add(Color::hex("81D4FA").unwrap().into()),
-            pressed: materials.add(Color::hex("FF7043").unwrap().into()),
+            pressed: materials.add(Color::hex("03A9F4").unwrap().into()),
         }
     }
 }
