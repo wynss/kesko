@@ -36,14 +36,14 @@ fn test_scene(
 
     models::arena::spawn_arena(
         &mut commands,
-        materials.add(Color::ALICE_BLUE.into()), 
+        materials.add(Color::hex("CFD8DC").unwrap().into()), 
         &mut meshes, 
-        10.0, 10.0, 1.0
+        20.0, 20.0, 1.0
     );
 
     models::car::spawn_car(
         &mut commands,
-        materials.add(Color::GOLD.into()),
+        materials.add(Color::hex("69F0AE").unwrap().into()),
         materials.add(Color::BLACK.into()),
         Transform::from_xyz(2.0, 1.0, 0.0),
         &mut meshes
@@ -51,21 +51,21 @@ fn test_scene(
 
     models::spider::spawn_spider(
         &mut commands,
-        materials.add(Color::ORANGE_RED.into()),
+        materials.add(Color::hex("FFD740").unwrap().into()),
         Transform::from_xyz(0.0, 1.0, 0.0),
         &mut meshes
     );
 
     models::snake::spawn_snake(
         &mut commands,
-        materials.add(Color::PINK.into()),
+        materials.add(Color::hex("FF4081").unwrap().into()),
         Transform::from_xyz(0.0, 1.0, 0.0),
         &mut meshes
     );
 
     // spawn sphere that will generate collision events
     commands.spawn_bundle(PbrBundle {
-        material: materials.add(Color::VIOLET.into()),
+        material: materials.add(Color::hex("FF4081").unwrap().into()),
         mesh: meshes.add(Mesh::from(shape::Icosphere {radius: 0.5, subdivisions: 5})),
         transform: Transform::from_translation(Vec3::new(0.0, 1.0, 2.0)),
         ..default()

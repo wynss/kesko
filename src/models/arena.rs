@@ -35,7 +35,7 @@ pub fn spawn_arena(
         RigidBody::Fixed,
         Shape::Box {x_length: wall_width, y_length: wall_height, z_length: length},
         material.clone(),
-        Transform::from_xyz(-(width / 2.0 + half_wall_width), wall_height / 2.0, 0.0),
+        Transform::from_xyz(half_wall_width - (width / 2.0), wall_height / 2.0, 0.0),
         meshes
     )).insert(RayVisible::<GroupStatic>::default());
 
@@ -44,7 +44,7 @@ pub fn spawn_arena(
         RigidBody::Fixed,
         Shape::Box {x_length: wall_width, y_length: wall_height, z_length: length},
         material.clone(),
-        Transform::from_xyz(width / 2.0 + half_wall_width, wall_height / 2.0, 0.0),
+        Transform::from_xyz(width / 2.0 - half_wall_width, wall_height / 2.0, 0.0),
         meshes
     )).insert(RayVisible::<GroupStatic>::default());
 
@@ -53,7 +53,7 @@ pub fn spawn_arena(
         RigidBody::Fixed,
         Shape::Box {x_length: length, y_length: wall_height, z_length: wall_width},
         material.clone(),
-        Transform::from_xyz(0.0, wall_height / 2.0, -(width / 2.0 + half_wall_width)),
+        Transform::from_xyz(0.0, wall_height / 2.0, half_wall_width - (width / 2.0)),
         meshes
     )).insert(RayVisible::<GroupStatic>::default());
 
@@ -62,7 +62,7 @@ pub fn spawn_arena(
         RigidBody::Fixed,
         Shape::Box {x_length: length, y_length: wall_height, z_length: wall_width},
         material.clone(),
-        Transform::from_xyz(0.0, wall_height / 2.0, width / 2.0 + half_wall_width),
+        Transform::from_xyz(0.0, wall_height / 2.0, width / 2.0 - half_wall_width),
         meshes
     )).insert(RayVisible::<GroupStatic>::default());
 }

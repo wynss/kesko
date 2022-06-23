@@ -20,7 +20,7 @@ pub(crate) fn handle_vertical_marker_spawning<T: Component + Default>(
                 commands.spawn_bundle( PbrBundle {
                     mesh: meshes.add(Mesh::from(shape::Box::new(1.0, 1.0, 1.0))),
                     material: materials.add(StandardMaterial {
-                        base_color: Color::rgba(1.0, 0.0, 0.0, 0.3),
+                        base_color: Color::rgba(1.0, 1.0, 1.0, 0.4),
                         unlit: true,
                         alpha_mode: AlphaMode::Blend,
                         ..default()
