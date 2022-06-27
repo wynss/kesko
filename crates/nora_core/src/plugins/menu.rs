@@ -81,7 +81,7 @@ fn update_menus(
             .default_width(200.0)
             .max_width(400.0)
             .show(egui_ctx.ctx_mut(), |ui| {
-                if ui.button("Load URDF").clicked() {}
+                ui.heading("Left Menu");
                 ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
             })
             .response

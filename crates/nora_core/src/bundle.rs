@@ -4,11 +4,10 @@ use nora_physics::collider::{ColliderPhysicalProperties, ColliderShape};
 use nora_physics::force::Force;
 use nora_physics::gravity::GravityScale;
 use nora_physics::impulse::Impulse;
-use nora_physics::rigid_body::RigidBody;
-use crate::shape::{Shape, Cylinder};
+use nora_physics::rigid_body::{RigidBody, CanSleep};
+use crate::shape::Shape;
 
 
-/// Component bundle for physic enabled Pbr entities
 #[derive(Bundle)]
 pub struct PhysicBodyBundle {
     rigid_body: RigidBody,
@@ -18,12 +17,49 @@ pub struct PhysicBodyBundle {
     force: Force,
     /// How much the entity will be affected by gravity
     gravity_scale: GravityScale,
+    can_sleep: CanSleep,
+
+    #[bundle]
+    transform_bundle: TransformBundle
+}
+
+impl PhysicBodyBundle {
+    pub fn from(
+        body_type: RigidBody,
+        shape: Shape,
+        transform: Transform,
+    ) -> Self {
+        Self {
+            rigid_body: body_type,
+            collider_shape: shape.into_collider_shape(),
+            collider_physical_properties: ColliderPhysicalProperties::default(),
+            impulse: Impulse::default(),
+            force: Force::default(),
+            gravity_scale: GravityScale::default(),
+            can_sleep: CanSleep(false),
+
+            transform_bundle: TransformBundle { local: transform, ..Default::default() }
+        }
+    }
+}
+
+/// Component bundle for physic enabled Pbr entities
+#[derive(Bundle)]
+pub struct MeshPhysicBodyBundle {
+    rigid_body: RigidBody,
+    collider_shape: ColliderShape,
+    collider_physical_properties: ColliderPhysicalProperties,
+    impulse: Impulse,
+    force: Force,
+    /// How much the entity will be affected by gravity
+    gravity_scale: GravityScale,
+    can_sleep: CanSleep,
 
     #[bundle]
     pbr_bundle: PbrBundle,
 }
 
-impl PhysicBodyBundle {
+impl MeshPhysicBodyBundle {
     pub fn from(
         body_type: RigidBody,
         shape: Shape,
@@ -32,41 +68,8 @@ impl PhysicBodyBundle {
         meshes: &mut Assets<Mesh>,
     ) -> Self {
 
-        let (mesh, collider_shape) = match shape {
-            Shape::Sphere{radius, subdivisions} => {
-                (Mesh::from(shape::Icosphere {radius, subdivisions}), ColliderShape::Sphere {radius})
-            },
-            Shape::Plane {size} => {
-                (
-                    Mesh::from(shape::Plane {size}),
-                    ColliderShape::Cuboid { x_half: size / 2.0, y_half: 0.0, z_half: size / 2.0}
-                )
-            },
-            Shape::Cube {size} => {
-                (
-                    Mesh::from(shape::Cube {size}),
-                    ColliderShape::Cuboid { x_half: size / 2.0, y_half: size / 2.0, z_half: size / 2.0}
-                )
-            },
-            Shape::Box {x_length, y_length, z_length} => {
-                (
-                    Mesh::from(shape::Box::new(x_length, y_length, z_length)),
-                    ColliderShape::Cuboid {x_half: x_length / 2.0, y_half: y_length / 2.0, z_half: z_length / 2.0}
-                )
-            },
-            Shape::Cylinder {radius, length} => {
-                (
-                    Mesh::from(Cylinder {radius, height: length, ..default()}),
-                    ColliderShape::Cylinder {radius, length}
-                )
-            },
-            Shape::Capsule {radius, length} => {
-                (
-                    Mesh::from( shape::Capsule{ radius, depth: length, ..default()}),
-                    ColliderShape::CapsuleY {radius, half_length: length / 2.0}
-                )
-            }
-        };
+        let mesh = shape.into_mesh().unwrap();
+        let collider_shape = shape.into_collider_shape();
 
         Self {
             rigid_body: body_type,
@@ -75,6 +78,7 @@ impl PhysicBodyBundle {
             impulse: Impulse::default(),
             force: Force::default(),
             gravity_scale: GravityScale::default(),
+            can_sleep: CanSleep(false),
 
             pbr_bundle: PbrBundle {
                 mesh: meshes.add(mesh),

@@ -7,7 +7,7 @@ use nora_physics::{
     }
 };
 use nora_core::{
-    bundle::PhysicBodyBundle,
+    bundle::MeshPhysicBodyBundle,
     shape::Shape,
     transform::get_world_transform,
     interaction::groups::GroupDynamic
@@ -28,7 +28,7 @@ pub fn spawn_snake(
 
     let mut new_origin = origin;
 
-    let mut root = commands.spawn_bundle( PhysicBodyBundle::from(
+    let mut root = commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Capsule {radius, length},
         material.clone(),
@@ -44,7 +44,7 @@ pub fn spawn_snake(
         let child_anchor = Transform::from_translation(-half_length * Vec3::Y);
         let world_transform = get_world_transform(&new_origin, &parent_anchor, &child_anchor);
 
-        let child = commands.spawn_bundle( PhysicBodyBundle::from(
+        let child = commands.spawn_bundle( MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Capsule {radius, length},
             material.clone(),

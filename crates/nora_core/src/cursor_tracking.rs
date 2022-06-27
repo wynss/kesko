@@ -15,9 +15,9 @@ use crate::controller::{PID, Controller};
 
 
 /// constants for the PID-controller
-const P: f32 = 15.0;
-const I: f32 = 0.5;
-const D: f32 = 10.0;
+const P: f32 = 10.0;
+const I: f32 = 0.1;
+const D: f32 = 5.0;
 
 #[derive(Default)]
 pub struct GrabablePlugin<T> {

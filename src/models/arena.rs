@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use nora_physics::rigid_body::RigidBody;
 use nora_core::{
-    bundle::PhysicBodyBundle,
+    bundle::MeshPhysicBodyBundle,
     shape::Shape,
     interaction::groups::GroupStatic
 };
@@ -22,7 +22,7 @@ pub fn spawn_arena(
     let half_wall_width = wall_width / 2.0;
 
     // Spawn ground
-    commands.spawn_bundle(PhysicBodyBundle::from(
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Fixed,
         Shape::Box {x_length: width, y_length: 0.5, z_length: length},
         material.clone(),
@@ -31,7 +31,7 @@ pub fn spawn_arena(
     )).insert(RayVisible::<GroupStatic>::default());
 
     // right wall
-    commands.spawn_bundle(PhysicBodyBundle::from(
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Fixed,
         Shape::Box {x_length: wall_width, y_length: wall_height, z_length: length},
         material.clone(),
@@ -40,7 +40,7 @@ pub fn spawn_arena(
     )).insert(RayVisible::<GroupStatic>::default());
 
     // left wall
-    commands.spawn_bundle(PhysicBodyBundle::from(
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Fixed,
         Shape::Box {x_length: wall_width, y_length: wall_height, z_length: length},
         material.clone(),
@@ -49,7 +49,7 @@ pub fn spawn_arena(
     )).insert(RayVisible::<GroupStatic>::default());
 
     // back wall
-    commands.spawn_bundle(PhysicBodyBundle::from(
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Fixed,
         Shape::Box {x_length: length, y_length: wall_height, z_length: wall_width},
         material.clone(),
@@ -58,7 +58,7 @@ pub fn spawn_arena(
     )).insert(RayVisible::<GroupStatic>::default());
 
     // front wall
-    commands.spawn_bundle(PhysicBodyBundle::from(
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Fixed,
         Shape::Box {x_length: length, y_length: wall_height, z_length: wall_width},
         material.clone(),
