@@ -11,12 +11,51 @@ use nora_physics::{
     }
 };
 use nora_core::{
-    bundle::PhysicBodyBundle,
     shape::Shape,
+    bundle::{MeshPhysicBodyBundle, PhysicBodyBundle},
     interaction::groups::GroupDynamic,
-    transform::get_world_transform
+    transform::get_world_transform,
 };
 use nora_object_interaction::InteractiveBundle;
+
+
+const RIGHT_FRONT_WHEEL: &str = "right_front_wheel";
+const LEFT_FRONT_WHEEL: &str = "left_front_wheel";
+const RIGHT_REAR_WHEEL: &str = "right_rear_wheel";
+const LEFT_REAR_WHEEL: &str = "left_rear_wheel";
+
+pub struct CarPlugin;
+impl Plugin for CarPlugin {
+    fn build(&self, app: &mut App) {
+        app
+        .add_event::<CarEvent>()
+        .add_startup_system(setup)
+        .add_system(send_car_control_events);
+        //.add_system(handle_car_control_system);
+    }
+}
+
+fn setup(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>
+) {
+
+    let root = spawn_car(
+        &mut commands, 
+        materials.add(Color::SEA_GREEN.into()), 
+        materials.add(Color::DARK_GRAY.into()),
+        Transform::from_translation(Vec3::new(0.0, 1.0, 0.0)),
+        &mut meshes
+    );
+
+    commands.entity(root).insert(CarController {
+        velocity: 8.0,
+        dampning: 30000.0,
+        stiffness: 30000.0,
+        turn_angle: FRAC_PI_2
+    });
+}
 
 
 pub fn spawn_car(
@@ -25,7 +64,8 @@ pub fn spawn_car(
     material_wheel: Handle<StandardMaterial>,
     origin: Transform,
     meshes: &mut Assets<Mesh>
-) {
+) -> Entity {
+
     let frame_width = 0.5;
     let frame_height = 0.1;
     let frame_length = 1.0;
@@ -36,7 +76,7 @@ pub fn spawn_car(
 
     let wheel_radius = 0.18;
     let wheel_width = 0.08;
-    let wheel_base = frame_width + 0.2;
+    let wheel_base = frame_width + 0.1;
     let wbh = wheel_base / 2.0;
 
     let wall_thickness = 0.05;
@@ -45,7 +85,7 @@ pub fn spawn_car(
     let half_wall_thick = wall_thickness / 2.0;
 
     // Frame
-    let frame = commands.spawn_bundle( PhysicBodyBundle::from(
+    let frame = commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box {x_length: frame_width, y_length: frame_height, z_length: frame_length},
         material_body.clone(),
@@ -55,28 +95,11 @@ pub fn spawn_car(
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .id();
 
-    // front wall
-    let parent_anchor = Transform::from_translation(Vec3::new(0.0, half_frame_height, half_frame_length - half_wall_thick));
-    let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_wall_height, 0.0));
-    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
-    commands.spawn_bundle( PhysicBodyBundle::from(
-        RigidBody::Dynamic,
-        Shape::Box {x_length: frame_width, y_length: wall_height, z_length: wall_thickness},
-        material_body.clone(),
-        world_transform,
-        meshes
-    ))
-        .insert(Joint::new(frame, FixedJoint {
-            parent_anchor,
-            child_anchor
-        }))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
-
     // back wall
-    let parent_anchor = Transform::from_translation(Vec3::new(0.0, frame_height / 2.0, -(half_frame_length - half_wall_thick)));
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, half_frame_height, -(half_frame_length - half_wall_thick)));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_wall_height, 0.0));
     let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
-    commands.spawn_bundle( PhysicBodyBundle::from(
+    commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box {x_length: frame_width, y_length: wall_height, z_length: wall_thickness},
         material_body.clone(),
@@ -90,10 +113,10 @@ pub fn spawn_car(
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
     // left wall
-    let parent_anchor = Transform::from_translation(Vec3::new(half_frame_width - half_wall_thick, frame_height / 2.0, 0.0));
+    let parent_anchor = Transform::from_translation(Vec3::new(half_frame_width - half_wall_thick, half_frame_height, 0.0));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_wall_height, 0.0));
     let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
-    commands.spawn_bundle( PhysicBodyBundle::from(
+    commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box {x_length: wall_thickness, y_length: wall_height, z_length: frame_length - 2.0 * wall_thickness},
         material_body.clone(),
@@ -107,10 +130,10 @@ pub fn spawn_car(
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
     // right wall
-    let parent_anchor = Transform::from_translation(Vec3::new(-half_frame_width + half_wall_thick, frame_height / 2.0, 0.0));
+    let parent_anchor = Transform::from_translation(Vec3::new(-half_frame_width + half_wall_thick, half_frame_height, 0.0));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_wall_height, 0.0));
     let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
-    commands.spawn_bundle( PhysicBodyBundle::from(
+    commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box {x_length: wall_thickness, y_length: wall_height, z_length: frame_length - 2.0 * wall_thickness},
         material_body.clone(),
@@ -123,124 +146,219 @@ pub fn spawn_car(
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
-    // left front wheel
-    let parent_anchor = Transform::from_translation(Vec3::new(wbh, 0.0, half_frame_length));
-    let child_anchor = Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2));
-    commands.spawn_bundle( PhysicBodyBundle::from(
+
+    // left front link
+    let parent_anchor = Transform::from_translation(Vec3::new(wbh, 0.0, half_frame_length))
+        .with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
+    let child_anchor = Transform::default();
+    let left_front_link = commands.spawn_bundle(PhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width},
+        Shape::Sphere { radius: 0.01, subdivisions: 5},
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
+    ))
+    .insert(Joint::new(frame, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::X,
+        ..default()
+    }))
+    .id();
+
+    // left front wheel
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.1, 0.0));
+    let child_anchor = Transform::default();
+    commands.spawn_bundle( MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 5},
         material_wheel.clone(),
         get_world_transform(&origin, &parent_anchor, &child_anchor),
         meshes
     ))
-        .insert(Joint::new(frame, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Vec3::Y,
-            ..default()
-        }));
+    .insert(Joint::new(left_front_link, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::Y,
+        ..default()
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
+
+    // right front link
+    let parent_anchor = Transform::from_translation(Vec3::new(-wbh, 0.0, half_frame_length))
+        .with_rotation(Quat::from_rotation_z(FRAC_PI_2));
+    let child_anchor = Transform::default();
+    let right_front_link = commands.spawn_bundle(PhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Sphere { radius: 0.01, subdivisions: 5},
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
+    ))
+    .insert(Joint::new(frame, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::X,
+        ..default()
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .id();
 
     // right front wheel
-    let parent_anchor = Transform::from_translation(Vec3::new(-wbh, 0.0, half_frame_length));
-    let child_anchor = Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2));
-    commands.spawn_bundle( PhysicBodyBundle::from(
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.1, 0.0));
+    let child_anchor = Transform::default();
+    commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width},
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 5},
         material_wheel.clone(),
         get_world_transform(&origin, &parent_anchor, &child_anchor),
         meshes
     ))
-        .insert(Joint::new(frame, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Vec3::Y,
-            ..default()
-        }));
+    .insert(Joint::new(right_front_link, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::Y,
+        ..default()
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
     // left back wheel
-    let parent_anchor = Transform::from_translation(Vec3::new(wbh, 0.0, -half_frame_length));
-    let child_anchor = Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2));
-    commands.spawn_bundle( PhysicBodyBundle::from(
+    let parent_anchor = Transform::from_translation(Vec3::new(wbh, 0.0, -half_frame_length))
+        .with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
+    let child_anchor = Transform::default();
+    commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width},
-        material_wheel.clone(),
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 5},        material_wheel.clone(),
         get_world_transform(&origin, &parent_anchor, &child_anchor),
         meshes
     ))
-        .insert(Joint::new(frame, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Vec3::Y,
-            ..default()
-        }));
+    .insert(Joint::new(frame, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::Y,
+        ..default()
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
     // right back wheel
-    let parent_anchor = Transform::from_translation(Vec3::new(-wbh, 0.0, -half_frame_length));
-    let child_anchor = Transform::from_rotation(Quat::from_rotation_z(FRAC_PI_2));
-    commands.spawn_bundle( PhysicBodyBundle::from(
+    let parent_anchor = Transform::from_translation(Vec3::new(-wbh, 0.0, -half_frame_length))
+        .with_rotation(Quat::from_rotation_z(FRAC_PI_2));
+    let child_anchor = Transform::default();
+    commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width},
-        material_wheel.clone(),
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 5},        material_wheel.clone(),
         get_world_transform(&origin, &parent_anchor, &child_anchor),
         meshes
     ))
-        .insert(Joint::new(frame, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Vec3::Y,
-            ..default()
-        }));
+    .insert(Joint::new(frame, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::Y,
+        ..default()
+    }));
+
+
+    // let mut multi_body = Multibody::default();
+    // multi_body.insert_joint(RIGHT_FRONT_WHEEL, &right_front_wheel);
+    // multi_body.insert_joint(LEFT_FRONT_WHEEL, &left_front_wheel);
+    // multi_body.insert_joint(RIGHT_REAR_WHEEL, &right_rear_wheel);
+    // multi_body.insert_joint(LEFT_REAR_WHEEL, &left_rear_wheel);
+    // commands.entity(frame).insert(multi_body);
+
+    frame
+
 }
 
-// /// Controller for the car model
-// /// Should hold the settings for sensitivity etc
-// #[derive(Component)]
-// struct CarController;
+/// Controller for the car model
+/// Should hold the settings for sensitivity etc
+#[derive(Component)]
+struct CarController {
+    velocity: f32,
+    turn_angle: f32,
+    dampning: f32,
+    stiffness: f32
+}
 
-// fn send_car_control_events(
-//     keys: Res<Input<KeyCode>>,
-//     car_event_writer: EventWriter<CarEvent>,
-//     query: Query<Entity, With<CarController>>
-// ) {
+#[derive(Debug)]
+enum CarEvent {
+    Velocity(CarVelocity),
+    Direction(CarDirection)
+}
 
-//     if keys.pressed(KeyCode::W) {
+#[derive(Debug)]
+enum CarVelocity {
+    Forward,
+    Backward,
+    NoVelocity,
+}
 
-//     } else if keys.pressed(KeyCode::S) {
-        
-//     } else if keys.pressed(KeyCode::A) {
-        
-//     } else if keys.pressed(KeyCode::D) {
-        
-//     }
-// }
+#[derive(Debug)]
+enum CarDirection {
+    Left,
+    Right,
+    NoAngle
+}
+
+fn send_car_control_events(
+    keys: Res<Input<KeyCode>>,
+    mut car_event_writer: EventWriter<CarEvent>
+) {
+    if keys.just_pressed(KeyCode::W) {
+        car_event_writer.send(CarEvent::Velocity(CarVelocity::Forward));
+    } else if keys.just_pressed(KeyCode::S) {
+        car_event_writer.send(CarEvent::Velocity(CarVelocity::Backward));
+    } else if keys.just_released(KeyCode::S) || keys.just_released(KeyCode::W){
+        car_event_writer.send(CarEvent::Velocity(CarVelocity::NoVelocity));
+    } 
+    
+    if keys.just_pressed(KeyCode::A) {
+        car_event_writer.send(CarEvent::Direction(CarDirection::Left));
+    } else if keys.just_pressed(KeyCode::D) {
+        car_event_writer.send(CarEvent::Direction(CarDirection::Right));
+    } else if keys.just_released(KeyCode::D) || keys.just_released(KeyCode::A) {
+        car_event_writer.send(CarEvent::Direction(CarDirection::NoAngle));
+    }
+}
 
 // fn handle_car_control_system(
-//     mut event_reader: EventReader<CarEvent>,
-//     query: Query<(Entity, &Multibody), With<CarController>>
+//     mut car_event_reader: EventReader<CarEvent>,
+//     mut joint_event_writer: EventWriter<JointMotorEvent>,
+//     query: Query<(&Multibody, &CarController), With<CarController>>
 // ) {
 
-//     let (e, multi_body) = query.get_single().unwrap();
+//     let (car_body, controller) = query.get_single().unwrap();
 
-//     for event in event_reader.iter() {
+//     for event in car_event_reader.iter() {
 //         match event {
-//             Forward => {
-                
-//                 let wheel_entity = car_body.joints["rear_left_wheel"];
-//                 writer.send(JointEvent::SetVelocityRevolute {
-//                     entity: wheel_entity, 
-//                     vel: 3.0
-//                 })
-//             }
+//             CarEvent::Velocity(velocity) => {
+//                 let (velocity, factor) = match velocity {
+//                     CarVelocity::Forward => (controller.velocity, controller.dampning),
+//                     CarVelocity::Backward => (-controller.velocity, controller.dampning),
+//                     CarVelocity::NoVelocity => (0.0, controller.dampning)
+//                 };
+//                 if let Some(entity) = car_body.joints.get(RIGHT_REAR_WHEEL) {
+//                     joint_event_writer.send(JointMotorEvent {
+//                         entity: *entity,
+//                         action: MotorAction::VelocityRevolute { velocity, factor }
+//                     });
+//                 }
+//                 if let Some(entity) = car_body.joints.get(LEFT_REAR_WHEEL) {
+//                     joint_event_writer.send(JointMotorEvent {
+//                         entity: *entity,
+//                         action: MotorAction::VelocityRevolute { velocity, factor }
+//                     });
+//                 }
+//             },
+//             CarEvent::Direction(direction) => {
+
+//                 let (position, dampning, stiffness) = match direction {
+//                     CarDirection::Left => {
+//                         (controller.turn_angle, controller.dampning, controller.stiffness)
+//                     },
+//                     CarDirection::Right => {
+//                         (-controller.turn_angle, controller.dampning, controller.stiffness)
+//                     },
+//                     CarDirection::NoAngle => {
+//                         (0.0, controller.dampning, controller.stiffness)
+//                     }
+//                 };
+//             } 
 //         }
 //     }
 // }
-
-// enum CarEvent {
-//     Forward,
-//     Backward,
-//     Left,
-//     Right
-// }
-
-// #[derive(Component)]
-// struct CarId(u32);

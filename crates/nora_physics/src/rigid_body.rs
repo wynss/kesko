@@ -17,6 +17,10 @@ pub enum RigidBody {
     Dynamic
 }
 
+/// If a rigid body can sleep or not
+#[derive(Component)]
+pub struct CanSleep(pub bool);
+
 #[derive(Component)]
 pub struct RigidBodyHandle(pub rapier::RigidBodyHandle);
 
@@ -25,10 +29,15 @@ pub(crate) fn add_rigid_bodies_system(
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
     mut entity_body_map: ResMut<EntityBodyHandleMap>,
     mut commands: Commands,
-    query: Query<(Entity, &RigidBody, &Transform, Option<&Mass>, Option<&GravityScale>), Without<RigidBodyHandle>>
+    query: Query<(
+        Entity, 
+        &RigidBody, 
+        &Transform, 
+        Option<&Mass>, 
+        Option<&GravityScale>, Option<&CanSleep>), Without<RigidBodyHandle>>
 ) {
 
-    for (entity, rigid_body_comp, transform, mass, gravity_scale) in query.iter() {
+    for (entity, rigid_body_comp, transform, mass, gravity_scale, can_sleep) in query.iter() {
 
         let mut rigid_body_builder = match rigid_body_comp {
             RigidBody::Fixed => rapier::RigidBodyBuilder::fixed(),
@@ -43,6 +52,10 @@ pub(crate) fn add_rigid_bodies_system(
             rigid_body_builder = rigid_body_builder.gravity_scale(gravity_scale.val);
         }
 
+        if let Some(can_sleep) = can_sleep {
+            rigid_body_builder = rigid_body_builder.can_sleep(can_sleep.0);
+        }
+
         let rigid_body = rigid_body_builder
             .position((transform.translation, transform.rotation).into_rapier())
             .build();
@@ -55,6 +68,7 @@ pub(crate) fn add_rigid_bodies_system(
         commands.entity(entity).insert(RigidBodyHandle(rigid_body_handle));
     }
 }
+
 
 #[cfg(test)]
 mod tests {

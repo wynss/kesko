@@ -3,7 +3,7 @@ use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
 use nora_lib::models;
 use nora_core::{
-    bundle::PhysicBodyBundle,
+    bundle::MeshPhysicBodyBundle,
     shape::Shape,
     orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera},
     plugins::physics::DefaultPhysicsPlugin,
@@ -77,7 +77,7 @@ fn setup(
         let sphere_radius = 0.05 * (1.0 + i_f);
         let z = - 1.0 +  8.0 * sphere_radius;
 
-        commands.spawn_bundle(PhysicBodyBundle::from(
+        commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere {radius: sphere_radius, subdivisions: 5},
             materials.add(Color::hex("66BB6A").unwrap().into()),

@@ -1,6 +1,9 @@
 use std::f32::consts::PI;
-use bevy::render::mesh::{PrimitiveTopology, Indices, Mesh};
+use bevy::prelude::error;
+use bevy::render::mesh::{PrimitiveTopology, Indices, Mesh, shape};
 use bevy::math::Vec3;
+
+use nora_physics::collider::ColliderShape;
 
 
 /// A cylinder which stands on the XZ plane
@@ -135,9 +138,6 @@ pub enum Shape {
     Cube {
         size: f32,
     },
-    Plane {
-        size: f32,
-    },
     Box {
         x_length: f32,
         y_length: f32,
@@ -146,9 +146,53 @@ pub enum Shape {
     Cylinder {
         radius: f32,
         length: f32,
+        resolution: u32
     },
     Capsule {
         radius: f32,
         length: f32
+    }
+}
+
+impl Shape {
+    pub fn into_mesh(&self) -> Option<Mesh> {
+        match self {
+            Self::Sphere { radius , subdivisions} => {
+                Some(Mesh::from(shape::Icosphere { radius: *radius, subdivisions: *subdivisions}))
+            },
+            Self::Box { x_length, y_length, z_length } => {
+                Some(Mesh::from(shape::Box::new(*x_length, *y_length, *z_length)))
+            },
+            Self::Cylinder { radius, length, resolution} => {
+                Some(Mesh::from(Cylinder { radius: *radius, height: *length, resolution: *resolution, ..Default::default()}))
+            },
+            Self::Capsule { radius, length } => {
+                Some(Mesh::from(shape::Capsule{ radius: *radius, depth: *length, ..Default::default()}))
+            },
+            _ => {
+                error!("function not implemented for {:?}", self);
+                None
+            }
+        } 
+    }
+
+    pub fn into_collider_shape(&self) -> ColliderShape {
+        match self {
+            Self::Sphere { radius , subdivisions: _} => {
+                ColliderShape::Sphere { radius: *radius }
+            },
+            Self::Box { x_length, y_length, z_length } => {
+                ColliderShape::Cuboid { x_half: x_length / 2.0, y_half: y_length / 2.0, z_half: z_length / 2.0 }
+            },
+            Self::Cylinder { radius, length, resolution: _} => {
+                ColliderShape::Cylinder { radius: *radius, length: *length }
+            },
+            Self::Capsule { radius, length } => {
+                ColliderShape::CapsuleY { half_length: length / 2.0, radius: *radius }
+            },
+            Self::Cube { size } => {
+                ColliderShape::Cuboid { x_half: size / 2.0, y_half: size / 2.0, z_half: size / 2.0 }
+            }
+        } 
     }
 }
