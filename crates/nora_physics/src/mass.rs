@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use rapier3d::prelude::{MultibodyJointSet, RigidBodySet};
+use rapier3d::prelude as rapier;
 
-use crate::{joint::MultibodyJointHandle, rigid_body::RigidBodyHandle};
+use crate::rigid_body::RigidBodyHandle;
 
 
 /// Component for storing the mass of a rigid body
@@ -11,30 +11,44 @@ pub struct Mass {
 }
 
 /// Compnent that stores the mass of the multibody that a rigid body is part of
+/// Will be same as Mass of the body is not part of a multibody
 #[derive(Component)]
 pub struct MultibodyMass {
     pub val: f32
 }
 
-/// System for adding multi body mass to rigid bodies that are part of a multibody
+/// System for adding multi body mass to rigid bodies. If the body is not part of a multibody the mass will be equal
+/// to the body mass
 pub(crate) fn update_multibody_mass_system(
     mut commands: Commands,
-    multibody_set: Res<MultibodyJointSet>,
-    bodies: Res<RigidBodySet>,
-    query: Query<(Entity, &RigidBodyHandle), (With<MultibodyJointHandle>, Without<MultibodyMass>)>
+    multibody_set: Res<rapier::MultibodyJointSet>,
+    bodies: Res<rapier::RigidBodySet>,
+    query: Query<(Entity, &RigidBodyHandle), Without<MultibodyMass>>
 ) {
-
-    // TODO: This could be improved since we will calculate the multibody mass for all the bodies in the multibody,
-    // but it is not crucial since it is a one timer. Could be when scaling up the amount of bodies
     for (entity, handle) in query.iter() {
+        let mass = mass_of_attached(&handle.0, &multibody_set, &bodies, None);
+        commands.entity(entity).insert(MultibodyMass { val: mass });
+    }
+}
 
-        let mut multibody_mass = 0.0;
-        for attached_handle in multibody_set.attached_bodies(handle.0) { 
-            if let Some(body) = bodies.get(attached_handle) {
-                multibody_mass += body.mass();
+/// function that calculates the total mass of a multibody recursively.
+/// 
+/// TODO: This could be improved since we will calculate the multibody mass for all the bodies in the multibody,
+/// but it is not crucial since it is a one timer. Could be when scaling up the amount of bodies
+fn mass_of_attached(handle: &rapier::RigidBodyHandle, multibody_set: &rapier::MultibodyJointSet, bodies: &rapier::RigidBodySet, parent_handle: Option<&rapier::RigidBodyHandle>) -> f32 {
+
+    let body = bodies.get(*handle).unwrap();
+    let mut mass = body.mass();
+
+    for attached_handle in multibody_set.attached_bodies(*handle) {
+
+        if let Some(handle) = parent_handle {
+            if *handle == attached_handle {
+                continue;
             }
         }
-
-        commands.entity(entity).insert(MultibodyMass { val: multibody_mass });
+        mass += mass_of_attached(&attached_handle, &multibody_set, &bodies, Some(handle));
     }
+
+    mass
 }
