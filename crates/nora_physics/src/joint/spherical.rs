@@ -10,12 +10,31 @@ pub struct SphericalJoint {
     pub x_ang_limit: Option<Vec2>,
     pub y_ang_limit: Option<Vec2>,
     pub z_ang_limit: Option<Vec2>,
+    pub x_stiffness: f32,
+    pub x_damping: f32,
+    pub y_stiffness: f32,
+    pub y_damping: f32,
+    pub z_stiffness: f32,
+    pub z_damping: f32,
 }
 
 impl From<SphericalJoint> for GenericJoint {
     fn from(joint: SphericalJoint) -> GenericJoint {
+
         let mut builder = SphericalJointBuilder::new();
 
+        // set activate and set motor parameters
+        if joint.x_stiffness > 0.0 || joint.x_damping > 0.0 {
+            builder = builder.motor_position(JointAxis::AngX, 0.0, joint.x_stiffness, joint.x_damping);
+        }
+        if joint.y_stiffness > 0.0 || joint.y_damping > 0.0 {
+            builder = builder.motor_position(JointAxis::AngY, 0.0, joint.y_stiffness, joint.y_damping);
+        }
+        if joint.z_stiffness > 0.0 || joint.z_damping > 0.0 {
+            builder = builder.motor_position(JointAxis::AngZ, 0.0, joint.z_stiffness, joint.z_damping);
+        }
+
+        // set rotational limits if any
         if let Some(x_ang_limit) = joint.x_ang_limit {
             builder = builder.limits(JointAxis::AngX, x_ang_limit.into());
         }

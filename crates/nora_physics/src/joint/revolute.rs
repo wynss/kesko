@@ -7,7 +7,9 @@ pub struct RevoluteJoint {
     pub parent_anchor: Transform,
     pub child_anchor: Transform,
     pub axis: Vec3,
-    pub limits: Option<Vec2>
+    pub limits: Option<Vec2>,
+    pub damping: f32,
+    pub stiffness: f32,
 }
 
 impl Default for RevoluteJoint {
@@ -16,7 +18,9 @@ impl Default for RevoluteJoint {
             parent_anchor: Transform::default(), 
             child_anchor: Transform::default(), 
             axis: Vec3::X, 
-            limits: None 
+            limits: None,
+            damping: 0.0,
+            stiffness: 0.0
         }
     }
 }
@@ -27,6 +31,10 @@ impl From<RevoluteJoint> for GenericJoint {
         let mut builder = RevoluteJointBuilder::new(joint.axis.into_rapier())
             .local_anchor1(joint.parent_anchor.translation.into_rapier())
             .local_anchor2(joint.child_anchor.translation.into_rapier());
+
+        if joint.stiffness > 0.0 || joint.damping > 0.0 {
+            builder = builder.motor(0.0, 0.0, joint.stiffness, joint.damping);
+        }
 
         if let Some(limits) = joint.limits {
             builder = builder.limits(limits.into());
