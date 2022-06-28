@@ -9,7 +9,8 @@ use crate::{
 };
 
 
-pub type EntityBodyHandleMap = FnvHashMap<Entity, rapier::RigidBodyHandle>;
+pub type Entity2BodyHandle = FnvHashMap<Entity, rapier::RigidBodyHandle>;
+pub type BodyHandle2Entity = FnvHashMap<rapier::RigidBodyHandle, Entity>;
 
 #[derive(Component)]
 pub enum RigidBody {
@@ -21,13 +22,18 @@ pub enum RigidBody {
 #[derive(Component)]
 pub struct CanSleep(pub bool);
 
+// Name of a rigid body
+#[derive(Component)]
+pub struct RigidBodyName(pub String);
+
 #[derive(Component)]
 pub struct RigidBodyHandle(pub rapier::RigidBodyHandle);
 
 
 pub(crate) fn add_rigid_bodies_system(
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
-    mut entity_body_map: ResMut<EntityBodyHandleMap>,
+    mut entity_2_body: ResMut<Entity2BodyHandle>,
+    mut body_2_entity: ResMut<BodyHandle2Entity>,
     mut commands: Commands,
     query: Query<(
         Entity, 
@@ -62,7 +68,8 @@ pub(crate) fn add_rigid_bodies_system(
 
         // insert and add to map
         let rigid_body_handle = rigid_body_set.insert(rigid_body);
-        entity_body_map.insert(entity, rigid_body_handle);
+        entity_2_body.insert(entity, rigid_body_handle);
+        body_2_entity.insert(rigid_body_handle, entity);
 
         // Add the rigid body component to the entity
         commands.entity(entity).insert(RigidBodyHandle(rigid_body_handle));
@@ -75,7 +82,7 @@ mod tests {
 
     use bevy::prelude::*;
     use rapier3d::prelude as rapier;
-    use crate::rigid_body::{add_rigid_bodies_system, EntityBodyHandleMap, RigidBody, RigidBodyHandle};
+    use crate::rigid_body::{add_rigid_bodies_system, Entity2BodyHandle, RigidBody, RigidBodyHandle, BodyHandle2Entity};
     use crate::conversions::IntoBevy;
 
     #[test]
@@ -86,7 +93,8 @@ mod tests {
         let mut test_stage = SystemStage::parallel();
         test_stage.add_system(add_rigid_bodies_system);
 
-        world.init_resource::<EntityBodyHandleMap>();
+        world.init_resource::<Entity2BodyHandle>();
+        world.init_resource::<BodyHandle2Entity>();
         world.init_resource::<rapier3d::prelude::RigidBodySet>();
 
 
@@ -99,7 +107,7 @@ mod tests {
 
         test_stage.run(&mut world);
 
-        let body_map = world.get_resource::<EntityBodyHandleMap>().unwrap();
+        let body_map = world.get_resource::<Entity2BodyHandle>().unwrap();
         let body_handle = body_map.get(&entity).unwrap();
         let body_set = world.get_resource::<rapier::RigidBodySet>().unwrap();
 
