@@ -134,12 +134,13 @@ mod tests {
     use bevy::prelude::*;
     use rapier3d::prelude as rapier;
     use crate::collider::{EntityColliderMap, ColliderShape, ColliderPhysicalProperties, add_collider_to_bodies_system, ColliderHandle};
-    use crate::rigid_body::{RigidBody, EntityBodyHandleMap, add_rigid_bodies_system};
+    use crate::rigid_body::{RigidBody, Entity2BodyHandle, add_rigid_bodies_system, BodyHandle2Entity};
 
     fn setup_world() -> (World, SystemStage) {
 
         let mut world = World::default();
-        world.init_resource::<EntityBodyHandleMap>();
+        world.init_resource::<Entity2BodyHandle>();
+        world.init_resource::<BodyHandle2Entity>();
         world.init_resource::<EntityColliderMap>();
 
         world.init_resource::<rapier::RigidBodySet>();
@@ -179,7 +180,7 @@ mod tests {
         assert_eq!(collider_set.len(), 1);
 
         // check that collider has correct parent
-        let body_map = world.get_resource::<EntityBodyHandleMap>().unwrap();
+        let body_map = world.get_resource::<Entity2BodyHandle>().unwrap();
         let body_handle = body_map.get(&entity).unwrap();
         let collider = collider_set.get(*collider_handle).unwrap();
         let parent_body = collider.parent().unwrap();

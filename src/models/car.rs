@@ -1,14 +1,19 @@
-use std::f32::consts::FRAC_PI_2;
+use std::f32::consts::{FRAC_PI_2, FRAC_PI_6};
 
 use bevy::prelude::*;
 
 use nora_physics::{
-    rigid_body::RigidBody,
+    rigid_body::{
+        RigidBody,
+        RigidBodyName
+    },
     joint::{
         Joint,
         fixed::FixedJoint,
-        revolute::RevoluteJoint
-    }
+        revolute::RevoluteJoint,
+        JointMotorEvent, MotorAction
+    },
+    multibody::MultibodyRoot
 };
 use nora_core::{
     shape::Shape,
@@ -30,8 +35,8 @@ impl Plugin for CarPlugin {
         app
         .add_event::<CarEvent>()
         .add_startup_system(setup)
-        .add_system(send_car_control_events);
-        //.add_system(handle_car_control_system);
+        .add_system(send_car_control_events)
+        .add_system(handle_car_control_system);
     }
 }
 
@@ -50,10 +55,10 @@ fn setup(
     );
 
     commands.entity(root).insert(CarController {
-        velocity: 8.0,
-        dampning: 30000.0,
-        stiffness: 30000.0,
-        turn_angle: FRAC_PI_2
+        max_velocity: 10.0,
+        max_turn_angle: FRAC_PI_6,
+        damping: 300.0,
+        stiffness: 3000.0
     });
 }
 
@@ -92,8 +97,8 @@ pub fn spawn_car(
         origin,
         meshes
     ))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .id();
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .id();
 
     // back wall
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, half_frame_height, -(half_frame_length - half_wall_thick)));
@@ -162,6 +167,7 @@ pub fn spawn_car(
         axis: Vec3::X,
         ..default()
     }))
+    .insert(RigidBodyName(LEFT_FRONT_WHEEL.to_owned()))
     .id();
 
     // left front wheel
@@ -169,7 +175,7 @@ pub fn spawn_car(
     let child_anchor = Transform::default();
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 5},
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},
         material_wheel.clone(),
         get_world_transform(&origin, &parent_anchor, &child_anchor),
         meshes
@@ -198,6 +204,7 @@ pub fn spawn_car(
         ..default()
     }))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName(RIGHT_FRONT_WHEEL.to_owned()))
     .id();
 
     // right front wheel
@@ -205,7 +212,7 @@ pub fn spawn_car(
     let child_anchor = Transform::default();
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 5},
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},
         material_wheel.clone(),
         get_world_transform(&origin, &parent_anchor, &child_anchor),
         meshes
@@ -224,7 +231,7 @@ pub fn spawn_car(
     let child_anchor = Transform::default();
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 5},        material_wheel.clone(),
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},        material_wheel.clone(),
         get_world_transform(&origin, &parent_anchor, &child_anchor),
         meshes
     ))
@@ -234,7 +241,8 @@ pub fn spawn_car(
         axis: Vec3::Y,
         ..default()
     }))
-    .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName(LEFT_REAR_WHEEL.to_owned()));
 
     // right back wheel
     let parent_anchor = Transform::from_translation(Vec3::new(-wbh, 0.0, -half_frame_length))
@@ -242,7 +250,7 @@ pub fn spawn_car(
     let child_anchor = Transform::default();
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 5},        material_wheel.clone(),
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},        material_wheel.clone(),
         get_world_transform(&origin, &parent_anchor, &child_anchor),
         meshes
     ))
@@ -251,15 +259,8 @@ pub fn spawn_car(
         child_anchor,
         axis: Vec3::Y,
         ..default()
-    }));
-
-
-    // let mut multi_body = Multibody::default();
-    // multi_body.insert_joint(RIGHT_FRONT_WHEEL, &right_front_wheel);
-    // multi_body.insert_joint(LEFT_FRONT_WHEEL, &left_front_wheel);
-    // multi_body.insert_joint(RIGHT_REAR_WHEEL, &right_rear_wheel);
-    // multi_body.insert_joint(LEFT_REAR_WHEEL, &left_rear_wheel);
-    // commands.entity(frame).insert(multi_body);
+    }))
+    .insert(RigidBodyName(RIGHT_REAR_WHEEL.to_owned()));
 
     frame
 
@@ -269,9 +270,9 @@ pub fn spawn_car(
 /// Should hold the settings for sensitivity etc
 #[derive(Component)]
 struct CarController {
-    velocity: f32,
-    turn_angle: f32,
-    dampning: f32,
+    max_velocity: f32,      // m/s
+    max_turn_angle: f32,    // rad
+    damping: f32,
     stiffness: f32
 }
 
@@ -307,58 +308,77 @@ fn send_car_control_events(
         car_event_writer.send(CarEvent::Velocity(CarVelocity::NoVelocity));
     } 
     
-    if keys.just_pressed(KeyCode::A) {
+    if keys.just_pressed(KeyCode::A) || (keys.pressed(KeyCode::A) && keys.just_released(KeyCode::D)) {
         car_event_writer.send(CarEvent::Direction(CarDirection::Left));
-    } else if keys.just_pressed(KeyCode::D) {
+    } else if keys.just_pressed(KeyCode::D) || (keys.pressed(KeyCode::D) && keys.just_released(KeyCode::A)) {
         car_event_writer.send(CarEvent::Direction(CarDirection::Right));
     } else if keys.just_released(KeyCode::D) || keys.just_released(KeyCode::A) {
         car_event_writer.send(CarEvent::Direction(CarDirection::NoAngle));
     }
 }
 
-// fn handle_car_control_system(
-//     mut car_event_reader: EventReader<CarEvent>,
-//     mut joint_event_writer: EventWriter<JointMotorEvent>,
-//     query: Query<(&Multibody, &CarController), With<CarController>>
-// ) {
+fn handle_car_control_system(
+    mut car_event_reader: EventReader<CarEvent>,
+    mut joint_event_writer: EventWriter<JointMotorEvent>,
+    query: Query<(&MultibodyRoot, &CarController), (With<CarController>, With<MultibodyRoot>)>
+) {
 
-//     let (car_body, controller) = query.get_single().unwrap();
+    if let Ok((car_body, controller)) = query.get_single() {
+        for event in car_event_reader.iter() {
+            match event {
+                CarEvent::Velocity(velocity) => {
 
-//     for event in car_event_reader.iter() {
-//         match event {
-//             CarEvent::Velocity(velocity) => {
-//                 let (velocity, factor) = match velocity {
-//                     CarVelocity::Forward => (controller.velocity, controller.dampning),
-//                     CarVelocity::Backward => (-controller.velocity, controller.dampning),
-//                     CarVelocity::NoVelocity => (0.0, controller.dampning)
-//                 };
-//                 if let Some(entity) = car_body.joints.get(RIGHT_REAR_WHEEL) {
-//                     joint_event_writer.send(JointMotorEvent {
-//                         entity: *entity,
-//                         action: MotorAction::VelocityRevolute { velocity, factor }
-//                     });
-//                 }
-//                 if let Some(entity) = car_body.joints.get(LEFT_REAR_WHEEL) {
-//                     joint_event_writer.send(JointMotorEvent {
-//                         entity: *entity,
-//                         action: MotorAction::VelocityRevolute { velocity, factor }
-//                     });
-//                 }
-//             },
-//             CarEvent::Direction(direction) => {
+                    let (velocity, factor) = match velocity {
+                        CarVelocity::Forward => (controller.max_velocity, controller.damping),
+                        CarVelocity::Backward => (-controller.max_velocity, controller.damping),
+                        CarVelocity::NoVelocity => (0.0, controller.damping)
+                    };
 
-//                 let (position, dampning, stiffness) = match direction {
-//                     CarDirection::Left => {
-//                         (controller.turn_angle, controller.dampning, controller.stiffness)
-//                     },
-//                     CarDirection::Right => {
-//                         (-controller.turn_angle, controller.dampning, controller.stiffness)
-//                     },
-//                     CarDirection::NoAngle => {
-//                         (0.0, controller.dampning, controller.stiffness)
-//                     }
-//                 };
-//             } 
-//         }
-//     }
-// }
+                    if let Some(entity) = car_body.joints.get(RIGHT_REAR_WHEEL) {
+                        joint_event_writer.send(JointMotorEvent {
+                            entity: *entity,
+                            action: MotorAction::VelocityRevolute { velocity: -velocity, factor }
+                        });
+                    }
+                    if let Some(entity) = car_body.joints.get(LEFT_REAR_WHEEL) {
+                        joint_event_writer.send(JointMotorEvent {
+                            entity: *entity,
+                            action: MotorAction::VelocityRevolute { velocity, factor }
+                        });
+                    }
+                },
+                CarEvent::Direction(direction) => {
+
+                    let (position, damping, stiffness) = match direction {
+                        CarDirection::Left => {
+                            (controller.max_turn_angle, controller.damping, controller.stiffness)
+                        },
+                        CarDirection::Right => {
+                            (-controller.max_turn_angle, controller.damping, controller.stiffness)
+                        },
+                        CarDirection::NoAngle => {
+                            (0.0, controller.damping, controller.stiffness)
+                        }
+                    };
+
+                    if let Some(entity) = car_body.joints.get(LEFT_FRONT_WHEEL) {
+                        joint_event_writer.send(JointMotorEvent { 
+                            entity: *entity,
+                            action: MotorAction::PositionRevolute { position: -position, damping, stiffness } })
+                    } else {
+                        error!("Could not get {}", LEFT_FRONT_WHEEL);
+                    }
+
+                    if let Some(entity) = car_body.joints.get(RIGHT_FRONT_WHEEL) {
+                        joint_event_writer.send(JointMotorEvent { 
+                            entity: *entity,
+                            action: MotorAction::PositionRevolute { position, damping, stiffness } })
+                    } else {
+                        error!("Could not get {}", RIGHT_FRONT_WHEEL);
+                    }
+
+                } 
+            }
+        }
+    }
+}

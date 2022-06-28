@@ -6,6 +6,7 @@ pub mod impulse;
 pub mod mass;
 pub mod joint;
 pub mod event;
+pub mod multibody;
 mod conversions;
 
 use bevy::prelude::*;
@@ -23,6 +24,7 @@ pub enum PhysicsSystem {
     AddRigidBodies,
     AddJoints,
     AddColliders,
+    AddMultibodies,
     
     UpdateImpulse,
     UpdateForce,
@@ -60,7 +62,8 @@ impl Default for PhysicsPlugin {
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
         app
-            .init_resource::<rigid_body::EntityBodyHandleMap>()
+            .init_resource::<rigid_body::Entity2BodyHandle>()
+            .init_resource::<rigid_body::BodyHandle2Entity>()
             .init_resource::<collider::EntityColliderMap>()
             .init_resource::<rapier::PhysicsPipeline>()         // Runs the complete simulation
             .init_resource::<rapier::RigidBodySet>()            // Holds all the rigid bodies
@@ -78,10 +81,10 @@ impl Plugin for PhysicsPlugin {
 
             .insert_resource(Gravity::new(self.gravity))
 
-            .add_event::<joint::JointEvent>()
+            .add_event::<joint::JointMotorEvent>()
             
             .add_system_set_to_stage(
-                CoreStage::PostUpdate,
+                CoreStage::PreUpdate,
                 SystemSet::new()
                     .label("physics-systems")
                     .with_system(
@@ -97,6 +100,10 @@ impl Plugin for PhysicsPlugin {
                         collider::add_collider_to_bodies_system
                             .label(PhysicsSystem::AddColliders)
                             .after(PhysicsSystem::AddRigidBodies))
+                    .with_system(
+                        multibody::add_multibody_components_system 
+                            .label(PhysicsSystem::AddMultibodies)
+                            .after(PhysicsSystem::AddJoints))
                     .with_system(
                         impulse::update_impulse
                             .label(PhysicsSystem::UpdateImpulse)
@@ -115,10 +122,10 @@ impl Plugin for PhysicsPlugin {
                         .label(PhysicsSystem::UpdateMultibodyMass)
                         .after(PhysicsSystem::AddColliders)
                     )
-                    // .with_system(joint::update_joint_motors_system
-                    //     .label(PhysicsSystem::UpdateJointMotors)
-                    //     .after(PhysicsSystem::AddColliders)
-                    // )
+                    .with_system(joint::update_joint_motors_system
+                        .label(PhysicsSystem::UpdateJointMotors)
+                        .after(PhysicsSystem::AddColliders)
+                    )
                     .with_system(
                         physics_pipeline_step
                             .label(PhysicsSystem::PipelineStep)
