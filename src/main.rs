@@ -59,7 +59,7 @@ fn test_scene(
     models::snake::spawn_snake(
         &mut commands,
         materials.add(Color::hex("FF4081").unwrap().into()),
-        Transform::from_xyz(0.0, 1.0, 0.0),
+        Transform::from_xyz(-1.0, 1.0, 0.0),
         &mut meshes
     );
 
