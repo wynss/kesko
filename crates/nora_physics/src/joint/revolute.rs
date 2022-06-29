@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::prelude::{GenericJoint, RevoluteJointBuilder};
+use rapier3d::{prelude::{GenericJoint, RevoluteJointBuilder}, math::Real};
 use crate::conversions::IntoRapier;
 
 
@@ -10,6 +10,7 @@ pub struct RevoluteJoint {
     pub limits: Option<Vec2>,
     pub damping: f32,
     pub stiffness: f32,
+    pub max_motor_force: Real
 }
 
 impl Default for RevoluteJoint {
@@ -20,7 +21,8 @@ impl Default for RevoluteJoint {
             axis: Vec3::X, 
             limits: None,
             damping: 0.0,
-            stiffness: 0.0
+            stiffness: 0.0,
+            max_motor_force: Real::MAX
         }
     }
 }

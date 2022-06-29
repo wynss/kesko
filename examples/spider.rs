@@ -12,7 +12,6 @@ fn main() {
     .add_plugins(CorePlugins)
     .add_plugin(DebugEventPlugin)
     .add_startup_system(setup_scene)
-    .add_plugin(models::car::CarPlugin)
     .run();
 }
 
@@ -29,6 +28,13 @@ fn setup_scene(
         20.0, 20.0, 1.0
     );
 
+    models::spider::spawn_spider(
+        &mut commands, 
+        materials.add(Color::ALICE_BLUE.into()),
+        Transform::from_xyz(0.0, 1.0, 0.0),
+        &mut meshes, 
+    );
+
     // Light
     commands.spawn_bundle(DirectionalLightBundle {
         directional_light: DirectionalLight {
@@ -38,5 +44,4 @@ fn setup_scene(
         transform: Transform::from_xyz(20.0, 40.0, -40.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..Default::default()
     });
-
 }

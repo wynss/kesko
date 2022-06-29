@@ -169,9 +169,8 @@ impl Shape {
             Self::Capsule { radius, length } => {
                 Some(Mesh::from(shape::Capsule{ radius: *radius, depth: *length, ..Default::default()}))
             },
-            _ => {
-                error!("function not implemented for {:?}", self);
-                None
+            Self::Cube {size} => {
+                Some(Mesh::from(shape::Box::new(*size, *size, *size)))
             }
         } 
     }

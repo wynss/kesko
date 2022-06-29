@@ -57,8 +57,8 @@ fn setup(
     commands.entity(root).insert(CarController {
         max_velocity: 10.0,
         max_turn_angle: FRAC_PI_6,
-        damping: 300.0,
-        stiffness: 3000.0
+        damping: 0.1,
+        stiffness: 1.0
     });
 }
 
@@ -182,7 +182,7 @@ pub fn spawn_car(
         parent_anchor,
         child_anchor,
         axis: Vec3::X,
-        stiffness: 3000.0,
+        stiffness: 1.0,
         ..default()
     }))
     .insert(RigidBodyName(LEFT_FRONT_WHEEL.to_owned()))
@@ -219,7 +219,7 @@ pub fn spawn_car(
         parent_anchor,
         child_anchor,
         axis: Vec3::X,
-        stiffness: 3000.0,
+        stiffness: 1.0,
         ..default()
     }))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())

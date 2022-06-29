@@ -39,18 +39,19 @@ pub(crate) struct MultibodyJointHandle(pub(crate) rapier::MultibodyJointHandle);
 #[allow(clippy::type_complexity)]
 pub(crate) fn add_multibody_joints_system(
     mut commands: Commands,
-    mut joint_set: ResMut<rapier::MultibodyJointSet>,
+    mut multibody_joint_set: ResMut<rapier::MultibodyJointSet>,
     entity_body_map: Res<Entity2BodyHandle>,
     query: Query<(Entity, &Joint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>
 ) {
 
     for (entity, joint_comp) in query.iter() {
-        let joint_handle = joint_set.insert(
+        let joint_handle = multibody_joint_set.insert(
             *entity_body_map.get(&joint_comp.parent).unwrap(),
             *entity_body_map.get(&entity).unwrap(),
             joint_comp.joint,
             true
         ).unwrap();
+
         commands.entity(entity).insert(MultibodyJointHandle(joint_handle));
     }
 }
