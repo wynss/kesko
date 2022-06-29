@@ -25,13 +25,13 @@ impl From<SphericalJoint> for GenericJoint {
 
         // set activate and set motor parameters
         if joint.x_stiffness > 0.0 || joint.x_damping > 0.0 {
-            builder = builder.motor_position(JointAxis::AngX, 0.0, joint.x_stiffness, joint.x_damping);
+            builder = builder.motor(JointAxis::AngX, 0.0, 0.0,  joint.x_stiffness, joint.x_damping);
         }
         if joint.y_stiffness > 0.0 || joint.y_damping > 0.0 {
-            builder = builder.motor_position(JointAxis::AngY, 0.0, joint.y_stiffness, joint.y_damping);
+            builder = builder.motor(JointAxis::AngY, 0.0, 0.0,  joint.y_stiffness, joint.y_damping);
         }
         if joint.z_stiffness > 0.0 || joint.z_damping > 0.0 {
-            builder = builder.motor_position(JointAxis::AngZ, 0.0, joint.z_stiffness, joint.z_damping);
+            builder = builder.motor(JointAxis::AngZ, 0.0, 0.0,  joint.z_stiffness, joint.z_damping);
         }
 
         // set rotational limits if any
