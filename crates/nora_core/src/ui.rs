@@ -1,26 +1,33 @@
+mod main_menu;
 mod spawn_component;
 pub(crate) mod event;
 
 use std::collections::BTreeMap;
 
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContext, EguiPlugin};
 
-use crate::{
-    ui::{
-        event::UIEvent,
-        spawn_component::SpawnComponent
-    }
+use self::{
+    event::UIEvent,
+    main_menu::MainMenuComponent,
+    spawn_component::SpawnComponent
 };
 
 /// Plugin responsible to add all UI components and resources
 pub(crate) struct UIPlugin;
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<UIEvent>()
+        app.add_plugin(EguiPlugin)
+            // core ui 
+            .add_event::<UIEvent>()
             .add_system(handle_ui_components_system)
             .add_system(show_ui_components_system)
-            .insert_resource(UIComponents::default());
+            .insert_resource(UIComponents::default())
+            .add_startup_system(initialize_ui_components_system);
+    }
+
+    fn name(&self) -> &str {
+        "ui-plugin"
     }
 }
 
@@ -80,6 +87,15 @@ impl UIComponents {
     }
 }
 
+/// system to initialize ui components
+fn initialize_ui_components_system(
+    mut ui_components: ResMut<UIComponents>
+) {
+
+    let main_menu_comp = MainMenuComponent::default();
+    ui_components.components.insert(main_menu_comp.name().to_owned(), Box::new(main_menu_comp));
+}
+
 /// System to handle what components should be shown
 fn handle_ui_components_system(
     mut ui_components: ResMut<UIComponents>,
@@ -93,7 +109,7 @@ fn handle_ui_components_system(
                     ui_components.components.insert(spawn_component.name().to_owned(), Box::new(spawn_component));
                 }
             }
-            _ => { error!("event {:?} not implemented", event)}
+            _ => ()
         }
     }
 }

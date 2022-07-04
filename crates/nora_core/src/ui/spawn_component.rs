@@ -31,7 +31,7 @@ impl Default for SpawnComponent {
 
 impl super::UIComponent for SpawnComponent {
     fn name(&self) -> &'static str {
-        "spawn component"
+        "spawn-component"
     }
 
     fn show(&mut self, ctx: &egui::Context) -> Option<UIEvent> {
