@@ -30,9 +30,6 @@ impl Default for SpawnComponent {
 }
 
 impl super::UIComponent for SpawnComponent {
-    fn name(&self) -> &'static str {
-        "spawn-component"
-    }
 
     fn show(&mut self, ctx: &egui::Context) -> Option<UIEvent> {
         let Self {
@@ -91,10 +88,16 @@ impl super::UIComponent for SpawnComponent {
     }
 
     fn remove(&self) -> bool {
-        if !self.open {
-            return true;
-        }
+        !self.open
+    }
 
-        false
+    fn toggle_open(&mut self) {
+        self.open = !self.open;
+    }
+}
+
+impl super::UIComponentName for SpawnComponent {
+    fn name() -> &'static str {
+        "spawn-component"
     }
 }

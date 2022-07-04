@@ -16,9 +16,6 @@ pub(crate) struct MainMenuComponent {
 }
 
 impl super::UIComponent for MainMenuComponent {
-    fn name(&self) -> &'static str {
-        "main-menu-component"
-    }
 
     fn show(&mut self, ctx: &egui::Context) -> Option<UIEvent> {
 
@@ -45,7 +42,10 @@ impl super::UIComponent for MainMenuComponent {
                     });
 
                     ui.menu_button("Diagnostics", |ui| {
-                        todo!("Implement");
+                        if ui.button("FPS").clicked() {
+                            event = Some(UIEvent::OpenFPSWindow);
+                            ui.close_menu();
+                        }
                     });
                 });
             });
@@ -86,6 +86,16 @@ impl super::UIComponent for MainMenuComponent {
 
     fn remove(&self) -> bool {
         false
+    }
+
+    fn toggle_open(&mut self) {
+        
+    }
+}
+
+impl super::UIComponentName for MainMenuComponent {
+    fn name() -> &'static str {
+        "main-menu-component"
     }
 }
 

@@ -7,6 +7,7 @@ use crate::models::Model;
 #[derive(Debug)]
 pub(crate) enum UIEvent {
     OpenSpawnWindow,
+    OpenFPSWindow,
     SpawnModel {
         model: Model,
         transform: Transform,
