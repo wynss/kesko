@@ -12,7 +12,8 @@ use crate::{
         menu::MenuPlugin,
         main_camera::MainCameraPlugin,
         physics::DefaultPhysicsPlugin
-    }
+    },
+    ui::UIPlugin
 };
 
 
@@ -22,6 +23,7 @@ impl PluginGroup for CorePlugins {
     fn build(&mut self, group: &mut PluginGroupBuilder) {
         group.add(CorePlugin);
         group.add(MenuPlugin);
+        group.add(UIPlugin);
         group.add(MainCameraPlugin);
         group.add(DefaultPhysicsPlugin);
         group.add(InteractionPlugin::<GroupDynamic>::default());
