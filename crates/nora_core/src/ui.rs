@@ -1,5 +1,6 @@
 mod main_menu;
 mod spawn_component;
+mod fps_component;
 pub(crate) mod event;
 
 use std::collections::BTreeMap;
@@ -10,7 +11,8 @@ use bevy_egui::{egui, EguiContext, EguiPlugin};
 use self::{
     event::UIEvent,
     main_menu::MainMenuComponent,
-    spawn_component::SpawnComponent
+    spawn_component::SpawnComponent,
+    fps_component::FPSComponent
 };
 
 /// Plugin responsible to add all UI components and resources
@@ -33,9 +35,13 @@ impl Plugin for UIPlugin {
 
 /// UI trait that should be implemented by all ui components that can be rendered
 trait UIComponent {
-    fn name(&self) -> &'static str;
     fn show(&mut self, ctx: &egui::Context) -> Option<UIEvent>;
     fn remove(&self) -> bool;
+    fn toggle_open(&mut self);
+}
+
+trait UIComponentName {
+    fn name() -> &'static str;
 }
 
 /// Resource for holding all ui components
@@ -74,9 +80,9 @@ impl UIComponents {
     pub(crate) fn clean_up(&mut self) {
 
         let mut to_remove: Vec::<String> = Vec::new();
-        for comp in self.components.values() {
+        for (name, comp) in self.components.iter() {
             if comp.remove() {
-                to_remove.push(comp.name().to_owned());
+                to_remove.push(name.clone());
             }
         }
 
@@ -91,9 +97,8 @@ impl UIComponents {
 fn initialize_ui_components_system(
     mut ui_components: ResMut<UIComponents>
 ) {
-
-    let main_menu_comp = MainMenuComponent::default();
-    ui_components.components.insert(main_menu_comp.name().to_owned(), Box::new(main_menu_comp));
+    ui_components.components.insert(MainMenuComponent::name().to_owned(), Box::new(MainMenuComponent::default()));
+    ui_components.components.insert(FPSComponent::name().to_owned(), Box::new(FPSComponent::default()));
 }
 
 /// System to handle what components should be shown
@@ -104,9 +109,13 @@ fn handle_ui_components_system(
     for event in event_reader.iter() {
         match event {
             UIEvent::OpenSpawnWindow => {
-                let spawn_component = SpawnComponent::default();
-                if !ui_components.components.contains_key(spawn_component.name()) {
-                    ui_components.components.insert(spawn_component.name().to_owned(), Box::new(spawn_component));
+                if !ui_components.components.contains_key(SpawnComponent::name()) {
+                    ui_components.components.insert(SpawnComponent::name().to_owned(), Box::new(SpawnComponent::default()));
+                }
+            },
+            UIEvent::OpenFPSWindow => {
+                if let Some(comp) = ui_components.components.get_mut(FPSComponent::name()) {
+                    comp.toggle_open();
                 }
             }
             _ => ()
