@@ -5,13 +5,13 @@ use bevy::{
     window::WindowDescriptor
 };
 use bevy::window::PresentMode;
-use crate::interaction::{
+use crate::{interaction::{
     groups::GroupStatic,
     vertical_marker::{
         update_vertical_marker_pos_system,
         handle_vertical_marker_spawning
     }
-};
+}, models::spawn_model_system};
 
 
 #[derive(Default)]
@@ -30,6 +30,7 @@ impl Plugin for CorePlugin {
             .insert_resource(Msaa { samples: 4 })
             .add_system(handle_vertical_marker_spawning::<GroupStatic>)
             .add_system(update_vertical_marker_pos_system::<GroupStatic>)
+            .add_system(spawn_model_system)
             .add_system(bevy::input::system::exit_on_esc_system);
     }
 }

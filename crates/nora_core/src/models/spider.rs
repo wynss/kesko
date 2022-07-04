@@ -9,19 +9,18 @@ use nora_physics::{
         revolute::RevoluteJoint
     }
 };
-use nora_core::{
+use nora_object_interaction::InteractiveBundle;
+use crate::{
     shape::Shape,
     bundle::MeshPhysicBodyBundle,
     transform::get_world_transform,
     interaction::groups::GroupDynamic
 };
-use nora_object_interaction::InteractiveBundle;
-
 
 pub fn spawn_spider(
     commands: &mut Commands,
     material: Handle<StandardMaterial>,
-    origin: Transform,
+    transform: Transform,
     meshes: &mut Assets<Mesh>
 ) {
 
@@ -37,7 +36,7 @@ pub fn spawn_spider(
 
     // Frame
     let body = commands.spawn_bundle(MeshPhysicBodyBundle::from(RigidBody::Dynamic,
-        Shape::Sphere { radius: body_radius, subdivisions: 7 }, material.clone(), origin, meshes
+        Shape::Sphere { radius: body_radius, subdivisions: 7 }, material.clone(), transform, meshes
     ))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .id();
@@ -47,7 +46,7 @@ pub fn spawn_spider(
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(1.0, 0.0, 1.0).normalize())
         .with_rotation(Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0).normalize(), leg_angle));
     let child_anchor = Transform::default();
-    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
+    let world_transform = get_world_transform(&transform, &parent_anchor, &child_anchor);
     let left_front_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Sphere { radius: leg_radius, subdivisions: 5},
@@ -87,7 +86,7 @@ pub fn spawn_spider(
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(-1.0, 0.0, 1.0).normalize())
         .with_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0).normalize(), -leg_angle));
     let child_anchor = Transform::default();
-    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
+    let world_transform = get_world_transform(&transform, &parent_anchor, &child_anchor);
     let right_front_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Sphere { radius: leg_radius, subdivisions: 5},
@@ -126,7 +125,7 @@ pub fn spawn_spider(
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(1.0, 0.0, -1.0).normalize())
         .with_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0).normalize(), leg_angle));
     let child_anchor = Transform::default();
-    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
+    let world_transform = get_world_transform(&transform, &parent_anchor, &child_anchor);
     let left_rear_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Sphere { radius: leg_radius, subdivisions: 5},
@@ -164,7 +163,7 @@ pub fn spawn_spider(
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(-1.0, 0.0, -1.0).normalize())
         .with_rotation(Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0).normalize(), -leg_angle));
     let child_anchor = Transform::default();
-    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
+    let world_transform = get_world_transform(&transform, &parent_anchor, &child_anchor);
     let right_rear_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Sphere { radius: leg_radius, subdivisions: 5},

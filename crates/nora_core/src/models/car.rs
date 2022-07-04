@@ -15,13 +15,13 @@ use nora_physics::{
     },
     multibody::MultibodyRoot
 };
-use nora_core::{
+use nora_object_interaction::InteractiveBundle;
+use crate::{
     shape::Shape,
     bundle::{MeshPhysicBodyBundle, PhysicBodyBundle},
     interaction::groups::GroupDynamic,
     transform::get_world_transform,
 };
-use nora_object_interaction::InteractiveBundle;
 
 
 const RIGHT_FRONT_WHEEL: &str = "right_front_wheel";
@@ -67,7 +67,7 @@ pub fn spawn_car(
     commands: &mut Commands,
     material_body: Handle<StandardMaterial>,
     material_wheel: Handle<StandardMaterial>,
-    origin: Transform,
+    transform: Transform,
     meshes: &mut Assets<Mesh>
 ) -> Entity {
 
@@ -94,7 +94,7 @@ pub fn spawn_car(
         RigidBody::Dynamic,
         Shape::Box {x_length: frame_width, y_length: frame_height, z_length: frame_length},
         material_body.clone(),
-        origin,
+        transform,
         meshes
     ))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -103,7 +103,7 @@ pub fn spawn_car(
     // front wall
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, half_frame_height, half_frame_length - half_wall_thick));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_wall_height, 0.0));
-    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
+    let world_transform = get_world_transform(&transform, &parent_anchor, &child_anchor);
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box {x_length: frame_width, y_length: wall_height, z_length: wall_thickness},
@@ -120,7 +120,7 @@ pub fn spawn_car(
     // back wall
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, half_frame_height, -(half_frame_length - half_wall_thick)));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_wall_height, 0.0));
-    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
+    let world_transform = get_world_transform(&transform, &parent_anchor, &child_anchor);
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box {x_length: frame_width, y_length: wall_height, z_length: wall_thickness},
@@ -137,7 +137,7 @@ pub fn spawn_car(
     // left wall
     let parent_anchor = Transform::from_translation(Vec3::new(half_frame_width - half_wall_thick, half_frame_height, 0.0));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_wall_height, 0.0));
-    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
+    let world_transform = get_world_transform(&transform, &parent_anchor, &child_anchor);
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box {x_length: wall_thickness, y_length: wall_height, z_length: frame_length - 2.0 * wall_thickness},
@@ -154,7 +154,7 @@ pub fn spawn_car(
     // right wall
     let parent_anchor = Transform::from_translation(Vec3::new(-half_frame_width + half_wall_thick, half_frame_height, 0.0));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_wall_height, 0.0));
-    let world_transform = get_world_transform(&origin, &parent_anchor, &child_anchor);
+    let world_transform = get_world_transform(&transform, &parent_anchor, &child_anchor);
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box {x_length: wall_thickness, y_length: wall_height, z_length: frame_length - 2.0 * wall_thickness},
@@ -176,7 +176,7 @@ pub fn spawn_car(
     let left_front_link = commands.spawn_bundle(PhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Sphere { radius: 0.01, subdivisions: 5},
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        get_world_transform(&transform, &parent_anchor, &child_anchor),
     ))
     .insert(Joint::new(frame, RevoluteJoint {
         parent_anchor,
@@ -193,9 +193,9 @@ pub fn spawn_car(
     let child_anchor = Transform::default();
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 5},
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},
         material_wheel.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        get_world_transform(&transform, &parent_anchor, &child_anchor),
         meshes
     ))
     .insert(Joint::new(left_front_link, RevoluteJoint {
@@ -213,7 +213,7 @@ pub fn spawn_car(
     let right_front_link = commands.spawn_bundle(PhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Sphere { radius: 0.01, subdivisions: 5},
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        get_world_transform(&transform, &parent_anchor, &child_anchor),
     ))
     .insert(Joint::new(frame, RevoluteJoint {
         parent_anchor,
@@ -231,9 +231,9 @@ pub fn spawn_car(
     let child_anchor = Transform::default();
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 5},
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},
         material_wheel.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        get_world_transform(&transform, &parent_anchor, &child_anchor),
         meshes
     ))
     .insert(Joint::new(right_front_link, RevoluteJoint {
@@ -250,8 +250,8 @@ pub fn spawn_car(
     let child_anchor = Transform::default();
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 5},        material_wheel.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},        material_wheel.clone(),
+        get_world_transform(&transform, &parent_anchor, &child_anchor),
         meshes
     ))
     .insert(Joint::new(frame, RevoluteJoint {
@@ -269,8 +269,8 @@ pub fn spawn_car(
     let child_anchor = Transform::default();
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 5},        material_wheel.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},        material_wheel.clone(),
+        get_world_transform(&transform, &parent_anchor, &child_anchor),
         meshes
     ))
     .insert(Joint::new(frame, RevoluteJoint {

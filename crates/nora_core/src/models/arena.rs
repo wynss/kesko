@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use nora_physics::rigid_body::RigidBody;
-use nora_core::{
+use crate::{
     bundle::MeshPhysicBodyBundle,
     shape::Shape,
     interaction::groups::GroupStatic

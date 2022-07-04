@@ -1,14 +1,14 @@
 use bevy::prelude::*;
 use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
-use nora_lib::models;
 use nora_core::{
     bundle::MeshPhysicBodyBundle,
     shape::Shape,
     orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera},
     plugins::physics::DefaultPhysicsPlugin,
     diagnostic::{fps_screen::FPSScreenPlugin, event::DebugEventPlugin},
-    interaction::groups::GroupDynamic
+    interaction::groups::GroupDynamic,
+    models
 };
 use nora_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
 use nora_physics::{

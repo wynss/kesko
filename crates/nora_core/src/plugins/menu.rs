@@ -1,8 +1,7 @@
-use bevy::{
-    app::{App, Plugin},
-    ecs::change_detection::ResMut,
-};
+use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext, EguiPlugin};
+
+use crate::ui::event::UIEvent;
 
 
 #[derive(Default)]
@@ -43,6 +42,7 @@ impl Plugin for MenuPlugin {
 }
 
 fn update_menus(
+    mut event_writer: EventWriter<UIEvent>,
     mut occupied_screen_space_by_menus: ResMut<OccupiedScreenSpaceByMenus>,
     mut menus_ctx: ResMut<MenusContext>,
     mut egui_ctx: ResMut<EguiContext>
@@ -57,16 +57,25 @@ fn update_menus(
                 ui.menu_button("View", |ui| {
                     if ui.button("Show/Hide menus").clicked() {
                         menus_ctx.should_hide = !menus_ctx.should_hide;
-
                         if menus_ctx.should_hide {
                             occupied_screen_space_by_menus.top = 0.0;
                             occupied_screen_space_by_menus.right = 0.0;
                             occupied_screen_space_by_menus.bottom = 0.0;
                             occupied_screen_space_by_menus.left = 0.0;
                         }
-
                         ui.close_menu();
                     }
+                });
+
+                ui.menu_button("Spawn", |ui| {
+                    if ui.button("Model").clicked() {
+                        event_writer.send(UIEvent::OpenSpawnWindow);
+                        ui.close_menu();
+                    };
+                });
+
+                ui.menu_button("Diagnostics", |ui| {
+                    todo!("Implement");
                 });
             });
         })

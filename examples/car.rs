@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use nora_core::{
     diagnostic::event::DebugEventPlugin,
     plugins::CorePlugins,
+    models
 };
-use nora_lib::models;
 
 
 fn main() {

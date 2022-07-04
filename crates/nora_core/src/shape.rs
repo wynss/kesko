@@ -1,5 +1,4 @@
 use std::f32::consts::PI;
-use bevy::prelude::error;
 use bevy::render::mesh::{PrimitiveTopology, Indices, Mesh, shape};
 use bevy::math::Vec3;
 
