@@ -5,7 +5,7 @@ pub mod spider;
 
 use bevy::prelude::*;
 
-use crate::ui::event::UIEvent;
+use crate::ui::spawn_component::SpawnComponentEvent;
 
 
 // Enum to represent each default models
@@ -32,13 +32,13 @@ impl Model {
 
 /// System to spawn a model given an UIEvent::SpawnModel event
 pub(crate) fn spawn_model_system(
-    mut ui_event_reader: EventReader<UIEvent>,
+    mut ui_event_reader: EventReader<SpawnComponentEvent>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
     for event in ui_event_reader.iter() {
-        if let UIEvent::SpawnModel { model, transform, color } = event {
+        if let SpawnComponentEvent::Spawn { model, transform, color } = event {
 
             let material = materials.add(color.clone().into());
 

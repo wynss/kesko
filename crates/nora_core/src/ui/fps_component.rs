@@ -1,12 +1,14 @@
 use bevy_egui::egui::{self, plot::{Legend, Line, Values}, Color32};
 
 pub(crate) struct FPSComponent {
+    ave_fps: f32,
     open: bool
 }
 
 impl Default for FPSComponent {
     fn default() -> Self {
         Self {
+            ave_fps: 0.0,
             open: false
         }
     } 
@@ -14,9 +16,17 @@ impl Default for FPSComponent {
 
 impl super::UIComponent for FPSComponent {
 
-    fn show(&mut self, ctx: &bevy_egui::egui::Context) -> Option<super::event::UIEvent> {
+    type InEvent = ();
+    type OutEvent = ();
+
+    fn handle_event(&mut self, _event: &Self::InEvent) {
+        
+    }
+
+    fn show(&mut self, ctx: &bevy_egui::egui::Context) -> Option<Self::OutEvent> {
         
         let Self {
+            ave_fps,
             open
         } = self;
 

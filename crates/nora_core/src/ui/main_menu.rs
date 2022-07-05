@@ -1,6 +1,8 @@
 use bevy_egui::egui;
 
-use crate::ui::event::UIEvent;
+use crate::ui::{
+    spawn_component::SpawnComponentEvent,
+};
 
 
 #[derive(Default)]
@@ -17,9 +19,16 @@ pub(crate) struct MainMenuComponent {
 
 impl super::UIComponent for MainMenuComponent {
 
-    fn show(&mut self, ctx: &egui::Context) -> Option<UIEvent> {
+    type InEvent = ();
+    type OutEvent = SpawnComponentEvent;
 
-        let mut event: Option<UIEvent> = None;
+    fn handle_event(&mut self, _event: &Self::InEvent) {
+        
+    }
+
+    fn show(&mut self, ctx: &egui::Context) -> Option<Self::OutEvent> {
+
+        let mut event: Option<Self::OutEvent> = None;
 
         egui::TopBottomPanel::top("top_menu")
             .show(ctx, |ui| {
@@ -36,14 +45,14 @@ impl super::UIComponent for MainMenuComponent {
 
                     ui.menu_button("Spawn", |ui| {
                         if ui.button("Model").clicked() {
-                            event = Some(UIEvent::OpenSpawnWindow);
+                            event = Some(Self::OutEvent::Open);
                             ui.close_menu();
                         };
                     });
 
                     ui.menu_button("Diagnostics", |ui| {
                         if ui.button("FPS").clicked() {
-                            event = Some(UIEvent::OpenFPSWindow);
+                            //event = Some(UIEvent::OpenFPSWindow);
                             ui.close_menu();
                         }
                     });

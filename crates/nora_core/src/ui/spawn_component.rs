@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
 
-use super::event::UIEvent;
 use crate::models::Model;
 
 /// UI component for spawning default models
@@ -23,15 +22,36 @@ impl Default for SpawnComponent {
             y: 5.0, 
             z: 0.0, 
             color: egui::Color32::from_rgb(255, 0, 0),
-            open: true,
+            open: false,
             model: Model::Spider
         }
     } 
 }
 
+pub(crate) enum SpawnComponentEvent {
+    Open,
+    Spawn {
+        model: Model,
+        transform: Transform,
+        color: Color
+    }
+}
+
 impl super::UIComponent for SpawnComponent {
 
-    fn show(&mut self, ctx: &egui::Context) -> Option<UIEvent> {
+    type InEvent = SpawnComponentEvent;
+    type OutEvent = SpawnComponentEvent;
+
+    fn handle_event(&mut self, event: &Self::InEvent) {
+        match event {
+            Self::InEvent::Open => {
+                self.open = true;
+            },
+            _ => ()
+        }
+    }
+
+    fn show(&mut self, ctx: &egui::Context) -> Option<Self::OutEvent> {
         let Self {
             x, 
             y, 
@@ -41,7 +61,7 @@ impl super::UIComponent for SpawnComponent {
             model
         } = self;
 
-        let mut event: Option<UIEvent> = None;
+        let mut event: Option<Self::OutEvent> = None;
 
         egui::Window::new("Spawn model").open(open).show(ctx, |ui| {
             ui.vertical(|ui| {
@@ -74,7 +94,7 @@ impl super::UIComponent for SpawnComponent {
                 ui.separator();
 
                 if ui.button("Spawn").clicked() {
-                    event = Some(UIEvent::SpawnModel {
+                    event = Some(Self::OutEvent::Spawn {
                         model: model.clone(),
                         transform: Transform::from_xyz(*x, *y, *z),
                         color: Color::rgb_u8(color.r(), color.g(), color.b())
