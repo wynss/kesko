@@ -22,7 +22,7 @@ impl FPSPlugin {
                 let history = fps.values().cloned().map(|x| x as f32).collect::<Vec<f32>>();
 
                 fps_ew.send(FPSComponentEvent::FPSData {
-                    ave,
+                    ave: ave as f32,
                     history
                 });
             }

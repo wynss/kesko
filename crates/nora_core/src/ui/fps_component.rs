@@ -1,6 +1,4 @@
-
 use std::collections::VecDeque;
-use std::iter::FromIterator;
 
 use bevy::prelude::*;
 use bevy_egui::{
@@ -11,10 +9,12 @@ use bevy_egui::{
     }
 };
 
+const HISTORY_LEN: usize = 20;
+
 
 #[derive(Component)]
 pub(crate) struct FPSComponent {
-    fps_ave: f64,
+    fps_ave: f32,
     fps_ave_history: VecDeque<f32>,
     fps_history: Vec<f32>,
     open: bool
@@ -24,7 +24,7 @@ impl Default for FPSComponent {
     fn default() -> Self {
         Self {
             fps_ave: 0.0,
-            fps_ave_history: VecDeque::new(),
+            fps_ave_history: VecDeque::with_capacity(HISTORY_LEN),
             fps_history: Vec::new(),
             open: false
         }
@@ -43,11 +43,12 @@ impl FPSComponent {
             match event {
                 FPSComponentEvent::Open => comp.open = true,
                 FPSComponentEvent::FPSData {ave, history} => {
+
                     comp.fps_ave = *ave;
                     comp.fps_history = history.clone();
-
-                    comp.fps_ave_history.push_back(*ave as f32);
-                    if comp.fps_ave_history.len() > 20 {
+                    comp.fps_ave_history.push_back(*ave);
+                    
+                    if comp.fps_ave_history.len() > HISTORY_LEN {
                         comp.fps_ave_history.pop_front();
                     }
                 }
@@ -78,8 +79,6 @@ impl FPSComponent {
             .resizable(true)
             .show(ctx, |ui| {
 
-                ui.ctx().request_repaint();
-
                 ui.label(format!("Ave: {:.1} fps", fps_ave));
 
                 let plot = egui::plot::Plot::new("fps-plot")
@@ -89,22 +88,21 @@ impl FPSComponent {
                     .allow_zoom(false)
                     .show_axes([false, true]);
                 
-
-                let test = Vec::from_iter(fps_ave_history.iter().cloned());
                 plot.show(ui, |ui| {
                     ui.line(Line::new(Values::from_ys_f32(fps_history.as_slice())).color(Color32::from_rgb(100, 200, 100)).name("FPS"));
-                    ui.line(Line::new(Values::from_ys_f32(test.as_slice())).color(Color32::from_rgb(100, 100, 200)).name("FPS Ave"));
+                    ui.line(Line::new(Values::from_ys_f32(fps_ave_history.make_contiguous())).color(Color32::from_rgb(100, 100, 200)).name("FPS Ave"));
                 });
-                fps_history.as_slice();
         });
 
     }
 }
 
 pub(crate) enum FPSComponentEvent {
+    /// will open the component
     Open,
+    /// send fps to uppate the component
     FPSData {
-        ave: f64,
+        ave: f32,
         history: Vec<f32>
     }
 }
