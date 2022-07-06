@@ -6,7 +6,7 @@ use nora_core::{
     shape::Shape,
     orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera},
     plugins::physics::DefaultPhysicsPlugin,
-    diagnostic::{fps_screen::FPSScreenPlugin, event::DebugEventPlugin},
+    diagnostic::DiagnosticsPlugins,
     interaction::groups::GroupDynamic,
     models
 };
@@ -25,8 +25,7 @@ fn main() {
         .add_plugin(DefaultPhysicsPlugin::default())
         .add_plugin(InteractionPlugin::<GroupDynamic>::default())
         .add_plugin(PanOrbitCameraPlugin)
-        .add_plugin(FPSScreenPlugin::default())
-        .add_plugin(DebugEventPlugin)
+        .add_plugins(DiagnosticsPlugins)
         .add_startup_system(setup)
         .add_system(bevy::input::system::exit_on_esc_system)
         .insert_resource(ClearColor(Color::hex("F5F5F5").unwrap()))

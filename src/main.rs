@@ -1,9 +1,8 @@
 use bevy::prelude::*;
-use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
 use nora_core::{
     plugins::CorePlugins,
-    diagnostic::event::DebugEventPlugin,
+    diagnostic::DiagnosticsPlugins,
     interaction::groups::GroupDynamic
 };
 use nora_physics::{
@@ -24,9 +23,7 @@ fn main() {
     App::new()
     .add_plugins(DefaultPlugins)
     .add_plugins(CorePlugins)
-    .add_plugin(LogDiagnosticsPlugin::default())
-    .add_plugin(FrameTimeDiagnosticsPlugin)
-    .add_plugin(DebugEventPlugin)
+    .add_plugins(DiagnosticsPlugins)
     .add_plugin(CarPlugin)
     .add_startup_system(test_scene)
     .run();

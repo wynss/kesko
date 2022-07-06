@@ -1,6 +1,9 @@
-use bevy_egui::egui;
+use bevy::prelude::*;
+use bevy_egui::{egui, EguiContext};
 
-use crate::ui::event::UIEvent;
+use crate::ui::spawn_component::SpawnEvent;
+
+use super::fps_component::FPSComponentEvent;
 
 
 #[derive(Default)]
@@ -11,15 +14,23 @@ pub struct OccupiedScreenSpaceByMenus {
     pub bottom: f32
 }
 
+#[derive(Component)]
 pub(crate) struct MainMenuComponent {
     hide_panels: bool
 }
 
-impl super::UIComponent for MainMenuComponent {
+impl MainMenuComponent {
 
-    fn show(&mut self, ctx: &egui::Context) -> Option<UIEvent> {
+    pub(crate) fn update_system(
+        mut egui_context: ResMut<EguiContext>,
+        mut spawn_event_writer: EventWriter<SpawnEvent>,
+        mut fps_event_writer: EventWriter<FPSComponentEvent>,
+        mut comp: Query<&mut Self>
+    ) {
+        comp.get_single_mut().unwrap().show_and_send_system(egui_context.ctx_mut(), &mut spawn_event_writer, &mut fps_event_writer);
+    }
 
-        let mut event: Option<UIEvent> = None;
+    fn show_and_send_system(&mut self, ctx: &egui::Context, spawn_event_writer: &mut EventWriter<SpawnEvent>, fps_ew: &mut EventWriter<FPSComponentEvent>) {
 
         egui::TopBottomPanel::top("top_menu")
             .show(ctx, |ui| {
@@ -36,14 +47,14 @@ impl super::UIComponent for MainMenuComponent {
 
                     ui.menu_button("Spawn", |ui| {
                         if ui.button("Model").clicked() {
-                            event = Some(UIEvent::OpenSpawnWindow);
+                            spawn_event_writer.send(SpawnEvent::OpenWindow);
                             ui.close_menu();
                         };
                     });
 
                     ui.menu_button("Diagnostics", |ui| {
                         if ui.button("FPS").clicked() {
-                            event = Some(UIEvent::OpenFPSWindow);
+                            fps_ew.send(FPSComponentEvent::Open);
                             ui.close_menu();
                         }
                     });
@@ -79,23 +90,6 @@ impl super::UIComponent for MainMenuComponent {
                     ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
                 });
         }
-
-        event
-        
-    }
-
-    fn remove(&self) -> bool {
-        false
-    }
-
-    fn toggle_open(&mut self) {
-        
-    }
-}
-
-impl super::UIComponentName for MainMenuComponent {
-    fn name() -> &'static str {
-        "main-menu-component"
     }
 }
 
