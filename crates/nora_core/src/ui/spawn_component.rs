@@ -1,9 +1,10 @@
 use bevy::prelude::*;
-use bevy_egui::egui;
+use bevy_egui::{egui, EguiContext};
 
-use super::event::UIEvent;
 use crate::models::Model;
 
+
+#[derive(Component)]
 /// UI component for spawning default models
 pub(crate) struct SpawnComponent {
     /// World position
@@ -23,15 +24,38 @@ impl Default for SpawnComponent {
             y: 5.0, 
             z: 0.0, 
             color: egui::Color32::from_rgb(255, 0, 0),
-            open: true,
-            model: Model::Spider
+            open: false,
+            model: Model::Car
         }
     } 
 }
 
-impl super::UIComponent for SpawnComponent {
+impl SpawnComponent {
 
-    fn show(&mut self, ctx: &egui::Context) -> Option<UIEvent> {
+    pub(crate) fn update_system(
+        mut spawn_event_reader: EventReader<SpawnEvent>,
+        mut comp: Query<&mut Self>
+    ) {
+        let mut comp = comp.get_single_mut().unwrap();
+
+        for event in spawn_event_reader.iter() {
+            match event {
+                SpawnEvent::OpenWindow => comp.open = true,
+                _ => ()
+            }
+        }
+    }
+
+    pub(crate) fn show_and_send_system(
+        mut egui_context: ResMut<EguiContext>,
+        mut spawn_event_writer: EventWriter<SpawnEvent>,
+        mut comp: Query<&mut Self>
+    ) {
+        let mut comp = comp.get_single_mut().unwrap();
+        comp.show(egui_context.ctx_mut(), &mut spawn_event_writer);
+    }
+
+    fn show(&mut self, ctx: &egui::Context, spawn_event_writer: &mut EventWriter<SpawnEvent>) {
         let Self {
             x, 
             y, 
@@ -40,8 +64,6 @@ impl super::UIComponent for SpawnComponent {
             open,
             model
         } = self;
-
-        let mut event: Option<UIEvent> = None;
 
         egui::Window::new("Spawn model").open(open).show(ctx, |ui| {
             ui.vertical(|ui| {
@@ -74,7 +96,7 @@ impl super::UIComponent for SpawnComponent {
                 ui.separator();
 
                 if ui.button("Spawn").clicked() {
-                    event = Some(UIEvent::SpawnModel {
+                    spawn_event_writer.send( SpawnEvent::Spawn {
                         model: model.clone(),
                         transform: Transform::from_xyz(*x, *y, *z),
                         color: Color::rgb_u8(color.r(), color.g(), color.b())
@@ -83,21 +105,15 @@ impl super::UIComponent for SpawnComponent {
                 }
             });
         });
-
-        event
     }
 
-    fn remove(&self) -> bool {
-        !self.open
-    }
-
-    fn toggle_open(&mut self) {
-        self.open = !self.open;
-    }
 }
 
-impl super::UIComponentName for SpawnComponent {
-    fn name() -> &'static str {
-        "spawn-component"
+pub(crate) enum SpawnEvent {
+    OpenWindow,
+    Spawn {
+        model: Model,
+        transform: Transform,
+        color: Color
     }
 }
