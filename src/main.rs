@@ -21,7 +21,6 @@ use nora_core::{
 
 fn main() {
     App::new()
-    .add_plugins(DefaultPlugins)
     .add_plugins(CorePlugins)
     .add_plugins(DiagnosticsPlugins)
     .add_plugin(CarPlugin)
