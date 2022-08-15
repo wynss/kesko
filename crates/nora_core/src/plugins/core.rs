@@ -25,6 +25,8 @@ impl Plugin for CorePlugin {
                 title: String::from("Nora 0.1-alpha"),
                 width: 1280.0,
                 height: 720.0,
+                fit_canvas_to_parent: true,
+                canvas: Some("nora-wasm".to_owned()),
                 ..Default::default()
             })
             .insert_resource(Msaa { samples: 4 })
