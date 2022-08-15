@@ -25,7 +25,7 @@ impl Default for SpawnComponent {
             z: 0.0, 
             color: egui::Color32::from_rgb(255, 0, 0),
             open: false,
-            model: Model::Car
+            model: Model::Sphere
         }
     } 
 }
@@ -71,6 +71,7 @@ impl SpawnComponent {
                     egui::ComboBox::from_label("Model")
                         .selected_text(format!("{:?}", model))
                         .show_ui(ui, |ui| {
+                            ui.selectable_value(model, Model::Sphere, Model::Sphere.name());
                             ui.selectable_value(model, Model::Car, Model::Car.name());
                             ui.selectable_value(model, Model::Snake, Model::Snake.name());
                             ui.selectable_value(model, Model::Spider, Model::Spider.name());

@@ -2,6 +2,7 @@ pub mod car;
 pub mod snake;
 pub mod arena;
 pub mod spider;
+pub mod sphere;
 
 use bevy::prelude::*;
 
@@ -14,7 +15,7 @@ pub(crate) enum Model {
     Car,
     Snake,
     Spider,
-    Arena
+    Sphere
 }
 
 impl Model {
@@ -25,7 +26,7 @@ impl Model {
             Self::Car => "Car",
             Self::Snake => "Snake",
             Self::Spider => "Spider",
-            Self::Arena => "Arena"
+            Self::Sphere => "Sphere",
         }
     }
 }
@@ -48,8 +49,8 @@ pub(crate) fn spawn_model_system(
                 Model::Car => {
                     let wheel_material = materials.add(Color::DARK_GRAY.into());
                     car::spawn_car(&mut commands, material, wheel_material, *transform, &mut meshes);
-                }
-                _ => ()
+                },
+                Model::Sphere => sphere::spawn_sphere(&mut commands, material, *transform, &mut meshes)
             }
         }
     }
