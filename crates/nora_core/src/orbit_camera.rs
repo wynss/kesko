@@ -1,5 +1,8 @@
-use bevy::input::mouse::{MouseMotion, MouseWheel};
 use bevy::prelude::*;
+use bevy::{
+    input::mouse::{MouseMotion, MouseWheel},
+    render::camera::Projection
+};
 
 
 pub struct PanOrbitCameraPlugin;
@@ -86,13 +89,22 @@ fn handle_camera_events(
     time: Res<Time>,
     windows: Res<Windows>,
     mut camera_events: EventReader<PanOrbitCameraEvents>,
-    mut query: Query<(&mut PanOrbitCamera, &mut Transform, &PerspectiveProjection)>
+    mut query: Query<(&mut PanOrbitCamera, &mut Transform, &Projection)>
 ) {
 
     let window = windows.get_primary().unwrap();
     let window_size = Vec2::new(window.width(), window.height());
 
-    for (mut camera, mut transform, projection) in query.iter_mut() {
+    if let Ok((mut camera, mut transform, projection)) = query.get_single_mut() {
+
+        let projection = match projection {
+            Projection::Perspective(proj) => proj,
+            _ => {
+                error!("Could not get projection from main camera");
+                return;
+            }
+        };
+
         for event in camera_events.iter() {
             match event {
                 PanOrbitCameraEvents::Orbit(mouse_move) => {
@@ -131,5 +143,9 @@ fn handle_camera_events(
             // translate so camera always is on the sphere centered around camera.center with radius camera.distance
             transform.translation = camera.center + (transform.rotation * Vec3::Z) * camera.distance;
         }
+
+    } else {
+        error!("Can only have one pan orbit camera, found more than one");
+        return;
     }
 }

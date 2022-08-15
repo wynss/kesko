@@ -27,7 +27,7 @@ fn main() {
         .add_plugin(PanOrbitCameraPlugin)
         .add_plugins(DiagnosticsPlugins)
         .add_startup_system(setup)
-        .add_system(bevy::input::system::exit_on_esc_system)
+        .add_system(bevy::window::close_on_esc)
         .insert_resource(ClearColor(Color::hex("F5F5F5").unwrap()))
         .run();
 }
@@ -90,7 +90,7 @@ fn setup(
     let distance = camera_pos.length();
     let camera_transform = Transform::from_translation(camera_pos)
         .looking_at(Vec3::ZERO, Vec3::Y);
-    commands.spawn_bundle(PerspectiveCameraBundle {
+    commands.spawn_bundle(Camera3dBundle {
         transform: camera_transform,
         ..Default::default()
     })

@@ -14,7 +14,7 @@ fn main() {
         .add_plugin(RayCastPlugin::<RayCastGroup>::default())
         .insert_resource(Msaa { samples: 4 })
         .add_startup_system(setup)
-        .add_system(bevy::input::system::exit_on_esc_system)
+        .add_system(bevy::window::close_on_esc)
         .run();
 }
 
@@ -37,7 +37,7 @@ fn setup(
     let camera_pos = Vec3::new(0.0, 0.0, 5.0);
     let camera_transform = Transform::from_translation(camera_pos)
         .looking_at(Vec3::ZERO, Vec3::Y);
-    commands.spawn_bundle(PerspectiveCameraBundle {
+    commands.spawn_bundle(Camera3dBundle {
         transform: camera_transform,
         ..Default::default()
     })
