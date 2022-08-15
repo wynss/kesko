@@ -8,7 +8,7 @@ use bevy::prelude::*;
 use crate::ui::spawn_component::SpawnEvent;
 
 
-// Enum to represent each default models
+// Enum to represent each default model
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Model {
     Car,

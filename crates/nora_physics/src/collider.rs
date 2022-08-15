@@ -220,7 +220,7 @@ mod tests {
         let collider_set = world.get_resource::<rapier::ColliderSet>().unwrap();
         let collider = collider_set.get(collider_handle.0).unwrap();
 
-        assert_eq!(collider.density().unwrap(), physical_properties.density);
+        assert_eq!(collider.density(), physical_properties.density);
         assert_eq!(collider.friction(), physical_properties.friction);
         assert_eq!(collider.restitution(), physical_properties.restitution);
     }

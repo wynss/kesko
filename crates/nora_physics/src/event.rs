@@ -47,6 +47,17 @@ impl EventHandler for CollisionEventHandler {
             error!("Failed to propagate collision event: {e}");
         }
     }
+
+    fn handle_contact_force_event(
+            &self,
+            _dt: rapier::Real,
+            _bodies: &rapier::RigidBodySet,
+            _colliders: &rapier::ColliderSet,
+            _contact_pair: &rapier::ContactPair,
+            _total_force_magnitude: rapier::Real,
+        ) {
+        todo!("Implement when needed");
+    }
 }
 
 impl CollisionEventHandler {

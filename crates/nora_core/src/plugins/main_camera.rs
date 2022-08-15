@@ -26,7 +26,7 @@ pub fn spawn_camera(mut commands: Commands) {
     let camera_transform = Transform::from_translation(camera_pos)
         .looking_at(Vec3::ZERO, Vec3::Y);
 
-    commands.spawn_bundle(PerspectiveCameraBundle {
+    commands.spawn_bundle(Camera3dBundle {
         transform: camera_transform,
         ..Default::default()
     }).insert(PanOrbitCamera {

@@ -61,7 +61,7 @@ pub(crate) fn update_tracking_system<T: Component + Default>(
                 if let Ok((mut gravity_scale, _, entity_transform)) = entity_query.get_mut(*entity) {
                     let cursor_track = create_track_comp(
                         &camera_transform.compute_matrix(),
-                        &entity_transform.translation
+                        &entity_transform.translation()
                     );
                     commands.entity(*entity).insert(cursor_track);
                     gravity_scale.val = 0.0;
@@ -91,7 +91,7 @@ pub(crate) fn update_tracking_controller_system<T: Component + Default>(
                 let distance = (track.plane_point - ray.origin).dot(plane_normal) / ray.direction.dot(plane_normal);
                 let plane_intersection = ray.origin + distance * ray.direction;
                 
-                let pos_diff: Vec3 = plane_intersection - transform.translation;
+                let pos_diff: Vec3 = plane_intersection - transform.translation();
 
                 let mut control_output = track.controller.act(pos_diff);
 

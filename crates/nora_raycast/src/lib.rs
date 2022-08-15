@@ -6,11 +6,16 @@ pub(crate) mod debug;
 pub(crate) mod triangle;
 pub(crate) mod convert;
 
-use std::{sync::{Arc, Mutex}, marker::PhantomData};
+use std::{
+    sync::{Arc, Mutex}, 
+    marker::PhantomData
+};
 
 use bevy::prelude::*;
-use bevy::tasks::ComputeTaskPool;
-use bevy::render::primitives::Aabb;
+use bevy::render::{
+    camera::Projection,
+    primitives::Aabb
+};
 
 use ray::Ray;
 use intersect::{RayHit, mesh_intersection, aabb_intersection};
@@ -126,11 +131,11 @@ pub struct RayVisible<T> {
 
 fn create_rays_system<T: Component + Default>(
     windows: Res<Windows>,
-    mut ray_source_query: Query<(&mut RayCastSource<T>, Option<&Camera>, Option<&GlobalTransform>)>
+    mut ray_source_query: Query<(&mut RayCastSource<T>, Option<&Camera>, Option<&Projection>, Option<&GlobalTransform>)>
 ) {
 
     let window = windows.get_primary().unwrap();
-    for (mut ray_source, camera, transform) in ray_source_query.iter_mut() {
+    for (mut ray_source, camera, perspective_projection, transform) in ray_source_query.iter_mut() {
 
         // todo: Remove this and make a separate reset system that can be triggered
         if let Some(ray_hit) = &ray_source.ray_hit {
@@ -153,12 +158,26 @@ fn create_rays_system<T: Component + Default>(
                             }
                         };
 
+                        let perspective_projection = match perspective_projection {
+                            Some(perspective_projection) => match perspective_projection {
+                                Projection::Perspective(perspective_proj) => perspective_proj,
+                                _ => {
+                                    error!("Got wrong projection for main camera");
+                                    return;
+                                }
+                            },
+                            None => {
+                                error!("Could not get perspective projection for main camera");
+                                return;
+                            }
+                        };
+
                         if let Some(cursor_position) = window.cursor_position() {
-                            ray_source.ray = Some(Ray::from_screen_space(window, camera, transform, cursor_position));
+                            ray_source.ray = Some(Ray::from_screen_space(window, camera, perspective_projection, transform, cursor_position));
                         }
                     },
                     RayCastMethod::FromEntity { direction } => {
-                        ray_source.ray = Some(Ray::from_world_space(transform.translation, direction));
+                        ray_source.ray = Some(Ray::from_world_space(transform.translation(), direction));
                     }
                 }
 
@@ -174,7 +193,6 @@ fn create_rays_system<T: Component + Default>(
 #[allow(clippy::type_complexity)]
 fn calc_intersections_system<T: Component + Default> (
     meshes: Res<Assets<Mesh>>,
-    task_pool: Res<ComputeTaskPool>,
     culling_query: Query<(Entity, Option<&Aabb>, &Visibility, &ComputedVisibility, &GlobalTransform), With<RayVisible<T>>>,
     mut source_query: Query<&mut RayCastSource<T>>,
     visible_query: Query<(Entity, &Handle<Mesh>, &GlobalTransform), With<RayVisible<T>>>
@@ -192,7 +210,7 @@ fn calc_intersections_system<T: Component + Default> (
                     // check visibility, both user defined and computed
                     match source.method {
                         RayCastMethod::ScreenSpace => {
-                            if !visibility.is_visible && !computed_visibility.is_visible { return None }
+                            if !visibility.is_visible && !computed_visibility.is_visible() { return None }
                         },
                         _ => {
                             if !visibility.is_visible { return None }
@@ -211,8 +229,7 @@ fn calc_intersections_system<T: Component + Default> (
 
             let ray_hits = Arc::new(Mutex::new(Vec::new()));
 
-            visible_query.par_for_each(
-                &task_pool, num_cpus::get(), 
+            visible_query.par_for_each(num_cpus::get(), 
                 | (entity, mesh_handle, transform) | {
                     if culled_entities.contains(&entity) {
                         if let Some(mesh) = meshes.get(mesh_handle) {
