@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::interaction::{Drag, Hover, Select};
 
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum InteractionEvent {
     DragStarted(Entity),
@@ -13,8 +14,34 @@ pub enum InteractionEvent {
     NoInteraction(Entity),
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum SelectEvent {
+    Select(Entity),
+    Deselect(Entity)
+}
+
+/// System that will select an entity based on SelectEvents. This in order to be able to select
+/// entities programmatically.
+pub(crate) fn handle_select_events<T: Component + Default>(
+    mut select_event_reader: EventReader<SelectEvent>,
+    mut query: Query<&mut Select<T>, With<Select<T>>>
+) {
+
+    for event in select_event_reader.iter() {
+        let (should_select, entity) = match event {
+            SelectEvent::Select(entity) => (true, entity),
+            SelectEvent::Deselect(entity) => (false, entity)
+        };
+
+        if let Ok(mut select) = query.get_mut(*entity) {
+            select.selected = should_select;
+        }
+    }
+}
+
+
 #[allow(clippy::type_complexity)]
-pub(crate) fn send_events<T: Component + Default>(
+pub(crate) fn send_interaction_events<T: Component + Default>(
     mut event_writer: EventWriter<InteractionEvent>,
     interaction_query: Query<
         (
@@ -70,8 +97,10 @@ pub(crate) fn send_events<T: Component + Default>(
 mod tests {
     use bevy::core::CorePlugin;
     use bevy::prelude::*;
-    use crate::event::{send_events, InteractionEvent};
+    use crate::event::{send_interaction_events, InteractionEvent};
     use crate::interaction::{Drag, Hover, Select};
+
+    use super::{SelectEvent, handle_select_events};
 
     #[derive(Component, Default)]
     struct TestGroup;
@@ -91,6 +120,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugin(CorePlugin);
         app.add_event::<InteractionEvent>();
+        app.add_event::<SelectEvent>();
 
         let mut world = app.world;
         let entity = world
@@ -159,8 +189,8 @@ mod tests {
         stage.add_system_set(
             SystemSet::new()
                 .with_system(trigger_events)
-                .with_system(send_events::<TestGroup>.after(trigger_events))
-                .with_system(read_and_assert.after(send_events::<TestGroup>))
+                .with_system(send_interaction_events::<TestGroup>.after(trigger_events))
+                .with_system(read_and_assert.after(send_interaction_events::<TestGroup>))
                 .with_system(propagate_test.after(read_and_assert))
         );
 
@@ -168,4 +198,40 @@ mod tests {
         stage.run(&mut world);
         stage.run(&mut world);
     }
+
+    #[test]
+    fn test_select_events() {
+
+        let (mut world, entity) = get_world_and_entity();
+
+        // make sure that the entity is not selected before running
+        let mut query = world.query::<&Select<TestGroup>>();
+        let select_before = query.get_single(&world).expect("World should have one entity");
+        assert!(!select_before.selected, "Entity was selected but should have been deselected");
+
+        // setup and run systems once
+        let mut stage = SystemStage::single_threaded();
+        
+        world.send_event(SelectEvent::Select(entity));
+        stage.add_system_set(
+            SystemSet::new()
+                .with_system(handle_select_events::<TestGroup>)
+        );
+        stage.run(&mut world);
+
+        // check that the entity is now selected
+        let mut query = world.query::<&Select<TestGroup>>();
+        let select_after = query.get_single(&world).expect("World should have one entity");
+        assert!(select_after.selected, "Entity was deselected but should have been selected");
+
+        world.send_event(SelectEvent::Deselect(entity));
+        stage.run(&mut world);
+
+        // check that the entity is now deselected
+        let mut query = world.query::<&Select<TestGroup>>();
+        let select_after = query.get_single(&world).expect("World should have one entity");
+        assert!(!select_after.selected, "Entity was selected but should have been deselected");
+
+    }
+
 }
