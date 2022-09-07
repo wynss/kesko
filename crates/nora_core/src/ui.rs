@@ -6,6 +6,12 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext, EguiPlugin};
 
 
+#[derive(SystemLabel, Debug, PartialEq, Eq, Clone, Hash)]
+enum UISystems {
+   MainMenu 
+}
+
+
 /// Plugin responsible to add all UI components and resources
 pub(crate) struct UIPlugin;
 impl Plugin for UIPlugin {
@@ -16,15 +22,15 @@ impl Plugin for UIPlugin {
             .add_startup_system(initialize_ui_components_system)
 
             // add components
+            .add_system(main_menu::MainMenuComponent::update_system.label(UISystems::MainMenu))
+
             .add_event::<spawn_component::SpawnEvent>()
-            .add_system(spawn_component::SpawnComponent::update_system)
+            .add_system(spawn_component::SpawnComponent::update_system.after(UISystems::MainMenu))
             .add_system(spawn_component::SpawnComponent::show_and_send_system)
 
             .add_event::<fps_component::FPSComponentEvent>()
             .add_system(fps_component::FPSComponent::update_system)
-            .add_system(fps_component::FPSComponent::show_and_send_system)
-
-            .add_system(main_menu::MainMenuComponent::update_system);
+            .add_system(fps_component::FPSComponent::show_and_send_system);
     }
 
     fn name(&self) -> &str {

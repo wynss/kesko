@@ -184,7 +184,7 @@ pub fn spawn_spider(
     commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Capsule { radius: leg_radius, length: leg_length },
-        material.clone(),
+        material,
         get_world_transform(&world_transform, &parent_anchor, &child_anchor),
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())

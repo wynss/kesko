@@ -44,7 +44,7 @@ impl Controller for PID<Vec3> {
         self.prev_val = Some(val);
 
         if let Some(sum_val) = &mut self.sum_val {
-            *sum_val = *sum_val + val;
+            *sum_val += val;
         } else {
             self.sum_val = Some(val);
         }

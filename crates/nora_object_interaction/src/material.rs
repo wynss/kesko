@@ -6,7 +6,8 @@ pub(crate) struct OriginalMaterial(pub(crate) Option<Handle<StandardMaterial>>);
 
 pub(crate) struct InteractionMaterials {
     pub(crate) hovered: Handle<StandardMaterial>,
-    pub(crate) pressed: Handle<StandardMaterial>,
+    pub(crate) dragged: Handle<StandardMaterial>,
+    pub(crate) selected: Handle<StandardMaterial>,
 }
 
 impl FromWorld for InteractionMaterials {
@@ -16,7 +17,8 @@ impl FromWorld for InteractionMaterials {
             .unwrap();
         Self {
             hovered: materials.add(Color::hex("81D4FA").unwrap().into()),
-            pressed: materials.add(Color::hex("03A9F4").unwrap().into()),
+            dragged: materials.add(Color::hex("03A9F4").unwrap().into()),
+            selected: materials.add(Color::GOLD.into()),
         }
     }
 }

@@ -39,7 +39,7 @@ pub(crate) fn spawn_model_system(
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
     for event in ui_event_reader.iter() {
-        if let SpawnEvent::Spawn { model, transform, color } = event {
+        if let SpawnEvent::Spawn { model, transform, color} = event {
 
             let material = materials.add(color.clone().into());
 

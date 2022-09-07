@@ -78,6 +78,7 @@ pub(crate) fn update_tracking_system<T: Component + Default>(
 }
 
 /// System that will update the controller of the object cursor tracking using a PD controller
+#[allow(clippy::type_complexity)]
 pub(crate) fn update_tracking_controller_system<T: Component + Default>(
     ray_query: Query<(&RayCastSource<T>, &Transform), With<PanOrbitCamera>>,
     mut track_query: Query<(&mut CursorTrack, &mut Force, &Mass, Option<&MultibodyMass>, &GlobalTransform), With<CursorTrack>>

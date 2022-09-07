@@ -146,6 +146,5 @@ fn handle_camera_events(
 
     } else {
         error!("Can only have one pan orbit camera, found more than one");
-        return;
     }
 }

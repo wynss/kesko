@@ -1,11 +1,13 @@
 use bevy::prelude::*;
 
-use crate::interaction::{Drag, Hover};
+use crate::interaction::{Drag, Hover, Select};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum InteractionEvent {
     DragStarted(Entity),
     DragStopped(Entity),
+    Selected(Entity),
+    Deselected(Entity),
     HoverStarted(Entity),
     HoverStopped(Entity),
     NoInteraction(Entity),
@@ -19,30 +21,47 @@ pub(crate) fn send_events<T: Component + Default>(
             Entity,
             &Hover<T>,
             &Drag<T>,
+            &Select<T>,
             ChangeTrackers<Hover<T>>,
             ChangeTrackers<Drag<T>>,
+            ChangeTrackers<Select<T>>,
         ),
-        Or<(Changed<Hover<T>>, Changed<Drag<T>>)>,
+        Or<(Changed<Hover<T>>, Changed<Drag<T>>, Changed<Select<T>>)>,
     >,
 ) {
-    for (entity, hover, drag, hover_track, drag_track) in interaction_query.iter() {
+    for (
+        entity, 
+        hover, 
+        drag, 
+        select, 
+        hover_track, 
+        drag_track, 
+        select_track
+    ) in interaction_query.iter() {
 
-        if hover_track.is_changed() || drag_track.is_changed() {
-            if drag_track.is_changed() && !drag_track.is_added() {
-                event_writer.send(match drag.dragged {
-                    true => InteractionEvent::DragStarted(entity),
-                    false => InteractionEvent::DragStopped(entity)
-                });
-            }
-            if hover_track.is_changed() && !hover_track.is_added() {
-                event_writer.send(match hover.hovered {
-                    true => InteractionEvent::HoverStarted(entity),
-                    false => InteractionEvent::HoverStopped(entity),
-                });
-            }
-            if !hover.hovered && !drag.dragged && !drag_track.is_added() && !hover_track.is_added() {
-                event_writer.send(InteractionEvent::NoInteraction(entity))
-            }
+        if drag_track.is_changed() && !drag_track.is_added() {
+            event_writer.send(match drag.dragged {
+                true => InteractionEvent::DragStarted(entity),
+                false => InteractionEvent::DragStopped(entity)
+            });
+        }
+
+        if select_track.is_changed() && !select_track.is_added() {
+            event_writer.send(match select.selected {
+                true => InteractionEvent::Selected(entity),
+                false => InteractionEvent::Deselected(entity)
+            });
+        }
+
+        if hover_track.is_changed() && !hover_track.is_added() {
+            event_writer.send(match hover.hovered {
+                true => InteractionEvent::HoverStarted(entity),
+                false => InteractionEvent::HoverStopped(entity),
+            });
+        }
+
+        if !hover.hovered && !drag.dragged && !select.selected && !select_track.is_added() && !hover_track.is_added() && !drag_track.is_added() {
+            event_writer.send(InteractionEvent::NoInteraction(entity))
         }
     }
 }
@@ -52,7 +71,7 @@ mod tests {
     use bevy::core::CorePlugin;
     use bevy::prelude::*;
     use crate::event::{send_events, InteractionEvent};
-    use crate::interaction::{Drag, Hover};
+    use crate::interaction::{Drag, Hover, Select};
 
     #[derive(Component, Default)]
     struct TestGroup;
@@ -78,6 +97,7 @@ mod tests {
             .spawn()
             .insert(Hover::<TestGroup>::default())
             .insert(Drag::<TestGroup>::default())
+            .insert(Select::<TestGroup>::default())
             .id();
 
         (world, entity)

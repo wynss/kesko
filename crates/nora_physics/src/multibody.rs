@@ -15,15 +15,16 @@ pub struct MultibodyRoot {
 
 /// Component to indicate that the entity is a multibody
 #[derive(Component)]
-pub struct MultiBody;
+pub struct MultiBodyChild;
 
 /// Component to indicate that the entity is not a multibody
 #[derive(Component)]
 pub struct NotMultibody;
 
-/// Sytem that adds components related to multibodies
+/// System that adds components related to multibodies
 /// 
 /// Todo: Look how to improve this, now it feels a bit complicated and not clear.
+#[allow(clippy::type_complexity)]
 pub(crate) fn add_multibody_components_system(
     mut commands: Commands,
     multibody_joint_set: Res<rapier::MultibodyJointSet>,
@@ -59,7 +60,7 @@ pub(crate) fn add_multibody_components_system(
 
                 } else {
                     // not a root
-                    commands.entity(entity).insert(MultiBody);
+                    commands.entity(entity).insert(MultiBodyChild);
                 }
             }
         } else {
@@ -67,4 +68,10 @@ pub(crate) fn add_multibody_components_system(
             commands.entity(entity).insert(NotMultibody);
         }
     }
+}
+
+
+#[cfg(test)]
+mod tests {
+
 }

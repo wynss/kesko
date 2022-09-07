@@ -28,6 +28,7 @@ impl Default for Force {
 
 
 /// System to apply a force to a rigid body
+#[allow(clippy::type_complexity)]
 pub(crate) fn update_force_system(
     mut rigid_bodies: ResMut<rapier::RigidBodySet>,
     changed_force: Query<(&RigidBodyHandle, &Force), (Changed<Force>, With<RigidBodyHandle>)>

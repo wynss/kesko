@@ -57,11 +57,11 @@ pub(crate) fn update_vertical_marker_pos_system<T: Component + Default>(
                 if let Some(ray) = &ray_source.ray {
 
                     let pos = ray.origin + (hit.intersection.point - ray.origin) / 2.0;
-                    transform.translation = pos.into();
-                    transform.scale = Vec3::new(0.05, hit.intersection.distance, 0.05).into();
+                    transform.translation = pos;
+                    transform.scale = Vec3::new(0.05, hit.intersection.distance, 0.05);
                 }
             } else {
-                transform.scale = Vec3::ZERO.into();
+                transform.scale = Vec3::ZERO;
             }
         }
     }

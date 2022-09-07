@@ -6,6 +6,7 @@ mod interaction;
 use std::marker::PhantomData;
 
 use bevy::prelude::*;
+use interaction::Select;
 use nora_raycast::{RayCastSource, RayCastSystems, RayVisible, RayCastPlugin};
 use crate::{
     interaction::{
@@ -48,7 +49,7 @@ where T: Component + Default
                         .label(InteractionSystems::SendEvents)
                         .after(InteractionSystems::UpdateInteractions))
                     .with_system(
-                        debug::update_interaction_material.after(InteractionSystems::UpdateInteractions),
+                        debug::update_interaction_material::<T>.after(InteractionSystems::SendEvents),
                     )
                     .with_system(set_initial_interaction_material),
             );
@@ -60,6 +61,7 @@ pub struct InteractiveBundle<T: Component + Default> {
     material: OriginalMaterial,
     ray_castable: RayVisible::<T>,
     drag: Drag<T>,
+    select: Select<T>,
     hover: Hover<T>
 }
 
