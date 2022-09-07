@@ -6,6 +6,7 @@ mod interaction;
 use std::marker::PhantomData;
 
 use bevy::prelude::*;
+use event::SelectEvent;
 use interaction::Select;
 use nora_raycast::{RayCastSource, RayCastSystems, RayVisible, RayCastPlugin};
 use crate::{
@@ -14,7 +15,11 @@ use crate::{
         Drag, Hover
     },
     event::InteractionEvent,
-    material::{InteractionMaterials, set_initial_interaction_material, OriginalMaterial}
+    material::{
+        InteractionMaterials, 
+        set_initial_interaction_material, 
+        OriginalMaterial
+    }
 };
 
 
@@ -36,6 +41,7 @@ where T: Component + Default
     fn build(&self, app: &mut App) {
         app.init_resource::<InteractionMaterials>()
             .add_event::<InteractionEvent>()
+            .add_event::<SelectEvent>()
             .init_resource::<DraggingGlobal>()
             .add_plugin(RayCastPlugin::<T>::default())
             .add_system_set_to_stage(
@@ -45,7 +51,8 @@ where T: Component + Default
                         .label(InteractionSystems::UpdateInteractions)
                         .after(RayCastSystems::CalcIntersections)
                     )
-                    .with_system(event::send_events::<T>
+                    .with_system(event::handle_select_events::<T>)
+                    .with_system(event::send_interaction_events::<T>
                         .label(InteractionSystems::SendEvents)
                         .after(InteractionSystems::UpdateInteractions))
                     .with_system(

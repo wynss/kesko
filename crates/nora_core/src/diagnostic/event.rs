@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use nora_object_interaction::event::InteractionEvent;
+use nora_object_interaction::event::{InteractionEvent, SelectEvent};
 use nora_physics::{event::CollisionEvent, joint::JointMotorEvent};
 
 
@@ -13,11 +13,15 @@ impl Plugin for DebugEventPlugin {
 
 pub fn debug_events(
     mut collision_event_reader: EventReader<CollisionEvent>,
+    mut select_event_reader: EventReader<SelectEvent>,
     mut interaction_event_reader: EventReader<InteractionEvent>,
     mut joint_event_reader: EventReader<JointMotorEvent>
 ) {
     for interaction_event in interaction_event_reader.iter() {
         info!("Interaction event {:?}", interaction_event);
+    }
+    for select_event in select_event_reader.iter() {
+        info!("Select event {:?}", select_event);
     }
     for collision_event in collision_event_reader.iter() {
         info!("Collision event {:?}", collision_event);
