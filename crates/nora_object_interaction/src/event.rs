@@ -71,7 +71,7 @@ mod tests {
     use bevy::core::CorePlugin;
     use bevy::prelude::*;
     use crate::event::{send_events, InteractionEvent};
-    use crate::interaction::{Drag, Hover};
+    use crate::interaction::{Drag, Hover, Select};
 
     #[derive(Component, Default)]
     struct TestGroup;
@@ -97,6 +97,7 @@ mod tests {
             .spawn()
             .insert(Hover::<TestGroup>::default())
             .insert(Drag::<TestGroup>::default())
+            .insert(Select::<TestGroup>::default())
             .id();
 
         (world, entity)
