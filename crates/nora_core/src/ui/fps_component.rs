@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_egui::{
     egui, EguiContext,
     egui::{
-        plot::{Legend, Line, Values},
+        plot::{Legend, Line, PlotPoints},
         Color32
     }
 };
@@ -89,8 +89,8 @@ impl FPSComponent {
                     .show_axes([false, true]);
                 
                 plot.show(ui, |ui| {
-                    ui.line(Line::new(Values::from_ys_f32(fps_history.as_slice())).color(Color32::from_rgb(100, 200, 100)).name("FPS"));
-                    ui.line(Line::new(Values::from_ys_f32(fps_ave_history.make_contiguous())).color(Color32::from_rgb(100, 100, 200)).name("FPS Ave"));
+                    ui.line(Line::new(PlotPoints::from_ys_f32(fps_history.as_slice())).color(Color32::from_rgb(100, 200, 100)).name("FPS"));
+                    ui.line(Line::new(PlotPoints::from_ys_f32(fps_ave_history.make_contiguous())).color(Color32::from_rgb(100, 100, 200)).name("FPS Ave"));
                 });
         });
 

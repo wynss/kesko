@@ -61,7 +61,7 @@ pub fn spawn_arena(
     commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Fixed,
         Shape::Box {x_length: length, y_length: wall_height, z_length: wall_width},
-        material.clone(),
+        material,
         Transform::from_xyz(0.0, wall_height / 2.0, width / 2.0 - half_wall_width),
         meshes
     )).insert(RayVisible::<GroupStatic>::default());

@@ -80,7 +80,7 @@ pub enum RayCastMethod {
 pub struct RayCastSource<T> 
 where T: Component + Default
 {
-    method: RayCastMethod,
+    pub method: RayCastMethod,
     pub ray: Option<Ray>,
     pub ray_hit: Option<RayHit>,
     pub prev_ray_hit: Option<RayHit>,
@@ -129,6 +129,7 @@ pub struct RayVisible<T> {
 }
 
 
+#[allow(clippy::type_complexity)]
 fn create_rays_system<T: Component + Default>(
     windows: Res<Windows>,
     mut ray_source_query: Query<(&mut RayCastSource<T>, Option<&Camera>, Option<&Projection>, Option<&GlobalTransform>)>

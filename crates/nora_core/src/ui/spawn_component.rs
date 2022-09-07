@@ -39,9 +39,8 @@ impl SpawnComponent {
         let mut comp = comp.get_single_mut().unwrap();
 
         for event in spawn_event_reader.iter() {
-            match event {
-                SpawnEvent::OpenWindow => comp.open = true,
-                _ => ()
+            if let SpawnEvent::OpenWindow = event {
+                comp.open = true;
             }
         }
     }

@@ -4,7 +4,6 @@ use bevy::{
     app::{App, Plugin},
     window::WindowDescriptor, DefaultPlugins
 };
-use bevy::window::PresentMode;
 use crate::{interaction::{
     groups::GroupStatic,
     vertical_marker::{

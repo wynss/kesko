@@ -2,7 +2,9 @@ use std::marker::PhantomData;
 
 use bevy::prelude::*;
 use bevy::input::mouse::MouseMotion;
-use nora_raycast::RayCastSource;
+use nora_raycast::{RayCastSource, RayCastMethod};
+
+const CURSOR_MOVE_LIMIT: f32 = 0.5;
 
 
 #[derive(Default)]
@@ -22,60 +24,77 @@ pub(crate) struct Hover<T: Component + Default> {
     _phantom: PhantomData<fn() -> T>
 }
 
+#[derive(Component, Default)]
+pub(crate) struct Select<T: Component + Default> {
+    pub(crate) selected: bool,
+    _phantom: PhantomData<fn() -> T>
+}
+
+/// System for updating the user interactions with objects
+#[allow(clippy::type_complexity)]
 pub(crate) fn update_interactions<T: Component + Default>(
     mut motion_evr: EventReader<MouseMotion>,
     mouse_button_input: Res<Input<MouseButton>>,
     source_query: Query<&RayCastSource<T>, With<Camera>>,
-    mut dragging_global: ResMut<DraggingGlobal>,
-    mut interaction_query: Query<(Entity, &mut Drag<T>, &mut Hover<T>)>,
+    mut global_drag: ResMut<DraggingGlobal>,
+    mut interaction_query: Query<(Entity, &mut Drag<T>, &mut Hover<T>, &mut Select<T>)>,
 ) {
 
-    let mouse_pressed = mouse_button_input.pressed(MouseButton::Left);
-    let mouse_just_released = mouse_button_input.just_released(MouseButton::Left);
+    let left_btn_pressed = mouse_button_input.pressed(MouseButton::Left);
+    let left_btn_just_released = mouse_button_input.just_released(MouseButton::Left);
 
     // get if the cursor moved
-    let mut mouse_motion = 0.0;
-    for motion in motion_evr.iter() {
-        mouse_motion += motion.delta.x.abs() + motion.delta.y.abs();
-    }
-    let cursor_moved = mouse_motion > 0.5;
+    let mouse_motion: f32 = motion_evr.iter().map(|m| m.delta.length()).sum();
+    let cursor_moved = mouse_motion > CURSOR_MOVE_LIMIT;
 
     if let Ok(source) = source_query.get_single() {
+        // We have a single source that casts rays
 
-        let hit_entity = source.ray_hit.as_ref().map(|hit| hit.entity);
+        // Make sure the source is casting from screen space
+        if let RayCastMethod::ScreenSpace = source.method {
 
-        if mouse_pressed && cursor_moved && !dragging_global.dragged {
-            if let Some(hit_entity) = hit_entity {
-                let (_, mut drag, _) = interaction_query.get_mut(hit_entity).unwrap();
-                if !drag.dragged {
-                    drag.dragged = true;
-                    dragging_global.dragged = true;
-                }
-            }
-        }
-        else if mouse_just_released {
-            for (e, mut drag, mut hover) in interaction_query.iter_mut() {
-                if hit_entity == Some(e) && drag.dragged {
-                    hover.hovered = true;
-                    drag.dragged = false;
-                } else if hit_entity != Some(e) {
-                    if drag.dragged {
-                        drag.dragged = false;
+            // possible entity that was hit by the ray
+            let entity_hit = source.ray_hit.as_ref().map(|hit| hit.entity);
+
+            for (entity, mut drag, mut hover, mut select) in interaction_query.iter_mut() {
+
+                if entity_hit == Some(entity) {
+                    // we are pointing at 'entity'
+
+                    // handle hover
+                    if !hover.hovered {
+                        hover.hovered = true;
                     }
+                    
+                    // handle selection
+                    if left_btn_just_released && !cursor_moved && !global_drag.dragged{
+                        select.selected = !select.selected;
+                    }
+
+                    // handle drag
+                    if left_btn_pressed && cursor_moved && !drag.dragged && !global_drag.dragged{
+                        drag.dragged = true;
+                        global_drag.dragged = true;
+                    } else if left_btn_just_released && drag.dragged {
+                        drag.dragged = false;
+                        global_drag.dragged = false;
+                    }
+                    
+                } else {
+                    // we are not pointing at 'entity'
+                    
+                    //handle hover
                     if hover.hovered {
                         hover.hovered = false;
                     }
+
+                    // handle drag
+                    if left_btn_just_released && drag.dragged {
+                        drag.dragged = false;
+                        global_drag.dragged = false
+                    }
                 }
-                dragging_global.dragged = false;
-            }
-        } else {
-            for (e, drag, mut hover) in interaction_query.iter_mut() {
-                if hit_entity == Some(e) && !drag.dragged && !hover.hovered {
-                    hover.hovered = true;
-                } else if hit_entity != Some(e) && hover.hovered {
-                    hover.hovered = false;
-                }
-            }
+            } 
         }
     }
 }

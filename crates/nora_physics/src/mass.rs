@@ -47,7 +47,7 @@ fn mass_of_attached(handle: &rapier::RigidBodyHandle, multibody_set: &rapier::Mu
                 continue;
             }
         }
-        mass += mass_of_attached(&attached_handle, &multibody_set, &bodies, Some(handle));
+        mass += mass_of_attached(&attached_handle, multibody_set, bodies, Some(handle));
     }
 
     mass

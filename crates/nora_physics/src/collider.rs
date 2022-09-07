@@ -61,6 +61,7 @@ impl Default for ColliderPhysicalProperties {
 pub(crate) struct ColliderHandle(rapier::ColliderHandle);
 
 
+#[allow(clippy::type_complexity)]
 pub(crate) fn add_collider_to_bodies_system(
     mut commands: Commands,
     mut entity_collider_map: ResMut<EntityColliderMap>,

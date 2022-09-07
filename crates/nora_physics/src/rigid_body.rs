@@ -30,6 +30,7 @@ pub struct RigidBodyName(pub String);
 pub struct RigidBodyHandle(pub rapier::RigidBodyHandle);
 
 
+#[allow(clippy::type_complexity)]
 pub(crate) fn add_rigid_bodies_system(
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
     mut entity_2_body: ResMut<Entity2BodyHandle>,

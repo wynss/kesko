@@ -145,11 +145,11 @@ pub fn spawn_car(
         world_transform,
         meshes
     ))
-        .insert(Joint::new(frame, FixedJoint {
-            parent_anchor,
-            child_anchor
-        }))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
+    .insert(Joint::new(frame, FixedJoint {
+        parent_anchor,
+        child_anchor
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
     // right wall
     let parent_anchor = Transform::from_translation(Vec3::new(-half_frame_width + half_wall_thick, half_frame_height, 0.0));
@@ -158,15 +158,15 @@ pub fn spawn_car(
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box {x_length: wall_thickness, y_length: wall_height, z_length: frame_length - 2.0 * wall_thickness},
-        material_body.clone(),
+        material_body,
         world_transform,
         meshes
     ))
-        .insert(Joint::new(frame, FixedJoint {
-            parent_anchor,
-            child_anchor
-        }))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
+    .insert(Joint::new(frame, FixedJoint {
+        parent_anchor,
+        child_anchor
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
 
     // left front link
@@ -269,7 +269,8 @@ pub fn spawn_car(
     let child_anchor = Transform::default();
     commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},        material_wheel.clone(),
+        Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},
+        material_wheel,
         get_world_transform(&transform, &parent_anchor, &child_anchor),
         meshes
     ))
@@ -279,6 +280,7 @@ pub fn spawn_car(
         axis: Vec3::Y,
         ..default()
     }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName(RIGHT_REAR_WHEEL.to_owned()));
 
     frame
@@ -336,6 +338,7 @@ fn send_car_control_events(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn handle_car_control_system(
     mut car_event_reader: EventReader<CarEvent>,
     mut joint_event_writer: EventWriter<JointMotorEvent>,
