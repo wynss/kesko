@@ -10,7 +10,10 @@ use crate::{interaction::{
         update_vertical_marker_pos_system,
         handle_vertical_marker_spawning
     },
-    multibody_selection::multibody_selection_system
+    multibody_selection::{
+        multibody_selection_system, 
+        MultibodySelectionEvent
+    }
 }, models::spawn_model_system};
 
 
@@ -33,6 +36,7 @@ impl Plugin for CorePlugin {
             .add_system(handle_vertical_marker_spawning::<GroupStatic>)
             .add_system(update_vertical_marker_pos_system::<GroupStatic>)
             .add_system(multibody_selection_system)
+            .add_event::<MultibodySelectionEvent>()
             .add_system(spawn_model_system)
             .add_system(bevy::window::close_on_esc);
     }
