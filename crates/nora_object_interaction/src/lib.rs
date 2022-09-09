@@ -1,7 +1,7 @@
 pub mod debug;
 pub mod event;
 pub mod material;
-mod interaction;
+pub mod interaction;
 
 use std::marker::PhantomData;
 
