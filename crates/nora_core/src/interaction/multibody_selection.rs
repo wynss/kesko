@@ -10,6 +10,9 @@ use nora_physics::multibody::{
 use crate::interaction::groups::GroupDynamic;
 
 
+/// System that handles selection/deselection of multibodies.
+/// Also makes sure that only one multibody/singlebody can be selected at a time.
+#[allow(clippy::type_complexity)]
 pub fn multibody_selection_system(
     mut interaction_event_reader: EventReader<InteractionEvent>,
     mut select_event_writer: EventWriter<SelectEvent>,
@@ -35,9 +38,9 @@ pub fn multibody_selection_system(
             } else if let Ok((multi_child, _)) = child_query.get(*entity) {
                 (Some(&multi_child.joints), Some(multi_child.root))
             } else {
-                (None, None)
+                // the event was from a singlebody, pretend that it is a multibody with just a root
+                (None, Some(*entity))
             };
-            
 
             if let Some(links) = links {
 
@@ -62,22 +65,18 @@ pub fn multibody_selection_system(
             }
 
             // handle deselection the previous selected single body or multibody
-            let entity_to_check = if let Some(root_entity) = root_entity{
-                root_entity
-            } else {
-                *entity
-            };
+            let root_entity = root_entity.expect("We should have a root entity");
 
             // check if there is a multibody selected already, if so trigger deselection
             root_query.for_each(|(entity, _, select)| {
-                if select.selected && entity != entity_to_check && should_select {
+                if select.selected && entity != root_entity && should_select {
                     select_event_writer.send(SelectEvent::Deselect(entity));
                 }
             });
 
             // check if there is a singlebody selected already, if so trigger deselection
             non_multi.for_each(|(entity, select)| {
-                if select.selected && should_select && entity != entity_to_check {
+                if select.selected && should_select && entity != root_entity {
                     select_event_writer.send(SelectEvent::Deselect(entity));
                 }
             })
