@@ -100,8 +100,8 @@ impl CollisionEventHandler {
     }
 }
 
-/// System for propagating collsion events to Bevy from Rapier
-/// Should be exectuted after the rapier pipeline stepin order to capture the latest events
+/// System for propagating collision events to Bevy from Rapier
+/// Should be executed after the rapier pipeline step in order to capture the latest events
 pub(crate) fn send_collision_events_system(
     colliders: Res<rapier::ColliderSet>,
     collision_event_manager: Res<CollisionEventHandler>,

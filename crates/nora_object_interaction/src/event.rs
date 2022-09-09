@@ -14,6 +14,7 @@ pub enum InteractionEvent {
     NoInteraction(Entity),
 }
 
+/// Event that can be sent to select/deselect an entity 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SelectEvent {
     Select(Entity),

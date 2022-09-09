@@ -13,20 +13,20 @@ pub(crate) struct DraggingGlobal {
 }
 
 #[derive(Component, Default)]
-pub(crate) struct Drag<T: Component + Default> {
-    pub(crate) dragged: bool,
+pub struct Drag<T: Component + Default> {
+    pub dragged: bool,
     _phantom: PhantomData<fn() -> T>
 }
 
 #[derive(Component, Default)]
-pub(crate) struct Hover<T: Component + Default> {
-    pub(crate) hovered: bool,
+pub struct Hover<T: Component + Default> {
+    pub hovered: bool,
     _phantom: PhantomData<fn() -> T>
 }
 
 #[derive(Component, Default)]
-pub(crate) struct Select<T: Component + Default> {
-    pub(crate) selected: bool,
+pub struct Select<T: Component + Default> {
+    pub selected: bool,
     _phantom: PhantomData<fn() -> T>
 }
 
