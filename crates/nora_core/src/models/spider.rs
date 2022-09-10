@@ -3,7 +3,10 @@ use std::f32::consts::FRAC_PI_4;
 use bevy::prelude::*;
 
 use nora_physics::{
-    rigid_body::RigidBody,
+    rigid_body::{
+        RigidBody, 
+        RigidBodyName
+    },
     joint::{
         Joint,
         revolute::RevoluteJoint
@@ -39,6 +42,7 @@ pub fn spawn_spider(
         Shape::Sphere { radius: body_radius, subdivisions: 7 }, material.clone(), transform, meshes
     ))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("Spider".to_owned()))
     .id();
 
 

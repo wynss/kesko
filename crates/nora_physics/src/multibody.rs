@@ -9,6 +9,8 @@ use crate::rigid_body::{RigidBodyHandle, BodyHandle2Entity, RigidBodyName};
 /// Component to indicate that the entity is a multibody root entity
 #[derive(Component)]
 pub struct MultibodyRoot {
+    // Name of the multibody
+    pub name: String,
     /// map from rigidbody name to entity that has a reference to a joint
     pub joints: HashMap<String, Entity>
 }
@@ -34,7 +36,7 @@ pub(crate) fn add_multibody_components_system(
     >
 ) {
 
-    for (entity, handle, _) in query.iter() {
+    for (entity, handle, body_name) in query.iter() {
 
         // get the multibodyjoint link for the rigidbody handle.
         if let Some(body_joint_link) = multibody_joint_set.rigid_body_link(handle.0) {
@@ -62,11 +64,16 @@ pub(crate) fn add_multibody_components_system(
                 }
 
                 if handle.0 == multibody.root().rigid_body_handle() {
-                    commands.entity(entity).insert(MultibodyRoot { joints });
+                    let name = if let Some(body_name) = body_name {
+                        body_name.0.clone()
+                    } else {
+                        entity.id().to_string()
+                    };
+                    commands.entity(entity).insert(MultibodyRoot { name, joints });
                 } else {
                     // not a root
                     let root_rigid_body_handle = multibody.root().rigid_body_handle();
-                    let root_entity = body_2_entity.get(&root_rigid_body_handle).expect("Every rigid body should be conntected to an entity");
+                    let root_entity = body_2_entity.get(&root_rigid_body_handle).expect("Every rigid body should be connected to an entity");
                     commands.entity(entity).insert(MultiBodyChild { 
                         root: *root_entity, 
                         joints

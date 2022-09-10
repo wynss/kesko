@@ -9,6 +9,13 @@ use nora_physics::multibody::{
 };
 use crate::interaction::groups::GroupDynamic;
 
+// Event for when a multibody has been selected/deselected
+// the entity contained in the event is the root of the multibody
+pub enum MultibodySelectionEvent {
+    Selected(Entity),
+    Deselected(Entity)
+}
+
 
 /// System that handles selection/deselection of multibodies.
 /// Also makes sure that only one multibody/singlebody can be selected at a time.
@@ -16,6 +23,7 @@ use crate::interaction::groups::GroupDynamic;
 pub fn multibody_selection_system(
     mut interaction_event_reader: EventReader<InteractionEvent>,
     mut select_event_writer: EventWriter<SelectEvent>,
+    mut multibody_select_event_writer: EventWriter<MultibodySelectionEvent>,
     root_query: Query<(Entity, &MultibodyRoot, &Select<GroupDynamic>), With<MultibodyRoot>>,
     child_query: Query<(&MultiBodyChild, &Select<GroupDynamic>), With<MultiBodyChild>>,
     non_multi: Query<(Entity, &Select<GroupDynamic>), (Without<MultibodyRoot>, Without<MultiBodyChild>)>
@@ -34,6 +42,11 @@ pub fn multibody_selection_system(
             
             // get links/entities that possibly should be updated and the multibody root entity 
             let (links, root_entity) = if let Ok((root_entity, multi_root, _)) = root_query.get(*entity) {
+                // send event that a multibody root has been selected or deselected
+                match should_select {
+                    true => multibody_select_event_writer.send(MultibodySelectionEvent::Selected(root_entity)),
+                    false => multibody_select_event_writer.send(MultibodySelectionEvent::Deselected(root_entity))
+                }
                 (Some(&multi_root.joints), Some(root_entity))
             } else if let Ok((multi_child, _)) = child_query.get(*entity) {
                 (Some(&multi_child.joints), Some(multi_child.root))
@@ -61,6 +74,8 @@ pub fn multibody_selection_system(
                         }
                     }
                 }
+
+                // send events to select or deselect the other bodies in the multibody
                 select_event_writer.send_batch(events.drain(..));
             }
 

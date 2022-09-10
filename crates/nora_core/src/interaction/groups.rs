@@ -3,7 +3,7 @@
 /// This is implemented with generics so for example an entity with
 /// InteractorBundle<GroupDynamic> bundle can only interact with an entity with
 /// Interactive<GroupDynamic> bundle
-use bevy::prelude::{Component};
+use bevy::prelude::Component;
 
 
 /// For static entities

@@ -98,6 +98,7 @@ pub fn spawn_car(
         meshes
     ))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("Car".to_owned()))
     .id();
     
     // front wall
