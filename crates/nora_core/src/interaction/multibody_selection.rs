@@ -55,7 +55,7 @@ pub fn multibody_selection_system(
                 (None, Some(*entity))
             };
 
-            if let (Some(links), Some(root_entity)) = (links, root_entity) {
+            if let Some(links) = links {
 
                 // send events to select/deselect the other entities in the multibody
                 let mut events = Vec::<SelectEvent>::new();

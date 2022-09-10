@@ -37,9 +37,9 @@ impl MultibodyMenuComponent {
                         comp.multibody_name = root.name.clone();
                     }
                 },
-                MultibodySelectionEvent::Deselected(entity) => {
+                MultibodySelectionEvent::Deselected(root_entity) => {
                     // make sure we are only closing when the correct entity is deselected
-                    if Some(*entity) == comp.multibody_root {
+                    if Some(*root_entity) == comp.multibody_root {
                         comp.multibody_root = None;
                         comp.ui_open = false;
                     }
@@ -57,7 +57,8 @@ impl MultibodyMenuComponent {
             .title_bar(false)
             .show(ctx, |ui| {
                 ui.vertical(|ui| {
-                    ui.heading(&self.multibody_name);
+                    ui.heading("Multibody");
+                    ui.label(format!("Name: {}", &self.multibody_name));
                     if ui.button("Close").clicked() {
                         if let Some(entity) = self.multibody_root {
                             select_event_writer.send(SelectEvent::Deselect(entity))
