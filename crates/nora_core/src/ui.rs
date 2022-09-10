@@ -37,7 +37,7 @@ impl Plugin for UIPlugin {
             .add_system(fps_component::FPSComponent::show_and_send_system)
 
             // Add UI component for multibody interaction
-            .add_system(multibody_component::MultibodyMenuComponent::show_system);
+            .add_system(multibody_component::MultibodyUIComponent::show_system);
     }
 
     fn name(&self) -> &str {
@@ -55,5 +55,5 @@ fn initialize_ui_components_system(
     commands.spawn().insert(main_menu::MainMenuComponent::default());
     commands.spawn().insert(spawn_component::SpawnComponent::default());
     commands.spawn().insert(fps_component::FPSComponent::default());
-    commands.spawn().insert(multibody_component::MultibodyMenuComponent::default());
+    commands.spawn().insert(multibody_component::MultibodyUIComponent::default());
 }

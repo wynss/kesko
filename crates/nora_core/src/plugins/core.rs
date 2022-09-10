@@ -32,12 +32,21 @@ impl Plugin for CorePlugin {
                 ..Default::default()
             })
             .insert_resource(Msaa { samples: 4 })
+            
             .add_plugins(DefaultPlugins)
+
+            // vertical marker systems
             .add_system(handle_vertical_marker_spawning::<GroupStatic>)
             .add_system(update_vertical_marker_pos_system::<GroupStatic>)
+
+            // multibody selection systems and events
             .add_system(multibody_selection_system)
             .add_event::<MultibodySelectionEvent>()
+
+            // spawn default models system
             .add_system(spawn_model_system)
+
+            //// close on ESC
             .add_system(bevy::window::close_on_esc);
     }
 }

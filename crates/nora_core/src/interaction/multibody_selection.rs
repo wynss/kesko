@@ -9,8 +9,8 @@ use nora_physics::multibody::{
 };
 use crate::interaction::groups::GroupDynamic;
 
-// Event for when a multibody had been selected/deselected
-// the entity contained is the root of the multibody
+// Event for when a multibody has been selected/deselected
+// the entity contained in the event is the root of the multibody
 pub enum MultibodySelectionEvent {
     Selected(Entity),
     Deselected(Entity)
