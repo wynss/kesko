@@ -81,6 +81,9 @@ impl Plugin for PhysicsPlugin {
 
             .insert_resource(Gravity::new(self.gravity))
 
+            // Multibody name registry, making sure all multibodies have unique names
+            .insert_resource(multibody::MultibodyNameRegistry::new())
+
             .add_event::<joint::JointMotorEvent>()
             
             .add_system_set_to_stage(
