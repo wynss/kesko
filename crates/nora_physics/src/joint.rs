@@ -3,9 +3,13 @@ pub mod fixed;
 pub mod revolute;
 pub mod prismatic;
 
+use std::any::Any;
+
 use bevy::prelude::*;
 use rapier3d::prelude as rapier;
 use rapier3d::dynamics::GenericJoint;
+pub use rapier3d::prelude::{JointAxis, JointLimits};
+
 use crate::rigid_body::{Entity2BodyHandle, RigidBodyHandle};
 
 
@@ -19,6 +23,20 @@ pub struct Joint {
     joint: GenericJoint
 }
 
+/// Enum to indicate joint type
+#[derive(Debug)]
+pub enum JointType {
+    Fixed,
+    Revolute,
+    Prismatic,
+    Spherical
+}
+
+// trait to convert to an Any trait object
+pub trait AsAnyJoint {
+    fn as_any(&self) -> &dyn Any;
+}
+
 
 impl Joint {
     pub fn new(parent: Entity, joint: impl Into<GenericJoint>) -> Self {
@@ -27,12 +45,43 @@ impl Joint {
             joint: joint.into()
         }
     }
+
+    pub fn get_type(&self) -> JointType {
+        let joint_type = if self.joint.as_fixed().is_some() {
+            JointType::Fixed
+        } else if self.joint.as_spherical().is_some() {
+            JointType::Spherical
+        } else if self.joint.as_prismatic().is_some() {
+            JointType::Prismatic
+        } else {
+            JointType::Revolute
+        };
+        joint_type
+    }
+
+    pub fn get_limits(&self) -> Option<JointLimits<f32>> {
+        if let Some(rev_joint) = self.joint.as_revolute() {
+            if let Some(limits) = rev_joint.limits() {
+                return Some(*limits);
+            }
+        } else if let Some(prism_joint) = self.joint.as_prismatic() {
+            if let Some(limits) = prism_joint.limits() {
+                return Some(*limits);
+            }
+        }
+        None
+    }
+
+    /// Get a the joint as a trait object, this can then be downcasted to the real type using Any.
+    pub fn get(&self) -> Box<dyn AsAnyJoint> {
+        todo!("Implement when we need to obtain the specific joint by down casting");
+    }
 }
 
 /// Component that holds a handle to an entity's joint.
 /// Used to indicate that the joint has been added both in Bevy and Rapier
 #[derive(Component, Debug)]
-pub(crate) struct MultibodyJointHandle(pub(crate) rapier::MultibodyJointHandle);
+pub struct MultibodyJointHandle(pub(crate) rapier::MultibodyJointHandle);
 
 
 /// System to add multibody joints between bodies
@@ -248,7 +297,7 @@ mod tests {
         test_stage.with_system(update_joint_motors_system).run(&mut world);
         
         // get result
-        let res_set = world.get_resource::<rapier::MultibodyJointSet>().expect("Could not get impule joint set");
+        let res_set = world.get_resource::<rapier::MultibodyJointSet>().expect("Could not get impulse joint set");
         let (multibody, link_id) = res_set.get(joint_handle).expect("Could not get joint from joint set");
 
         // test correct values
@@ -272,14 +321,14 @@ mod tests {
 
         // Setup and send test event for setting the velocity
         let expected_pos = 2.3;
-        let expected_dampning = 3.4;
+        let expected_damping = 3.4;
         let expected_stiffness = 4.5;
         let mut events = Events::<JointMotorEvent>::default();
         events.send(JointMotorEvent { 
             entity, 
             action: MotorAction::PositionRevolute { 
                 position: expected_pos, 
-                damping: expected_dampning,
+                damping: expected_damping,
                 stiffness: expected_stiffness
             }
         });
@@ -290,13 +339,13 @@ mod tests {
         test_stage.with_system(update_joint_motors_system).run(&mut world);
         
         // get result
-        let res_set = world.get_resource::<rapier::MultibodyJointSet>().expect("Could not get impule joint set");
+        let res_set = world.get_resource::<rapier::MultibodyJointSet>().expect("Could not get impulse joint set");
         let (multibody, link_id) = res_set.get(joint_handle).expect("Could not get joint from joint set");
 
         // test correct values
         let res_joint = multibody.link(link_id).unwrap().joint;
         assert_eq!(res_joint.data.as_revolute().unwrap().motor().unwrap().target_pos, expected_pos);
-        assert_eq!(res_joint.data.as_revolute().unwrap().motor().unwrap().damping, expected_dampning);
+        assert_eq!(res_joint.data.as_revolute().unwrap().motor().unwrap().damping, expected_damping);
         assert_eq!(res_joint.data.as_revolute().unwrap().motor().unwrap().stiffness, expected_stiffness);
 
     }
@@ -333,7 +382,7 @@ mod tests {
         test_stage.with_system(update_joint_motors_system).run(&mut world);
         
         // get result
-        let res_set = world.get_resource::<rapier::MultibodyJointSet>().expect("Could not get impule joint set");
+        let res_set = world.get_resource::<rapier::MultibodyJointSet>().expect("Could not get impulse joint set");
         let (multibody, link_id) = res_set.get(joint_handle).expect("Could not get joint from joint set");
 
         // test correct values
@@ -357,7 +406,7 @@ mod tests {
 
         // Setup and send test event for setting the velocity
         let expected_pos = 2.3;
-        let expected_dampning = 3.4;
+        let expected_damping = 3.4;
         let expected_stiffness = 4.5;
         let test_axis = rapier::JointAxis::AngY;
         let mut events = Events::<JointMotorEvent>::default();
@@ -366,7 +415,7 @@ mod tests {
             action: MotorAction::PositionSpherical {
                 position: expected_pos, 
                 axis: test_axis,
-                damping: expected_dampning,
+                damping: expected_damping,
                 stiffness: expected_stiffness
             }
         });
@@ -377,13 +426,13 @@ mod tests {
         test_stage.with_system(update_joint_motors_system).run(&mut world);
         
         // get result
-        let res_set = world.get_resource::<rapier::MultibodyJointSet>().expect("Could not get impule joint set");
+        let res_set = world.get_resource::<rapier::MultibodyJointSet>().expect("Could not get impulse joint set");
         let (multibody, link_id) = res_set.get(joint_handle).expect("Could not get joint from joint set");
 
         // test correct values
         let res_joint = multibody.link(link_id).unwrap().joint;
         assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().target_pos, expected_pos);
-        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().damping, expected_dampning);
+        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().damping, expected_damping);
         assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().stiffness, expected_stiffness);
 
     }

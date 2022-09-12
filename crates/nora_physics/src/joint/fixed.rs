@@ -1,11 +1,20 @@
 use bevy::prelude::*;
 use rapier3d::prelude::{GenericJoint, FixedJointBuilder};
-use crate::conversions::IntoRapier;
+
+use crate::conversions::{IntoRapier, IntoBevy};
+
+use super::AsAnyJoint;
 
 
 pub struct FixedJoint {
     pub parent_anchor: Transform,
     pub child_anchor: Transform,
+}
+
+impl AsAnyJoint for FixedJoint {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 impl From<FixedJoint> for GenericJoint {
@@ -14,6 +23,16 @@ impl From<FixedJoint> for GenericJoint {
             .local_frame1(joint.parent_anchor.into_rapier())
             .local_frame2(joint.child_anchor.into_rapier())
             .into()
+    }
+}
+
+impl From<GenericJoint> for FixedJoint {
+    fn from(joint: GenericJoint) -> Self {
+        let (parent_translation, parent_rot) = joint.local_frame1.into_bevy();
+        let parent_anchor = Transform::from_translation(parent_translation).with_rotation(parent_rot);
+        let (child_translation, child_rot) = joint.local_frame2.into_bevy();
+        let child_anchor = Transform::from_translation(child_translation).with_rotation(child_rot);
+        FixedJoint { parent_anchor, child_anchor }
     }
 }
 

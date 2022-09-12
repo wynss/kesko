@@ -36,9 +36,16 @@ fn test_scene(
 
     models::arena::spawn_arena(
         &mut commands,
-        materials.add(Color::hex("CFD8DC").unwrap().into()), 
+        materials.add(Color::WHITE.into()), 
         &mut meshes, 
         20.0, 20.0, 1.0
+    );
+
+    models::spider::spawn_spider(
+        &mut commands,
+        materials.add(Color::CRIMSON.into()), 
+        Transform::from_xyz(2.0, 2.0, 2.0),
+        &mut meshes,
     );
 
     // spawn sphere that will generate collision events

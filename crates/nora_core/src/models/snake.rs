@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use nora_physics::{
-    rigid_body::RigidBody,
+    rigid_body::{RigidBody, RigidBodyName},
     joint::{
         Joint,
         spherical::SphericalJoint
@@ -36,10 +36,11 @@ pub fn spawn_snake(
         new_origin,
         meshes
     ))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .id();
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("snake".to_owned()))
+    .id();
 
-    for _ in 1..4 {
+    for i in 1..4 {
 
         let parent_anchor = Transform::from_translation((half_length + margin) * Vec3::Y);
         let child_anchor = Transform::from_translation(-(half_length + margin) * Vec3::Y);
@@ -52,13 +53,14 @@ pub fn spawn_snake(
             world_transform,
             meshes
         ))
-            .insert(Joint::new(root, SphericalJoint {
-                parent_anchor,
-                child_anchor,
-                ..default()
-            }))
-            .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-            .id();
+        .insert(Joint::new(root, SphericalJoint {
+            parent_anchor,
+            child_anchor,
+            ..default()
+        }))
+        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+        .insert(RigidBodyName(format!("joint {i}")))
+        .id();
         
         new_origin = world_transform;
         root = child;

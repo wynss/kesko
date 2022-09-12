@@ -1,5 +1,6 @@
 use bevy::math::{Vec3, Quat};
 use bevy::prelude::Transform;
+use rapier3d::prelude::UnitVector;
 use rapier3d::math::{Translation, Isometry, Vector};
 use nalgebra::{UnitQuaternion, Vector3, Quaternion, Point3, UnitVector3};
 
@@ -31,6 +32,12 @@ impl IntoBevy<Quat> for UnitQuaternion<f32> {
 impl IntoBevy<(Vec3, Quat)> for Isometry<f32> {
     fn into_bevy(self) -> (Vec3, Quat) {
         (self.translation.into_bevy(), self.rotation.into_bevy())
+    }
+}
+
+impl IntoBevy<Vec3> for UnitVector<f32> {
+    fn into_bevy(self) -> Vec3 {
+        Vec3::new(self.x, self.y, self.y)
     }
 }
 

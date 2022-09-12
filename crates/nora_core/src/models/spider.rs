@@ -42,7 +42,7 @@ pub fn spawn_spider(
         Shape::Sphere { radius: body_radius, subdivisions: 7 }, material.clone(), transform, meshes
     ))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("Spider".to_owned()))
+    .insert(RigidBodyName("spider".to_owned()))
     .id();
 
 
@@ -65,7 +65,9 @@ pub fn spawn_spider(
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
-    })).id();
+    }))
+    .insert(RigidBodyName("left_front_x".to_owned()))
+    .id();
 
     // left front leg z
     let parent_anchor = Transform::default();
@@ -84,7 +86,8 @@ pub fn spawn_spider(
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
-    }));
+    }))
+    .insert(RigidBodyName("left_front_z".to_owned()));
 
     // right front leg x
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(-1.0, 0.0, 1.0).normalize())
@@ -105,7 +108,10 @@ pub fn spawn_spider(
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
-    })).id();
+    }))
+    .insert(RigidBodyName("right_front_x".to_owned()))
+    .id();
+
     // right front leg z
     let parent_anchor = Transform::default();
     let child_anchor = Transform::from_translation((half_leg + leg_radius) * Vec3::Y);
@@ -123,9 +129,10 @@ pub fn spawn_spider(
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
-    }));
+    }))
+    .insert(RigidBodyName("right_front_z".to_owned()));
 
-    // left back leg x
+    // left rear leg x
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(1.0, 0.0, -1.0).normalize())
         .with_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0).normalize(), leg_angle));
     let child_anchor = Transform::default();
@@ -144,7 +151,11 @@ pub fn spawn_spider(
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
-    })).id();
+    }))
+    .insert(RigidBodyName("left_rear_x".to_owned()))
+    .id();
+
+    // left rear leg z
     let parent_anchor = Transform::default();
     let child_anchor = Transform::from_translation((half_leg + leg_radius) * Vec3::Y);
     commands.spawn_bundle(MeshPhysicBodyBundle::from(
@@ -161,7 +172,8 @@ pub fn spawn_spider(
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
-    }));
+    }))
+    .insert(RigidBodyName("left_rear_z".to_owned()));
 
     // right rear leg x
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(-1.0, 0.0, -1.0).normalize())
@@ -182,7 +194,11 @@ pub fn spawn_spider(
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
-    })).id();
+    }))
+    .insert(RigidBodyName("right_rear_x".to_owned()))
+    .id();
+
+    // right rear leg z
     let parent_anchor = Transform::default();
     let child_anchor = Transform::from_translation((half_leg + leg_radius) * Vec3::Y);
     commands.spawn_bundle(MeshPhysicBodyBundle::from(
@@ -199,5 +215,6 @@ pub fn spawn_spider(
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
-    }));
+    }))
+    .insert(RigidBodyName("right_rear_z".to_owned()));
 }

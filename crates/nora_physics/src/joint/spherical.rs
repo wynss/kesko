@@ -1,6 +1,10 @@
+use std::any::Any;
+
 use bevy::prelude::*;
 use rapier3d::prelude::{GenericJoint, JointAxis, SphericalJointBuilder};
+
 use crate::conversions::IntoRapier;
+use super::AsAnyJoint;
 
 
 #[derive(Default)]
@@ -16,6 +20,12 @@ pub struct SphericalJoint {
     pub y_damping: f32,
     pub z_stiffness: f32,
     pub z_damping: f32,
+}
+
+impl AsAnyJoint for SphericalJoint {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl From<SphericalJoint> for GenericJoint {
@@ -51,6 +61,12 @@ impl From<SphericalJoint> for GenericJoint {
         *generic
             .set_local_frame1(joint.parent_anchor.into_rapier())
             .set_local_frame2(joint.child_anchor.into_rapier())
+    }
+}
+
+impl From<GenericJoint> for SphericalJoint {
+    fn from(_joint: GenericJoint) -> Self {
+        todo!("Implement this when we need to convert back to the specific joint");
     }
 }
 
