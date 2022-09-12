@@ -183,6 +183,7 @@ pub fn spawn_car(
         parent_anchor,
         child_anchor,
         axis: Vec3::X,
+        limits: Some(Vec2::new(-FRAC_PI_6, FRAC_PI_6)),
         stiffness: 1.0,
         ..default()
     }))
@@ -220,6 +221,7 @@ pub fn spawn_car(
         parent_anchor,
         child_anchor,
         axis: Vec3::X,
+        limits: Some(Vec2::new(-FRAC_PI_6, FRAC_PI_6)),
         stiffness: 1.0,
         ..default()
     }))

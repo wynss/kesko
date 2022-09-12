@@ -67,6 +67,10 @@ impl Joint {
             if let Some(limits) = rev_joint.limits() {
                 return Some(*limits);
             }
+        } else if let Some(prism_joint) = self.joint.as_prismatic() {
+            if let Some(limits) = prism_joint.limits() {
+                return Some(*limits);
+            }
         }
         None
     }

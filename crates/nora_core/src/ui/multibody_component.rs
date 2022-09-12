@@ -95,11 +95,19 @@ impl MultibodyUIComponent {
                                             axis_val_1: 0.0,
                                             axis_val_2: Some(0.0),
                                             axis_val_3: Some(0.0),
+                                            // TODO: Add here
                                             limits: None
                                         });
                                     },
                                     JointType::Prismatic => {
-                                        todo!();
+                                        joints.insert(name.clone(), JointData {
+                                            entity: *entity,
+                                            joint_type, 
+                                            axis_val_1: 0.0,
+                                            axis_val_2: None,
+                                            axis_val_3: None,
+                                            limits: joint.get_limits()
+                                        });
                                     }
                                     _ => {}
                                 }
@@ -124,72 +132,6 @@ impl MultibodyUIComponent {
         // run ui logic
         comp.show(egui_context.ctx_mut(), &mut select_event_writer, &mut joint_motor_event_writer);
 
-    }
-
-    /// Add slider for a revolute joint
-    fn revolute_slider(ui: &mut Ui, joint_data: &mut JointData, joint_motor_event_writer: &mut EventWriter<JointMotorEvent>) {
-
-        if ui.add(egui::Slider::new(&mut joint_data.axis_val_1, Self::get_slider_range(joint_data.limits)).suffix("°").step_by(0.1)).changed() {
-            // send motor action if the value has changed
-            joint_motor_event_writer.send(JointMotorEvent {
-                entity: joint_data.entity,
-                action: MotorAction::PositionRevolute { 
-                    position: joint_data.axis_val_1.to_radians(), 
-                    damping: 0.1, 
-                    stiffness: 1.0 
-                }
-            });
-        }
-    }
-
-    /// Add sliders for a spherical joints
-    fn spherical_sliders(ui: &mut Ui, joint_data: &mut JointData, joint_motor_event_writer: &mut EventWriter<JointMotorEvent>) {
-        ui.horizontal(|ui| {
-            // X
-            if ui.add(egui::Slider::new(&mut joint_data.axis_val_1, Self::get_slider_range(joint_data.limits)).suffix("°").text("X")).changed() {
-                joint_motor_event_writer.send(JointMotorEvent {
-                    entity: joint_data.entity,
-                    action: MotorAction::PositionSpherical { 
-                        position: joint_data.axis_val_1.to_radians(),
-                        axis: JointAxis::AngX,
-                        damping: 0.1, 
-                        stiffness: 1.0 
-                    }
-                });
-            }
-            // Y
-            if ui.add(egui::Slider::new(&mut joint_data.axis_val_2.unwrap(), Self::get_slider_range(joint_data.limits)).suffix("°").text("Y")).changed() {
-                joint_motor_event_writer.send(JointMotorEvent {
-                    entity: joint_data.entity,
-                    action: MotorAction::PositionSpherical { 
-                        position: joint_data.axis_val_2.unwrap().to_radians(),
-                        axis: JointAxis::AngY,
-                        damping: 0.1, 
-                        stiffness: 1.0 
-                    }
-                });
-            }
-            // Z
-            if ui.add(egui::Slider::new(&mut joint_data.axis_val_3.unwrap(), Self::get_slider_range(joint_data.limits)).suffix("°").text("Z")).changed() {
-                joint_motor_event_writer.send(JointMotorEvent {
-                    entity: joint_data.entity,
-                    action: MotorAction::PositionSpherical { 
-                        position: joint_data.axis_val_3.unwrap().to_radians(),
-                        axis: JointAxis::AngZ,
-                        damping: 0.1, 
-                        stiffness: 1.0 
-                    }
-                });
-            }
-        });
-    }
-
-    /// Create a slider range from limits
-    fn get_slider_range(limits: Option<JointLimits<f32>>) -> RangeInclusive<f32> {
-        match limits {
-            Some(limits) => RangeInclusive::<f32>::new(limits.min, limits.max),
-            None => RangeInclusive::<f32>::new(-180.0, 180.0)
-        }
     }
 
     /// UI logic
@@ -259,8 +201,73 @@ impl MultibodyUIComponent {
                             select_event_writer.send(SelectEvent::Deselect(*entity))
                         }
                     }
-
                 });
             });
+    }
+    
+    /// Add slider for a revolute joint
+    fn revolute_slider(ui: &mut Ui, joint_data: &mut JointData, joint_motor_event_writer: &mut EventWriter<JointMotorEvent>) {
+
+        // send motor action if the value has changed
+        if ui.add(egui::Slider::new(&mut joint_data.axis_val_1, Self::get_slider_range(joint_data.limits)).suffix("°").step_by(0.1)).changed() {
+            joint_motor_event_writer.send(JointMotorEvent {
+                entity: joint_data.entity,
+                action: MotorAction::PositionRevolute { 
+                    position: joint_data.axis_val_1.to_radians(), 
+                    damping: 0.1, 
+                    stiffness: 1.0 
+                }
+            });
+        }
+    }
+
+    /// Add sliders for a spherical joints to control x, y and z axis and send motor actions
+    fn spherical_sliders(ui: &mut Ui, joint_data: &mut JointData, joint_motor_event_writer: &mut EventWriter<JointMotorEvent>) {
+        ui.horizontal(|ui| {
+            // X
+            if ui.add(egui::Slider::new(&mut joint_data.axis_val_1, Self::get_slider_range(joint_data.limits)).suffix("°").text("X")).changed() {
+                joint_motor_event_writer.send(JointMotorEvent {
+                    entity: joint_data.entity,
+                    action: MotorAction::PositionSpherical { 
+                        position: joint_data.axis_val_1.to_radians(),
+                        axis: JointAxis::AngX,
+                        damping: 0.1, 
+                        stiffness: 1.0 
+                    }
+                });
+            }
+            // Y
+            if ui.add(egui::Slider::new(&mut joint_data.axis_val_2.unwrap(), Self::get_slider_range(joint_data.limits)).suffix("°").text("Y")).changed() {
+                joint_motor_event_writer.send(JointMotorEvent {
+                    entity: joint_data.entity,
+                    action: MotorAction::PositionSpherical { 
+                        position: joint_data.axis_val_2.unwrap().to_radians(),
+                        axis: JointAxis::AngY,
+                        damping: 0.1, 
+                        stiffness: 1.0 
+                    }
+                });
+            }
+            // Z
+            if ui.add(egui::Slider::new(&mut joint_data.axis_val_3.unwrap(), Self::get_slider_range(joint_data.limits)).suffix("°").text("Z")).changed() {
+                joint_motor_event_writer.send(JointMotorEvent {
+                    entity: joint_data.entity,
+                    action: MotorAction::PositionSpherical { 
+                        position: joint_data.axis_val_3.unwrap().to_radians(),
+                        axis: JointAxis::AngZ,
+                        damping: 0.1, 
+                        stiffness: 1.0 
+                    }
+                });
+            }
+        });
+    }
+
+    /// Create a slider range from limits
+    fn get_slider_range(limits: Option<JointLimits<f32>>) -> RangeInclusive<f32> {
+        match limits {
+            Some(limits) => RangeInclusive::<f32>::new(limits.min.to_degrees(), limits.max.to_degrees()),
+            None => RangeInclusive::<f32>::new(-180.0, 180.0)
+        }
     }
 }
