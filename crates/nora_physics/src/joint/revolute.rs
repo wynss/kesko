@@ -1,10 +1,7 @@
 use bevy::prelude::*;
 use rapier3d::prelude::*;
 
-use crate::conversions::{
-    IntoBevy,
-    IntoRapier
-};
+use crate::conversions::IntoRapier;
 
 use super::AsAnyJoint;
 
@@ -62,7 +59,7 @@ impl From<RevoluteJoint> for GenericJoint {
 }
 
 impl From<GenericJoint> for RevoluteJoint {
-    fn from(joint: GenericJoint) -> Self {
+    fn from(_joint: GenericJoint) -> Self {
         todo!("Implement this when we need to convert back to the specific joint");
     }
 }

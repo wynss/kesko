@@ -11,9 +11,6 @@ use rapier3d::dynamics::GenericJoint;
 pub use rapier3d::prelude::{JointAxis, JointLimits};
 
 use crate::rigid_body::{Entity2BodyHandle, RigidBodyHandle};
-use self::{
-    fixed::FixedJoint, revolute::RevoluteJoint, spherical::SphericalJoint
-};
 
 
 /// Component for connecting two bodies with a joint. This component should be added to the body that wants to connect

@@ -65,7 +65,7 @@ impl From<SphericalJoint> for GenericJoint {
 }
 
 impl From<GenericJoint> for SphericalJoint {
-    fn from(joint: GenericJoint) -> Self {
+    fn from(_joint: GenericJoint) -> Self {
         todo!("Implement this when we need to convert back to the specific joint");
     }
 }
