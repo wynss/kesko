@@ -24,10 +24,12 @@ use crate::{
 };
 
 
-const RIGHT_FRONT_WHEEL: &str = "right_front_wheel";
-const LEFT_FRONT_WHEEL: &str = "left_front_wheel";
-const RIGHT_REAR_WHEEL: &str = "right_rear_wheel";
-const LEFT_REAR_WHEEL: &str = "left_rear_wheel";
+const RIGHT_FRONT_WHEEL_TURN: &str = "right_front_wheel_y";
+const LEFT_FRONT_WHEEL_TURN: &str = "left_front_wheel_y";
+const RIGHT_FRONT_WHEEL: &str = "right_front_wheel_x";
+const LEFT_FRONT_WHEEL: &str = "left_front_wheel_x";
+const RIGHT_REAR_WHEEL: &str = "right_rear_wheel_x";
+const LEFT_REAR_WHEEL: &str = "left_rear_wheel_x";
 
 pub struct CarPlugin;
 impl Plugin for CarPlugin {
@@ -187,7 +189,7 @@ pub fn spawn_car(
         stiffness: 1.0,
         ..default()
     }))
-    .insert(RigidBodyName(LEFT_FRONT_WHEEL.to_owned()))
+    .insert(RigidBodyName(LEFT_FRONT_WHEEL_TURN.to_owned()))
     .id();
 
     // left front wheel
@@ -206,6 +208,7 @@ pub fn spawn_car(
         axis: Vec3::Y,
         ..default()
     }))
+    .insert(RigidBodyName(LEFT_FRONT_WHEEL.to_owned()))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
     // right front link
@@ -226,7 +229,7 @@ pub fn spawn_car(
         ..default()
     }))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName(RIGHT_FRONT_WHEEL.to_owned()))
+    .insert(RigidBodyName(RIGHT_FRONT_WHEEL_TURN.to_owned()))
     .id();
 
     // right front wheel
@@ -245,6 +248,7 @@ pub fn spawn_car(
         axis: Vec3::Y,
         ..default()
     }))
+    .insert(RigidBodyName(RIGHT_FRONT_WHEEL.to_owned()))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
     // left back wheel
@@ -386,20 +390,20 @@ fn handle_car_control_system(
                         }
                     };
 
-                    if let Some(entity) = car_body.joints.get(LEFT_FRONT_WHEEL) {
+                    if let Some(entity) = car_body.joints.get(LEFT_FRONT_WHEEL_TURN) {
                         joint_event_writer.send(JointMotorEvent { 
                             entity: *entity,
                             action: MotorAction::PositionRevolute { position: -position, damping, stiffness } })
                     } else {
-                        error!("Could not get {}", LEFT_FRONT_WHEEL);
+                        error!("Could not get {}", LEFT_FRONT_WHEEL_TURN);
                     }
 
-                    if let Some(entity) = car_body.joints.get(RIGHT_FRONT_WHEEL) {
+                    if let Some(entity) = car_body.joints.get(RIGHT_FRONT_WHEEL_TURN) {
                         joint_event_writer.send(JointMotorEvent { 
                             entity: *entity,
                             action: MotorAction::PositionRevolute { position, damping, stiffness } })
                     } else {
-                        error!("Could not get {}", RIGHT_FRONT_WHEEL);
+                        error!("Could not get {}", RIGHT_FRONT_WHEEL_TURN);
                     }
 
                 } 
