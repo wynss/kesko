@@ -65,7 +65,7 @@ pub(crate) fn add_multibody_components_system(
         // get the multibodyjoint link for the rigidbody handle.
         if let Some(body_joint_link) = multibody_joint_set.rigid_body_link(handle.0) {
 
-            // get the multibody of the link
+            // get the multibody of the joint link
             if let Some(multibody) = multibody_joint_set.get_multibody(body_joint_link.multibody) {
                 
                 // build a hash map with names and entity to store in the component.
@@ -74,6 +74,7 @@ pub(crate) fn add_multibody_components_system(
                 for link in multibody.links() {
 
                     let link_entity = body_2_entity.get(&link.rigid_body_handle()).expect("body should be in body to entity map");
+
                     match query.get(*link_entity) {
                         Ok((_, _, name)) => {
                             if let Some(name) = name {

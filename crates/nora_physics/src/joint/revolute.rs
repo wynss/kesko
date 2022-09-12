@@ -1,6 +1,12 @@
 use bevy::prelude::*;
-use rapier3d::{prelude::{GenericJoint, RevoluteJointBuilder}, math::Real};
-use crate::conversions::IntoRapier;
+use rapier3d::prelude::*;
+
+use crate::conversions::{
+    IntoBevy,
+    IntoRapier
+};
+
+use super::AsAnyJoint;
 
 
 pub struct RevoluteJoint {
@@ -11,6 +17,12 @@ pub struct RevoluteJoint {
     pub damping: f32,
     pub stiffness: f32,
     pub max_motor_force: Real
+}
+
+impl AsAnyJoint for RevoluteJoint {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 impl Default for RevoluteJoint {
@@ -46,6 +58,12 @@ impl From<RevoluteJoint> for GenericJoint {
         generic.local_frame1.rotation = joint.parent_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
         generic.local_frame2.rotation = joint.child_anchor.rotation.into_rapier() * generic.local_frame2.rotation;
         generic
+    }
+}
+
+impl From<GenericJoint> for RevoluteJoint {
+    fn from(joint: GenericJoint) -> Self {
+        todo!("Implement this when we need to convert back to the specific joint");
     }
 }
 
