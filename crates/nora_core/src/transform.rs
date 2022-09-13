@@ -1,6 +1,7 @@
 use bevy::prelude::Transform;
 
 
+/// get the transformation of a multibody joint link in world coordinates
 pub fn get_world_transform(
     origin: &Transform, 
     parent_anchor: &Transform, 
