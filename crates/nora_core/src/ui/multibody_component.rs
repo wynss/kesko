@@ -25,11 +25,14 @@ use crate::interaction::multibody_selection::MultibodySelectionEvent;
 // Joint data to store relevant information and values to display and control the joints
 #[derive(Debug)]
 struct JointData {
-    entity: Entity,
+    name: String,
     joint_type: JointType,
-    axis_val_1: f32,
-    axis_val_2: Option<f32>,
-    axis_val_3: Option<f32>,
+    val_axis_1: f32,
+    val_axis_2: Option<f32>,
+    val_axis_3: Option<f32>,
+    current_val_axis_1: f32,
+    current_val_axis_2: f32,
+    current_val_axis_3: f32,
     limits: Option<JointLimits<f32>>
 }
 
@@ -40,7 +43,7 @@ pub(crate) struct MultibodyUIComponent {
     ui_open: bool,
     multibody_root: Option<Entity>,
     multibody_name: Option<String>,
-    multibody_joints: Option<HashMap<String, JointData>>,
+    multibody_joints: Option<HashMap<Entity, JointData>>,
 }
 
 impl MultibodyUIComponent {
@@ -58,72 +61,76 @@ impl MultibodyUIComponent {
         // get a reference to 'self'
         let mut comp = comp.get_single_mut().expect("We should have a component");
 
-        // read possible events that a multibody has been selected/deselected
-        for event in multibody_select_event_reader.iter() {
-            match event {
-                MultibodySelectionEvent::Selected(root_entity) => {
+        // update if we have a multibody selected or not
+        comp.parse_events(&body_query, &mut multibody_select_event_reader);
 
-                    comp.ui_open = true;
-                    comp.multibody_root = Some(*root_entity);
+        // We have a body selected -> update joint data
+        if let Some(root_entity) = comp.multibody_root {
+            if let Ok(root) = body_query.get(root_entity) {
 
-                    if let Ok(root) = body_query.get(*root_entity) {
+                if comp.multibody_joints.is_none() {
+                    // Build map with relevant joint data to be displayed
+                    let mut joints = HashMap::<Entity, JointData>::new();
+                    for (name, entity) in root.joints.iter() {
+                        if let Ok(joint) = joint_query.get(*entity) {
 
-                        comp.multibody_name = Some(root.name.clone());
-
-                        // Build map with relevant joint data to be displayed
-                        let mut joints = HashMap::<String, JointData>::new();
-                        for (name, entity) in root.joints.iter() {
-                            if let Ok(joint) = joint_query.get(*entity) {
-
-                                // check which type of joint we are dealing with and add it
-                                let joint_type = joint.get_type();
-                                match joint_type {
-                                    JointType::Revolute => {
-                                        joints.insert(name.clone(), JointData {
-                                            entity: *entity,
-                                            joint_type, 
-                                            axis_val_1: 0.0,
-                                            axis_val_2: None,
-                                            axis_val_3: None,
-                                            limits: joint.get_limits()
-                                        });
-                                    },
-                                    JointType::Spherical => {
-                                        joints.insert(name.clone(), JointData {
-                                            entity: *entity,
-                                            joint_type, 
-                                            axis_val_1: 0.0,
-                                            axis_val_2: Some(0.0),
-                                            axis_val_3: Some(0.0),
-                                            // TODO: Add here
-                                            limits: None
-                                        });
-                                    },
-                                    JointType::Prismatic => {
-                                        joints.insert(name.clone(), JointData {
-                                            entity: *entity,
-                                            joint_type, 
-                                            axis_val_1: 0.0,
-                                            axis_val_2: None,
-                                            axis_val_3: None,
-                                            limits: joint.get_limits()
-                                        });
-                                    }
-                                    _ => {}
+                            // check which type of joint we are dealing with and add it to the component
+                            let joint_type = joint.get_type();
+                            match joint_type {
+                                JointType::Revolute => {
+                                    joints.insert(*entity, JointData {
+                                        name: name.clone(),
+                                        joint_type, 
+                                        val_axis_1: 0.0,
+                                        val_axis_2: None,
+                                        val_axis_3: None,
+                                        current_val_axis_1: 0.0,
+                                        current_val_axis_2: 0.0,
+                                        current_val_axis_3: 0.0,
+                                        limits: joint.get_limits(),
+                                    });
+                                },
+                                JointType::Spherical => {
+                                    joints.insert(*entity, JointData {
+                                        name: name.clone(),
+                                        joint_type, 
+                                        val_axis_1: 0.0,
+                                        val_axis_2: Some(0.0),
+                                        val_axis_3: Some(0.0),
+                                        current_val_axis_1: 0.0,
+                                        current_val_axis_2: 0.0,
+                                        current_val_axis_3: 0.0,
+                                        // TODO: Add here
+                                        limits: None
+                                    });
+                                },
+                                JointType::Prismatic => {
+                                    joints.insert(*entity, JointData {
+                                        name: name.clone(),
+                                        joint_type, 
+                                        val_axis_1: 0.0,
+                                        val_axis_2: None,
+                                        val_axis_3: None,
+                                        current_val_axis_1: 0.0,
+                                        current_val_axis_2: 0.0,
+                                        current_val_axis_3: 0.0,
+                                        limits: joint.get_limits()
+                                    });
                                 }
+                                _ => {}
                             }
                         }
-
-                        comp.multibody_joints = Some(joints);
                     }
-                },
-                MultibodySelectionEvent::Deselected(root_entity) => {
-                    // make sure we are only closing when the correct entity is deselected
-                    if Some(*root_entity) == comp.multibody_root {
-                        comp.ui_open = false;
-                        comp.multibody_root = None;
-                        comp.multibody_name = None;
-                        comp.multibody_joints = None;
+                    comp.multibody_joints = Some(joints);
+
+                } else if let Some(joints) = &mut comp.multibody_joints {
+                    // just update the component data with current joint values
+                    for (joint_entity, joint_data) in joints.iter_mut() {
+                        if let Ok(joint) = joint_query.get(*joint_entity) {
+                            joint_data.current_val_axis_1 = joint.get_rot_x();
+                            joint_data.current_val_axis_2 = joint.get_rot_y();
+                            joint_data.current_val_axis_3 = joint.get_rot_z();
+                        }
                     }
                 }
             }
@@ -132,6 +139,31 @@ impl MultibodyUIComponent {
         // run ui logic
         comp.show(egui_context.ctx_mut(), &mut select_event_writer, &mut joint_motor_event_writer);
 
+    }
+
+    /// read possible events that a multibody has been selected/deselected and update component state
+    fn parse_events(&mut self, body_query: &Query<&MultibodyRoot>, multibody_select_event_reader: &mut EventReader<MultibodySelectionEvent>) {
+        for event in multibody_select_event_reader.iter() {
+            match event {
+                MultibodySelectionEvent::Selected(root_entity) => {
+                    self.ui_open = true;
+                    self.multibody_root = Some(*root_entity);
+                    if let Ok(root) = body_query.get(*root_entity) {
+                        self.multibody_name = Some(root.name.clone());
+                    }
+                    self.multibody_joints = None;
+                },
+                MultibodySelectionEvent::Deselected(root_entity) => {
+                    // make sure we are only closing when the correct entity is deselected
+                    if Some(*root_entity) == self.multibody_root {
+                        self.ui_open = false;
+                        self.multibody_root = None;
+                        self.multibody_name = None;
+                        self.multibody_joints = None;
+                    }
+                }
+            }
+        }
     }
 
     /// UI logic
@@ -151,7 +183,7 @@ impl MultibodyUIComponent {
         egui::Window::new("Multibody")
             .open(ui_open)
             .resizable(true)
-            .hscroll(false)
+            .hscroll(true)
             .vscroll(true)
             .title_bar(true)
             .show(ctx, |ui| {
@@ -170,24 +202,38 @@ impl MultibodyUIComponent {
                         ui.vertical(|ui| {
                             ui.heading("Joints");
                             egui::Grid::new("joint_grid")
-                            .num_columns(3)
+                            .num_columns(7)
                             .spacing([40.0, 4.0])
                             .striped(true)
                             .show(ui, |ui| {
-                                for (joint_name, joint_data) in joints.iter_mut() {
 
-                                    ui.label(joint_name);
+                                // headers
+                                ui.label("Name");
+                                ui.label("Type");
+                                ui.label("Set value");
+                                ui.label("X");
+                                ui.label("Y");
+                                ui.label("Z");
+                                ui.end_row();
+
+                                // joint rows
+                                for (joint_entity, joint_data) in joints.iter_mut() {
+
+                                    ui.label(joint_data.name.clone());
                                     ui.label(format!("{:?}", joint_data.joint_type));
 
                                     match joint_data.joint_type {
                                         JointType::Revolute => {
-                                            Self::revolute_slider(ui, joint_data, joint_motor_event_writer);
+                                            Self::revolute_slider(ui, joint_entity, joint_data, joint_motor_event_writer);
                                         },
                                         JointType::Spherical => {
-                                            Self::spherical_sliders(ui, joint_data, joint_motor_event_writer);
+                                            Self::spherical_sliders(ui, joint_entity, joint_data, joint_motor_event_writer);
                                         }
                                         _ => {}
                                     }
+                                    ui.label(format!("{:.1}", Self::smooth_joint_val(joint_data.current_val_axis_1.to_degrees())));
+                                    ui.label(format!("{:.1}", Self::smooth_joint_val(joint_data.current_val_axis_2.to_degrees())));
+                                    ui.label(format!("{:.1}", Self::smooth_joint_val(joint_data.current_val_axis_3.to_degrees())));
                                     ui.end_row();
                                 }
                             });
@@ -206,14 +252,14 @@ impl MultibodyUIComponent {
     }
     
     /// Add slider for a revolute joint
-    fn revolute_slider(ui: &mut Ui, joint_data: &mut JointData, joint_motor_event_writer: &mut EventWriter<JointMotorEvent>) {
+    fn revolute_slider(ui: &mut Ui, joint_entity: &Entity, joint_data: &mut JointData, joint_motor_event_writer: &mut EventWriter<JointMotorEvent>) {
 
         // send motor action if the value has changed
-        if ui.add(egui::Slider::new(&mut joint_data.axis_val_1, Self::get_slider_range(joint_data.limits)).suffix("°").step_by(0.1)).changed() {
+        if ui.add(egui::Slider::new(&mut joint_data.val_axis_1, Self::get_slider_range(joint_data.limits)).suffix("°").step_by(0.1)).changed() {
             joint_motor_event_writer.send(JointMotorEvent {
-                entity: joint_data.entity,
+                entity: *joint_entity,
                 action: MotorAction::PositionRevolute { 
-                    position: joint_data.axis_val_1.to_radians(), 
+                    position: joint_data.val_axis_1.to_radians(), 
                     damping: 0.1, 
                     stiffness: 1.0 
                 }
@@ -222,14 +268,14 @@ impl MultibodyUIComponent {
     }
 
     /// Add sliders for a spherical joints to control x, y and z axis and send motor actions
-    fn spherical_sliders(ui: &mut Ui, joint_data: &mut JointData, joint_motor_event_writer: &mut EventWriter<JointMotorEvent>) {
+    fn spherical_sliders(ui: &mut Ui, joint_entity: &Entity, joint_data: &mut JointData, joint_motor_event_writer: &mut EventWriter<JointMotorEvent>) {
         ui.horizontal(|ui| {
             // X
-            if ui.add(egui::Slider::new(&mut joint_data.axis_val_1, Self::get_slider_range(joint_data.limits)).suffix("°").text("X")).changed() {
+            if ui.add(egui::Slider::new(&mut joint_data.val_axis_1, Self::get_slider_range(joint_data.limits)).suffix("°").text("X")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
-                    entity: joint_data.entity,
+                    entity: *joint_entity,
                     action: MotorAction::PositionSpherical { 
-                        position: joint_data.axis_val_1.to_radians(),
+                        position: joint_data.val_axis_1.to_radians(),
                         axis: JointAxis::AngX,
                         damping: 0.1, 
                         stiffness: 1.0 
@@ -237,11 +283,11 @@ impl MultibodyUIComponent {
                 });
             }
             // Y
-            if ui.add(egui::Slider::new(&mut joint_data.axis_val_2.unwrap(), Self::get_slider_range(joint_data.limits)).suffix("°").text("Y")).changed() {
+            if ui.add(egui::Slider::new(&mut joint_data.val_axis_2.unwrap(), Self::get_slider_range(joint_data.limits)).suffix("°").text("Y")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
-                    entity: joint_data.entity,
+                    entity: *joint_entity,
                     action: MotorAction::PositionSpherical { 
-                        position: joint_data.axis_val_2.unwrap().to_radians(),
+                        position: joint_data.val_axis_2.unwrap().to_radians(),
                         axis: JointAxis::AngY,
                         damping: 0.1, 
                         stiffness: 1.0 
@@ -249,11 +295,11 @@ impl MultibodyUIComponent {
                 });
             }
             // Z
-            if ui.add(egui::Slider::new(&mut joint_data.axis_val_3.unwrap(), Self::get_slider_range(joint_data.limits)).suffix("°").text("Z")).changed() {
+            if ui.add(egui::Slider::new(&mut joint_data.val_axis_3.unwrap(), Self::get_slider_range(joint_data.limits)).suffix("°").text("Z")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
-                    entity: joint_data.entity,
+                    entity: *joint_entity,
                     action: MotorAction::PositionSpherical { 
-                        position: joint_data.axis_val_3.unwrap().to_radians(),
+                        position: joint_data.val_axis_3.unwrap().to_radians(),
                         axis: JointAxis::AngZ,
                         damping: 0.1, 
                         stiffness: 1.0 
@@ -269,5 +315,14 @@ impl MultibodyUIComponent {
             Some(limits) => RangeInclusive::<f32>::new(limits.min.to_degrees(), limits.max.to_degrees()),
             None => RangeInclusive::<f32>::new(-180.0, 180.0)
         }
+    }
+
+    /// to smoothen the displayed joint values since they can often be -0.0/0.0 which
+    /// result in a very erratic UI behavior
+    fn smooth_joint_val(val: f32) -> f32 {
+        if val.abs() < 1e-2 && val.is_sign_negative(){
+            return 0.0
+        }
+        val
     }
 }
