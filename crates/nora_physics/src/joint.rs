@@ -11,17 +11,8 @@ use rapier3d::dynamics::GenericJoint;
 pub use rapier3d::prelude::{JointAxis, JointLimits};
 
 use crate::rigid_body::{Entity2BodyHandle, RigidBodyHandle};
+use crate::conversions::{IntoBevy, IntoRapier};
 
-
-/// Component for connecting two bodies with a joint. This component should be added to the body that wants to connect
-/// to another body
-#[derive(Component)]
-pub struct Joint {
-    /// entity that the entity with the component should attach to
-    parent: Entity,
-    /// Rapier joint
-    joint: GenericJoint
-}
 
 /// Enum to indicate joint type
 #[derive(Debug)]
@@ -37,12 +28,40 @@ pub trait AsAnyJoint {
     fn as_any(&self) -> &dyn Any;
 }
 
+pub trait JointTrait {
+    fn parent_anchor(&self) -> Transform;
+    fn child_anchor(&self) -> Transform;
+}
+
+/// Component for connecting two bodies with a joint. This component should be added to the body that wants to connect
+/// to another body
+#[derive(Component)]
+pub struct Joint {
+    /// entity that the entity with the component should attach to
+    parent: Entity,
+    /// Rapier joint
+    joint: GenericJoint,
+    /// local joint_orientation
+    local_joint_rot: Quat,
+    /// parent anchor
+    parent_anchor: Transform,
+    /// child anchor
+    child_anchor: Transform
+}
 
 impl Joint {
-    pub fn new(parent: Entity, joint: impl Into<GenericJoint>) -> Self {
+    pub fn new(parent: Entity, joint: impl Into<GenericJoint> + JointTrait) -> Self 
+    {
+
+        let parent_anchor = joint.parent_anchor();
+        let child_anchor = joint.child_anchor();
+
         Self {
             parent,
-            joint: joint.into()
+            joint: joint.into(),
+            local_joint_rot: Quat::default(),
+            parent_anchor,
+            child_anchor
         }
     }
 
@@ -70,6 +89,18 @@ impl Joint {
             }
         }
         None
+    }
+
+    pub fn get_rot_x(&self) -> f32 {
+        self.local_joint_rot.to_euler(EulerRot::XYZ).0
+    }
+
+    pub fn get_rot_y(&self) -> f32 {
+        self.local_joint_rot.to_euler(EulerRot::XYZ).1
+    }
+
+    pub fn get_rot_z(&self) -> f32 {
+        self.local_joint_rot.to_euler(EulerRot::XYZ).2
     }
 
     /// Get a the joint as a trait object, this can then be downcasted to the real type using Any.
@@ -102,6 +133,27 @@ pub(crate) fn add_multibody_joints_system(
         ).unwrap();
 
         commands.entity(entity).insert(MultibodyJointHandle(joint_handle));
+    }
+}
+
+/// System that updates the joints positions and velocities
+pub(crate) fn update_joint_pos_system(
+    multibody_joint_set: Res<rapier::MultibodyJointSet>,
+    mut handle_query: Query<(&mut Joint, &MultibodyJointHandle), (With<MultibodyJointHandle>, With<Joint>)>,
+) {
+    for (mut joint, handle) in handle_query.iter_mut() {
+        if let Some((mb, link_index)) = multibody_joint_set.get(handle.0) {
+            if let Some(link) = mb.link(link_index) {
+
+                // we have the joint transformation in the parent frame
+                let body_to_parent = link.joint().body_to_parent();
+
+                // convert to local orientation by multiplying by the inverse of anchor's rotation
+                joint.local_joint_rot = (
+                    joint.parent_anchor.rotation.into_rapier().inverse() * joint.child_anchor.rotation.into_rapier().inverse() * body_to_parent.rotation
+                ).into_bevy();
+            }
+        }
     }
 }
 

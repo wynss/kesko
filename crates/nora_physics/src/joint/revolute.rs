@@ -3,7 +3,7 @@ use rapier3d::prelude::*;
 
 use crate::conversions::IntoRapier;
 
-use super::AsAnyJoint;
+use super::{AsAnyJoint, JointTrait};
 
 
 pub struct RevoluteJoint {
@@ -36,6 +36,15 @@ impl Default for RevoluteJoint {
     }
 }
 
+impl JointTrait for RevoluteJoint {
+    fn parent_anchor(&self) -> Transform {
+        self.parent_anchor
+    }
+    fn child_anchor(&self) -> Transform {
+        self.child_anchor
+    }
+}
+
 impl From<RevoluteJoint> for GenericJoint {
     fn from(joint: RevoluteJoint) -> GenericJoint {
         
@@ -53,7 +62,7 @@ impl From<RevoluteJoint> for GenericJoint {
 
         let mut generic: GenericJoint = builder.into();
         generic.local_frame1.rotation = joint.parent_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
-        generic.local_frame2.rotation = joint.child_anchor.rotation.into_rapier() * generic.local_frame2.rotation;
+        generic.local_frame1.rotation = joint.child_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
         generic
     }
 }

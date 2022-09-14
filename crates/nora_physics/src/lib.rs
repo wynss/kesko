@@ -129,6 +129,9 @@ impl Plugin for PhysicsPlugin {
                         .label(PhysicsSystem::UpdateJointMotors)
                         .after(PhysicsSystem::AddColliders)
                     )
+                    .with_system(joint::update_joint_pos_system
+                        .after(PhysicsSystem::AddColliders)
+                    )
                     .with_system(
                         physics_pipeline_step
                             .label(PhysicsSystem::PipelineStep)
