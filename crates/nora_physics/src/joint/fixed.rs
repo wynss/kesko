@@ -3,7 +3,7 @@ use rapier3d::prelude::{GenericJoint, FixedJointBuilder};
 
 use crate::conversions::{IntoRapier, IntoBevy};
 
-use super::AsAnyJoint;
+use super::{AsAnyJoint, JointTrait};
 
 
 pub struct FixedJoint {
@@ -14,6 +14,16 @@ pub struct FixedJoint {
 impl AsAnyJoint for FixedJoint {
     fn as_any(&self) -> &dyn std::any::Any {
         self
+    }
+}
+
+impl JointTrait for FixedJoint {
+    fn parent_anchor(&self) -> Transform {
+        self.parent_anchor
+    }
+
+    fn child_anchor(&self) -> Transform {
+        self.child_anchor
     }
 }
 

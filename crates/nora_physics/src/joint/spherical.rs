@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use rapier3d::prelude::{GenericJoint, JointAxis, SphericalJointBuilder};
 
 use crate::conversions::IntoRapier;
-use super::AsAnyJoint;
+use super::{AsAnyJoint, JointTrait};
 
 
 #[derive(Default)]
@@ -25,6 +25,15 @@ pub struct SphericalJoint {
 impl AsAnyJoint for SphericalJoint {
     fn as_any(&self) -> &dyn Any {
         self
+    }
+}
+
+impl JointTrait for SphericalJoint {
+    fn parent_anchor(&self) -> Transform {
+        self.parent_anchor
+    }
+    fn child_anchor(&self) -> Transform {
+        self.child_anchor
     }
 }
 
