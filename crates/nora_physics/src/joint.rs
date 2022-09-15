@@ -190,6 +190,10 @@ pub enum MotorAction {
         position: f32,
         damping: f32,
         stiffness: f32,
+    },
+    VelocityPrismatic {
+        velocity: f32,
+        factor: f32
     }
 }
 
@@ -238,6 +242,12 @@ pub(crate) fn update_joint_motors_system(
                             MotorAction::PositionPrismatic { position, damping, stiffness } => {
                                 match joint_link.joint.data.as_prismatic_mut() {
                                     Some(prismatic_joint) => { prismatic_joint.set_motor_position(position, stiffness, damping); }
+                                    None => { info!("Joint was not a prismatic joint for prismatic joint event"); }
+                                }
+                            },
+                            MotorAction::VelocityPrismatic { velocity, factor } => {
+                                match joint_link.joint.data.as_prismatic_mut() {
+                                    Some(prismatic_joint) => { prismatic_joint.set_motor_velocity(velocity, factor); }
                                     None => { info!("Joint was not a prismatic joint for prismatic joint event"); }
                                 }
                             }

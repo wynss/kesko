@@ -3,7 +3,10 @@ use bevy::prelude::*;
 use nora_core::{
     plugins::CorePlugins,
     diagnostic::DiagnosticsPlugins,
-    interaction::groups::GroupDynamic
+    interaction::groups::GroupDynamic, 
+    models,
+    models::car::CarPlugin,
+    models::wheely::WheelyPlugin
 };
 use nora_physics::{
     rigid_body::RigidBody,
@@ -13,10 +16,6 @@ use nora_physics::{
     event::GenerateCollisionEvents
 };
 use nora_object_interaction::InteractiveBundle;
-use nora_core::{
-    models,
-    models::car::CarPlugin
-};
 
 
 fn main() {
@@ -24,6 +23,7 @@ fn main() {
     .add_plugins(CorePlugins)
     .add_plugins(DiagnosticsPlugins)
     .add_plugin(CarPlugin)
+    .add_plugin(WheelyPlugin)
     .add_startup_system(test_scene)
     .run();
 }

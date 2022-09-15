@@ -47,7 +47,7 @@ pub fn multibody_selection_system(
                     true => multibody_select_event_writer.send(MultibodySelectionEvent::Selected(root_entity)),
                     false => multibody_select_event_writer.send(MultibodySelectionEvent::Deselected(root_entity))
                 }
-                (Some(&multi_root.joints), Some(root_entity))
+                (Some(&multi_root.joint_name_2_entity), Some(root_entity))
             } else if let Ok((multi_child, _)) = child_query.get(*entity) {
                 (Some(&multi_child.joints), Some(multi_child.root))
             } else {
