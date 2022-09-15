@@ -52,7 +52,7 @@ fn test_scene(
     models::spider::spawn_spider(
         &mut commands,
         materials.add(Color::CRIMSON.into()), 
-        Transform::from_xyz(2.0, 2.0, 2.0),
+        Transform::from_xyz(2.0, 2.0, 0.0),
         &mut meshes,
     );
 
@@ -60,7 +60,7 @@ fn test_scene(
         &mut commands,
         materials.add(Color::FUCHSIA.into()), 
         materials.add(Color::DARK_GRAY.into()), 
-        Transform::from_xyz(-2.0, 2.0, -2.0),
+        Transform::from_xyz(-2.0, 2.0, 0.0),
         &mut meshes,
     );
 
