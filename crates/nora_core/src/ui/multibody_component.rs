@@ -28,8 +28,8 @@ struct JointData {
     name: String,
     joint_type: JointType,
     val_axis_1: f32,
-    val_axis_2: Option<f32>,
-    val_axis_3: Option<f32>,
+    val_axis_2: f32,
+    val_axis_3: f32,
     current_val_axis_1: f32,
     current_val_axis_2: f32,
     current_val_axis_3: f32,
@@ -82,8 +82,8 @@ impl MultibodyUIComponent {
                                         name: name.clone(),
                                         joint_type, 
                                         val_axis_1: 0.0,
-                                        val_axis_2: None,
-                                        val_axis_3: None,
+                                        val_axis_2: 0.0,
+                                        val_axis_3: 0.0,
                                         current_val_axis_1: 0.0,
                                         current_val_axis_2: 0.0,
                                         current_val_axis_3: 0.0,
@@ -95,8 +95,8 @@ impl MultibodyUIComponent {
                                         name: name.clone(),
                                         joint_type, 
                                         val_axis_1: 0.0,
-                                        val_axis_2: Some(0.0),
-                                        val_axis_3: Some(0.0),
+                                        val_axis_2: 0.0,
+                                        val_axis_3: 0.0,
                                         current_val_axis_1: 0.0,
                                         current_val_axis_2: 0.0,
                                         current_val_axis_3: 0.0,
@@ -109,8 +109,8 @@ impl MultibodyUIComponent {
                                         name: name.clone(),
                                         joint_type, 
                                         val_axis_1: 0.0,
-                                        val_axis_2: None,
-                                        val_axis_3: None,
+                                        val_axis_2: 0.0,
+                                        val_axis_3: 0.0,
                                         current_val_axis_1: 0.0,
                                         current_val_axis_2: 0.0,
                                         current_val_axis_3: 0.0,
@@ -210,10 +210,10 @@ impl MultibodyUIComponent {
                                 // headers
                                 ui.label("Name");
                                 ui.label("Type");
-                                ui.label("Set value");
                                 ui.label("X");
                                 ui.label("Y");
                                 ui.label("Z");
+                                ui.label("Set value");
                                 ui.end_row();
 
                                 // joint rows
@@ -221,19 +221,20 @@ impl MultibodyUIComponent {
 
                                     ui.label(joint_data.name.clone());
                                     ui.label(format!("{:?}", joint_data.joint_type));
+                                    ui.label(format!("{:.1}", Self::smooth_joint_val(joint_data.current_val_axis_1.to_degrees())));
+                                    ui.label(format!("{:.1}", Self::smooth_joint_val(joint_data.current_val_axis_2.to_degrees())));
+                                    ui.label(format!("{:.1}", Self::smooth_joint_val(joint_data.current_val_axis_3.to_degrees())));
 
                                     match joint_data.joint_type {
                                         JointType::Revolute => {
                                             Self::revolute_slider(ui, joint_entity, joint_data, joint_motor_event_writer);
                                         },
                                         JointType::Spherical => {
-                                            Self::spherical_sliders(ui, joint_entity, joint_data, joint_motor_event_writer);
+                                            // TODO: Spherical joints seems to be broken in rapier at the moment, implement when fixed
+                                            // Self::spherical_sliders(ui, joint_entity, joint_data, joint_motor_event_writer);
                                         }
                                         _ => {}
                                     }
-                                    ui.label(format!("{:.1}", Self::smooth_joint_val(joint_data.current_val_axis_1.to_degrees())));
-                                    ui.label(format!("{:.1}", Self::smooth_joint_val(joint_data.current_val_axis_2.to_degrees())));
-                                    ui.label(format!("{:.1}", Self::smooth_joint_val(joint_data.current_val_axis_3.to_degrees())));
                                     ui.end_row();
                                 }
                             });
@@ -278,31 +279,31 @@ impl MultibodyUIComponent {
                         position: joint_data.val_axis_1.to_radians(),
                         axis: JointAxis::AngX,
                         damping: 0.1, 
-                        stiffness: 1.0 
+                        stiffness: 2.0 
                     }
                 });
             }
             // Y
-            if ui.add(egui::Slider::new(&mut joint_data.val_axis_2.unwrap(), Self::get_slider_range(joint_data.limits)).suffix("°").text("Y")).changed() {
+            if ui.add(egui::Slider::new(&mut joint_data.val_axis_2, Self::get_slider_range(joint_data.limits)).suffix("°").text("Y")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
                     entity: *joint_entity,
                     action: MotorAction::PositionSpherical { 
-                        position: joint_data.val_axis_2.unwrap().to_radians(),
+                        position: joint_data.val_axis_2.to_radians(),
                         axis: JointAxis::AngY,
                         damping: 0.1, 
-                        stiffness: 1.0 
+                        stiffness: 2.0 
                     }
                 });
             }
             // Z
-            if ui.add(egui::Slider::new(&mut joint_data.val_axis_3.unwrap(), Self::get_slider_range(joint_data.limits)).suffix("°").text("Z")).changed() {
+            if ui.add(egui::Slider::new(&mut joint_data.val_axis_3, Self::get_slider_range(joint_data.limits)).suffix("°").text("Z")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
                     entity: *joint_entity,
                     action: MotorAction::PositionSpherical { 
-                        position: joint_data.val_axis_3.unwrap().to_radians(),
+                        position: joint_data.val_axis_3.to_radians(),
                         axis: JointAxis::AngZ,
                         damping: 0.1, 
-                        stiffness: 1.0 
+                        stiffness: 2.0 
                     }
                 });
             }
