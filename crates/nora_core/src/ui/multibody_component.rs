@@ -71,7 +71,7 @@ impl MultibodyUIComponent {
                 if comp.multibody_joints.is_none() {
                     // Build map with relevant joint data to be displayed
                     let mut joints = HashMap::<Entity, JointData>::new();
-                    for (name, entity) in root.joints.iter() {
+                    for (name, entity) in root.joint_name_2_entity.iter() {
                         if let Ok(joint) = joint_query.get(*entity) {
 
                             // check which type of joint we are dealing with and add it to the component

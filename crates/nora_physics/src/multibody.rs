@@ -12,7 +12,7 @@ pub struct MultibodyRoot {
     // Name of the multibody
     pub name: String,
     /// map from rigidbody name to entity that has a reference to a joint
-    pub joints: HashMap<String, Entity>
+    pub joint_name_2_entity: HashMap<String, Entity>
 }
 
 /// Component to indicate that the entity is a multibody child entity
@@ -98,7 +98,7 @@ pub(crate) fn add_multibody_components_system(
                     // We have a root
                     // make the name unique
                     name = name_registry.create_unique_name(&name);
-                    commands.entity(entity).insert(MultibodyRoot { name, joints });
+                    commands.entity(entity).insert(MultibodyRoot { name, joint_name_2_entity: joints });
                 } else {
                     // not a root
                     let root_rigid_body_handle = multibody.root().rigid_body_handle();

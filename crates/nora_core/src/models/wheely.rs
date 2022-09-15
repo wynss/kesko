@@ -2,12 +2,30 @@ use std::f32::consts::{FRAC_PI_2, PI};
 
 use bevy::prelude::*;
 
-use nora_physics::{rigid_body::{RigidBody, RigidBodyName}, joint::{Joint, revolute::RevoluteJoint, prismatic::PrismaticJoint, fixed::FixedJoint}};
+use nora_physics::{
+    rigid_body::{
+        RigidBody, RigidBodyName
+    }, 
+    joint::{
+        JointMotorEvent,
+        MotorAction,
+        Joint, 
+        revolute::RevoluteJoint, 
+        prismatic::PrismaticJoint, 
+        fixed::FixedJoint
+    },
+    multibody::MultibodyRoot
+};
 use nora_object_interaction::InteractiveBundle;
 use crate::{
     shape::Shape,
-    bundle::{MeshPhysicBodyBundle, PhysicBodyBundle},
-    interaction::groups::GroupDynamic,
+    bundle::{
+        MeshPhysicBodyBundle, PhysicBodyBundle
+    },
+    interaction::{
+        groups::GroupDynamic, 
+        multibody_selection::MultibodySelectionEvent
+    },
     transform::get_world_transform,
 };
 
@@ -18,10 +36,59 @@ const WHEEL_WIDTH: f32 = 0.08;
 const BACK_WHEEL_RADIUS: f32 = 0.07;
 const BACK_WHEEL_WIDTH: f32 = 0.04;
 
+const LEFT_WHEEL: &str = "left_wheel";
+const RIGHT_WHEEL: &str = "right_wheel";
+const ARM_LINK_1: &str = "arm_link_1";
+const ARM_LINK_2: &str = "arm_link_2";
+
+pub struct WheelyPlugin;
+impl Plugin for WheelyPlugin {
+    fn build(&self, app: &mut App) {
+        app
+        .add_event::<WheelyControlEvent>()
+        .add_system(Wheely::enable_control_system)
+        .add_system(Wheely::send_control_events)
+        .add_system(Wheely::handle_control_system);
+    }
+}
+
+
+#[derive(Component)]
+struct WheelyController {
+    wheel_velocity: f32,
+    arm_velocity: f32,
+    damping: f32,
+}
+
+impl Default for WheelyController {
+    fn default() -> Self {
+        Self {
+            wheel_velocity: 10.0,
+            arm_velocity: 1.0,
+            damping: 1.0,
+        }
+    }
+}
+
+enum WheelyControlEvent {
+    LeftWheelForward,
+    LeftWheelBackward,
+    LeftWheelStop,
+
+    RightWheelForward,
+    RightWheelBackward,
+    RightWheelStop,
+
+    ArmLink1Pos,
+    ArmLink1Neg,
+    ArmLink1Stop,
+
+    ArmLink2Pos,
+    ArmLink2Neg,
+    ArmLink2Stop,
+}
 
 pub struct Wheely;
-
-
 impl Wheely {
 
     pub fn spawn_wheely(
@@ -61,10 +128,10 @@ impl Wheely {
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("left_wheel".to_owned()));
+        .insert(RigidBodyName(LEFT_WHEEL.to_owned()));
 
         let parent_anchor = Transform::from_translation(Vec3::new(-rh, -hh + wheel_offset, 0.15))
-            .with_rotation(Quat::from_rotation_z(FRAC_PI_2));
+            .with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
         let child_anchor = Transform::default();
         commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
@@ -80,7 +147,7 @@ impl Wheely {
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("right_wheel".to_owned()));
+        .insert(RigidBodyName(RIGHT_WHEEL.to_owned()));
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -hh, -rh));
         let child_anchor = Transform::default();
@@ -167,7 +234,7 @@ impl Wheely {
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("arm_link_1".to_owned()))
+        .insert(RigidBodyName(ARM_LINK_1.to_owned()))
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.25, -0.015));
@@ -188,7 +255,157 @@ impl Wheely {
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("arm_link_2".to_owned()));
+        .insert(RigidBodyName(ARM_LINK_2.to_owned()));
 
+    }
+
+    fn enable_control_system(
+        mut commands: Commands,
+        mut selection_event_reader: EventReader<MultibodySelectionEvent>,
+    ) {
+        for event in selection_event_reader.iter() {
+            match event {
+                MultibodySelectionEvent::Selected(entity) => {
+                    commands.entity(*entity).insert(WheelyController::default());
+                },
+                MultibodySelectionEvent::Deselected(entity) => {
+                    commands.entity(*entity).remove::<WheelyController>();
+                }
+            }
+        }
+    }
+
+    fn send_control_events(
+        keys: Res<Input<KeyCode>>,
+        mut wheely_event_writer: EventWriter<WheelyControlEvent>
+    ) {
+        if keys.just_pressed(KeyCode::Y) {
+            wheely_event_writer.send(WheelyControlEvent::LeftWheelForward);
+        } else if keys.just_pressed(KeyCode::H) {
+            wheely_event_writer.send(WheelyControlEvent::LeftWheelBackward);
+        } else if keys.just_released(KeyCode::Y) || keys.just_released(KeyCode::H){
+            wheely_event_writer.send(WheelyControlEvent::LeftWheelStop);
+        } 
+        
+        if keys.just_pressed(KeyCode::I) {
+            wheely_event_writer.send(WheelyControlEvent::RightWheelForward);
+        } else if keys.just_pressed(KeyCode::K) {
+            wheely_event_writer.send(WheelyControlEvent::RightWheelBackward);
+        } else if keys.just_released(KeyCode::I) || keys.just_released(KeyCode::K){
+            wheely_event_writer.send(WheelyControlEvent::RightWheelStop);
+        } 
+        if keys.just_pressed(KeyCode::U) {
+            wheely_event_writer.send(WheelyControlEvent::ArmLink1Pos);
+        } else if keys.just_pressed(KeyCode::J) {
+            wheely_event_writer.send(WheelyControlEvent::ArmLink1Neg);
+        } else if keys.just_released(KeyCode::U) || keys.just_released(KeyCode::J){
+            wheely_event_writer.send(WheelyControlEvent::ArmLink1Stop);
+        } 
+        
+        if keys.just_pressed(KeyCode::O) {
+            wheely_event_writer.send(WheelyControlEvent::ArmLink2Pos);
+        } else if keys.just_pressed(KeyCode::L) {
+            wheely_event_writer.send(WheelyControlEvent::ArmLink2Neg);
+        } else if keys.just_released(KeyCode::O) || keys.just_released(KeyCode::L){
+            wheely_event_writer.send(WheelyControlEvent::ArmLink2Stop);
+        } 
+    }
+
+    fn handle_control_system(
+        mut wheely_event_reader: EventReader<WheelyControlEvent>,
+        mut joint_event_writer: EventWriter<JointMotorEvent>,
+        query: Query<(&MultibodyRoot, &WheelyController), (With<WheelyController>, With<MultibodyRoot>)>
+    ) {
+        if let Ok((root, controller)) = query.get_single() {
+            for event in wheely_event_reader.iter() {
+                let (entity, action) = match event {
+                    WheelyControlEvent::LeftWheelForward => {
+                        let entity = root.joint_name_2_entity.get(LEFT_WHEEL).expect("");
+                        let action = MotorAction::VelocityRevolute { 
+                            velocity: controller.wheel_velocity, factor: controller.damping 
+                        };
+                        (entity, action)
+                    },
+                    WheelyControlEvent::LeftWheelBackward => {
+                        let entity = root.joint_name_2_entity.get(LEFT_WHEEL).expect("");
+                        let action = MotorAction::VelocityRevolute { 
+                                    velocity: -controller.wheel_velocity, factor: controller.damping 
+                        };
+                        (entity, action)
+                    },
+                    WheelyControlEvent::LeftWheelStop => {
+                        let entity = root.joint_name_2_entity.get(LEFT_WHEEL).expect("");
+                        let action = MotorAction::VelocityRevolute { 
+                            velocity: 0.0, factor: controller.damping 
+                        };
+                        (entity, action)
+                    },
+                    WheelyControlEvent::RightWheelForward => {
+                        let entity = root.joint_name_2_entity.get(RIGHT_WHEEL).expect("");
+                        let action = MotorAction::VelocityRevolute { 
+                            velocity: controller.wheel_velocity, factor: controller.damping 
+                        };
+                        (entity, action)
+                    },
+                    WheelyControlEvent::RightWheelBackward => {
+                        let entity = root.joint_name_2_entity.get(RIGHT_WHEEL).expect("");
+                        let action = MotorAction::VelocityRevolute { 
+                                    velocity: -controller.wheel_velocity, factor: controller.damping 
+                        };
+                        (entity, action)
+                    },
+                    WheelyControlEvent::RightWheelStop => {
+                        let entity = root.joint_name_2_entity.get(RIGHT_WHEEL).expect("");
+                        let action = MotorAction::VelocityRevolute { 
+                            velocity: 0.0, factor: controller.damping 
+                        };
+                        (entity, action)
+                    },
+                    WheelyControlEvent::ArmLink1Pos => {
+                        let entity = root.joint_name_2_entity.get(ARM_LINK_1).expect("");
+                        let action = MotorAction::VelocityRevolute { 
+                            velocity: controller.arm_velocity, factor: controller.damping 
+                        };
+                        (entity, action)
+                    },
+                    WheelyControlEvent::ArmLink1Neg => {
+                        let entity = root.joint_name_2_entity.get(ARM_LINK_1).expect("");
+                        let action = MotorAction::VelocityRevolute { 
+                            velocity: -controller.arm_velocity, factor: controller.damping 
+                        };
+                        (entity, action)
+                    },
+                    WheelyControlEvent::ArmLink1Stop => {
+                        let entity = root.joint_name_2_entity.get(ARM_LINK_1).expect("");
+                        let action = MotorAction::VelocityRevolute { 
+                            velocity: 0.0, factor: controller.damping 
+                        };
+                        (entity, action)
+                    },
+                    WheelyControlEvent::ArmLink2Pos => {
+                        let entity = root.joint_name_2_entity.get(ARM_LINK_2).expect("");
+                        let action = MotorAction::VelocityPrismatic { 
+                            velocity: controller.arm_velocity, factor: controller.damping 
+                        };
+                        (entity, action)
+                    },
+                    WheelyControlEvent::ArmLink2Neg => {
+                        let entity = root.joint_name_2_entity.get(ARM_LINK_2).expect("");
+                        let action = MotorAction::VelocityPrismatic { 
+                            velocity: -controller.arm_velocity, factor: controller.damping 
+                        };
+                        (entity, action)
+                    },
+                    WheelyControlEvent::ArmLink2Stop => {
+                        let entity = root.joint_name_2_entity.get(ARM_LINK_2).expect("");
+                        let action = MotorAction::VelocityPrismatic { 
+                            velocity: 0.0, factor: controller.damping 
+                        };
+                        (entity, action)
+                    },
+                };
+                joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+            }
+        }
     }
 }
