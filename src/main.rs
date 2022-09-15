@@ -41,6 +41,14 @@ fn test_scene(
         20.0, 20.0, 1.0
     );
 
+    models::car::Car::spawn_car(
+        &mut commands,
+        materials.add(Color::SEA_GREEN.into()), 
+        materials.add(Color::DARK_GRAY.into()), 
+        Transform::from_xyz(0.0, 2.0, 0.0),
+        &mut meshes,
+    );
+
     models::spider::spawn_spider(
         &mut commands,
         materials.add(Color::CRIMSON.into()), 

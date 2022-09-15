@@ -11,6 +11,7 @@ use crate::interaction::groups::GroupDynamic;
 
 // Event for when a multibody has been selected/deselected
 // the entity contained in the event is the root of the multibody
+#[derive(Debug)]
 pub enum MultibodySelectionEvent {
     Selected(Entity),
     Deselected(Entity)
