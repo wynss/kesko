@@ -56,7 +56,7 @@ pub(crate) fn spawn_model_system(
                 Model::Sphere => sphere::spawn_sphere(&mut commands, material, *transform, &mut meshes),
                 Model::Wheely => {
                     let wheel_material = materials.add(Color::DARK_GRAY.into());
-                    wheely::spawn_wheely(&mut commands, material, wheel_material, *transform, &mut meshes);
+                    wheely::Wheely::spawn_wheely(&mut commands, material, wheel_material, *transform, &mut meshes);
                 }
             }
         }

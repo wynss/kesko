@@ -1,30 +1,65 @@
 use bevy::prelude::*;
-use rapier3d::prelude::{GenericJoint, PrismaticJointBuilder};
+use rapier3d::prelude::{GenericJoint, PrismaticJointBuilder, Real};
 use crate::conversions::IntoRapier;
 
+use super::JointTrait;
 
-#[derive(Default)]
+
 pub struct PrismaticJoint {
     pub parent_anchor: Transform,
     pub child_anchor: Transform,
     pub axis: Vec3,
-    pub limits: Option<Vec2>
+    pub limits: Option<Vec2>,
+    pub stiffness: f32,
+    pub damping: f32,
+    pub max_motor_force: Real
+}
+
+impl Default for PrismaticJoint {
+    fn default() -> Self {
+        Self { 
+            parent_anchor: Transform::default(), 
+            child_anchor: Transform::default(), 
+            axis: Vec3::X, 
+            limits: None,
+            damping: 0.0,
+            stiffness: 0.0,
+            max_motor_force: Real::MAX
+        }
+    }
 }
 
 impl From<PrismaticJoint> for GenericJoint {
     fn from(joint: PrismaticJoint) -> GenericJoint {
-        let mut builder = PrismaticJointBuilder::new(joint.axis.into_rapier());
+        let mut builder = PrismaticJointBuilder::new(joint.axis.into_rapier())
+            .local_anchor1(joint.parent_anchor.translation.into_rapier())
+            .local_anchor2(joint.child_anchor.translation.into_rapier());
+        
+        if joint.stiffness > 0.0 || joint.damping > 0.0 {
+            builder = builder.set_motor(0.0, 0.0, joint.stiffness, joint.damping).motor_max_force(joint.max_motor_force);
+        }
 
         if let Some(limits) = joint.limits {
             builder = builder.limits(limits.into());
         }
 
         let mut generic: GenericJoint = builder.into();
-        *generic
-            .set_local_frame1(joint.parent_anchor.into_rapier())
-            .set_local_frame2(joint.child_anchor.into_rapier())
+        generic.local_frame1.rotation = joint.parent_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
+        generic.local_frame1.rotation = joint.child_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
+        generic
     }
 }
+
+impl JointTrait for PrismaticJoint {
+    fn parent_anchor(&self) -> Transform {
+        self.parent_anchor
+    }
+
+    fn child_anchor(&self) -> Transform {
+        self.child_anchor
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -50,8 +85,8 @@ mod tests {
         let generic: GenericJoint = fixed_joint.into();
 
         assert!(generic.as_prismatic().is_some());
-        assert_eq!(generic.local_frame1, expected_parent_transform.into_rapier());
-        assert_eq!(generic.local_frame2, expected_child_transform.into_rapier());
+        assert_eq!(generic.local_anchor1(), expected_parent_transform.translation.into_rapier());
+        assert_eq!(generic.local_anchor2(), expected_child_transform.translation.into_rapier());
     }
 
     #[test]
@@ -76,14 +111,10 @@ mod tests {
     }
 
     #[test]
-    fn default_values() {
+    fn no_limits() {
 
         let joint = PrismaticJoint::default();
-
         let generic: GenericJoint = joint.into();
-
-        assert_eq!(generic.local_frame1, Transform::default().into_rapier());
-        assert_eq!(generic.local_frame2, Transform::default().into_rapier());
 
         assert!(generic.limits(JointAxis::AngX).is_none());
         assert!(generic.limits(JointAxis::AngY).is_none());

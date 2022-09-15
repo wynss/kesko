@@ -183,7 +183,7 @@ impl MultibodyUIComponent {
         egui::Window::new("Multibody")
             .open(ui_open)
             .resizable(true)
-            .hscroll(true)
+            .hscroll(false)
             .vscroll(true)
             .title_bar(true)
             .show(ctx, |ui| {
@@ -203,7 +203,7 @@ impl MultibodyUIComponent {
                             ui.heading("Joints");
                             egui::Grid::new("joint_grid")
                             .num_columns(7)
-                            .spacing([40.0, 4.0])
+                            .spacing([20.0, 4.0])
                             .striped(true)
                             .show(ui, |ui| {
 
@@ -232,6 +232,9 @@ impl MultibodyUIComponent {
                                         JointType::Spherical => {
                                             // TODO: Spherical joints seems to be broken in rapier at the moment, implement when fixed
                                             // Self::spherical_sliders(ui, joint_entity, joint_data, joint_motor_event_writer);
+                                        },
+                                        JointType::Prismatic => { 
+                                            Self::prismatic_slider(ui, joint_entity, joint_data, joint_motor_event_writer);
                                         }
                                         _ => {}
                                     }
@@ -254,9 +257,8 @@ impl MultibodyUIComponent {
     
     /// Add slider for a revolute joint
     fn revolute_slider(ui: &mut Ui, joint_entity: &Entity, joint_data: &mut JointData, joint_motor_event_writer: &mut EventWriter<JointMotorEvent>) {
-
-        // send motor action if the value has changed
-        if ui.add(egui::Slider::new(&mut joint_data.val_axis_1, Self::get_slider_range(joint_data.limits)).suffix("°").step_by(0.1)).changed() {
+        if ui.add(egui::Slider::new(&mut joint_data.val_axis_1, Self::get_slider_range(joint_data.limits, &joint_data.joint_type)).suffix("°").step_by(0.1)).changed() {
+            // send motor action if the value has changed
             joint_motor_event_writer.send(JointMotorEvent {
                 entity: *joint_entity,
                 action: MotorAction::PositionRevolute { 
@@ -268,11 +270,21 @@ impl MultibodyUIComponent {
         }
     }
 
+    fn prismatic_slider(ui: &mut Ui, joint_entity: &Entity, joint_data: &mut JointData, joint_motor_event_writer: &mut EventWriter<JointMotorEvent>) {
+        if ui.add(egui::Slider::new(&mut joint_data.val_axis_1, Self::get_slider_range(joint_data.limits, &joint_data.joint_type)).suffix("m").step_by(0.01)).changed() {
+            // send motor action if the value has changed
+            joint_motor_event_writer.send(JointMotorEvent {
+                entity: *joint_entity,
+                action: MotorAction::PositionPrismatic { position: joint_data.val_axis_1, damping: 0.1, stiffness: 1.0 }
+            });
+        }
+    }
+
     /// Add sliders for a spherical joints to control x, y and z axis and send motor actions
     fn spherical_sliders(ui: &mut Ui, joint_entity: &Entity, joint_data: &mut JointData, joint_motor_event_writer: &mut EventWriter<JointMotorEvent>) {
         ui.horizontal(|ui| {
             // X
-            if ui.add(egui::Slider::new(&mut joint_data.val_axis_1, Self::get_slider_range(joint_data.limits)).suffix("°").text("X")).changed() {
+            if ui.add(egui::Slider::new(&mut joint_data.val_axis_1, Self::get_slider_range(joint_data.limits, &joint_data.joint_type)).suffix("°").text("X")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
                     entity: *joint_entity,
                     action: MotorAction::PositionSpherical { 
@@ -284,7 +296,7 @@ impl MultibodyUIComponent {
                 });
             }
             // Y
-            if ui.add(egui::Slider::new(&mut joint_data.val_axis_2, Self::get_slider_range(joint_data.limits)).suffix("°").text("Y")).changed() {
+            if ui.add(egui::Slider::new(&mut joint_data.val_axis_2, Self::get_slider_range(joint_data.limits, &joint_data.joint_type)).suffix("°").text("Y")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
                     entity: *joint_entity,
                     action: MotorAction::PositionSpherical { 
@@ -296,7 +308,7 @@ impl MultibodyUIComponent {
                 });
             }
             // Z
-            if ui.add(egui::Slider::new(&mut joint_data.val_axis_3, Self::get_slider_range(joint_data.limits)).suffix("°").text("Z")).changed() {
+            if ui.add(egui::Slider::new(&mut joint_data.val_axis_3, Self::get_slider_range(joint_data.limits, &joint_data.joint_type)).suffix("°").text("Z")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
                     entity: *joint_entity,
                     action: MotorAction::PositionSpherical { 
@@ -311,10 +323,24 @@ impl MultibodyUIComponent {
     }
 
     /// Create a slider range from limits
-    fn get_slider_range(limits: Option<JointLimits<f32>>) -> RangeInclusive<f32> {
-        match limits {
-            Some(limits) => RangeInclusive::<f32>::new(limits.min.to_degrees(), limits.max.to_degrees()),
-            None => RangeInclusive::<f32>::new(-180.0, 180.0)
+    fn get_slider_range(limits: Option<JointLimits<f32>>, joint_type: &JointType) -> RangeInclusive<f32> {
+
+        match joint_type {
+            &JointType::Revolute => {
+                match limits {
+                    Some(limits) => RangeInclusive::<f32>::new(limits.min.to_degrees(), limits.max.to_degrees()),
+                    None => RangeInclusive::<f32>::new(-180.0, 180.0)
+                }
+            },
+            &JointType::Prismatic => {
+                match limits {
+                    Some(limits) => RangeInclusive::<f32>::new(limits.min, limits.max),
+                    None => RangeInclusive::<f32>::new(-1.0, 1.0)
+                }
+            }
+            _ => {
+                RangeInclusive::<f32>::new(-180.0, 180.0)
+            }
         }
     }
 
