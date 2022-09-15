@@ -48,6 +48,14 @@ fn test_scene(
         &mut meshes,
     );
 
+    models::wheely::Wheely::spawn_wheely(
+        &mut commands,
+        materials.add(Color::FUCHSIA.into()), 
+        materials.add(Color::DARK_GRAY.into()), 
+        Transform::from_xyz(-2.0, 2.0, -2.0),
+        &mut meshes,
+    );
+
     // spawn sphere that will generate collision events
     commands.spawn_bundle(PbrBundle {
         material: materials.add(Color::PURPLE.into()),
