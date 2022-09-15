@@ -46,7 +46,7 @@ fn setup(
         10.0, 10.0, 1.0
     );
 
-    models::car::spawn_car(
+    models::car::Car::spawn_car(
         &mut commands,
         materials.add(Color::GOLD.into()),
         materials.add(Color::BLACK.into()),
