@@ -8,8 +8,9 @@ const CURSOR_MOVE_LIMIT: f32 = 0.5;
 
 
 #[derive(Default)]
-pub(crate) struct DraggingGlobal {
-    dragged: bool
+pub(crate) struct GlobalDragState {
+    dragged: bool,
+    block_drag: bool
 }
 
 #[derive(Component, Default)]
@@ -36,12 +37,13 @@ pub(crate) fn update_interactions<T: Component + Default>(
     mut motion_evr: EventReader<MouseMotion>,
     mouse_button_input: Res<Input<MouseButton>>,
     source_query: Query<&RayCastSource<T>, With<Camera>>,
-    mut global_drag: ResMut<DraggingGlobal>,
+    mut global_drag: ResMut<GlobalDragState>,
     mut interaction_query: Query<(Entity, &mut Drag<T>, &mut Hover<T>, &mut Select<T>)>,
 ) {
 
     let left_btn_pressed = mouse_button_input.pressed(MouseButton::Left);
     let left_btn_just_released = mouse_button_input.just_released(MouseButton::Left);
+    let left_btn_just_pressed = mouse_button_input.just_pressed(MouseButton::Left);
 
     // get if the cursor moved
     let mouse_motion: f32 = motion_evr.iter().map(|m| m.delta.length()).sum();
@@ -55,7 +57,16 @@ pub(crate) fn update_interactions<T: Component + Default>(
 
             // possible entity that was hit by the ray
             let entity_hit = source.ray_hit.as_ref().map(|hit| hit.entity);
+            
+            // block dragging if we are pressing left mouse and are not hovering over something.
+            // otherwise an object will be dragged as soon as the cursor is over it
+            if entity_hit.is_none() && left_btn_just_pressed {
+                global_drag.block_drag = true;
+            } else if left_btn_just_released && global_drag.block_drag {
+                global_drag.block_drag = false;
+            }
 
+            // loop over object and update the state of their interactive components
             for (entity, mut drag, mut hover, mut select) in interaction_query.iter_mut() {
 
                 if entity_hit == Some(entity) {
@@ -72,7 +83,7 @@ pub(crate) fn update_interactions<T: Component + Default>(
                     }
 
                     // handle drag
-                    if left_btn_pressed && cursor_moved && !drag.dragged && !global_drag.dragged{
+                    if left_btn_pressed && cursor_moved && !drag.dragged && !global_drag.dragged && !global_drag.block_drag {
                         drag.dragged = true;
                         global_drag.dragged = true;
                     } else if left_btn_just_released && drag.dragged {

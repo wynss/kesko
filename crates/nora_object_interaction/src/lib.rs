@@ -11,7 +11,7 @@ use interaction::Select;
 use nora_raycast::{RayCastSource, RayCastSystems, RayVisible, RayCastPlugin};
 use crate::{
     interaction::{
-        DraggingGlobal, update_interactions,
+        GlobalDragState, update_interactions,
         Drag, Hover
     },
     event::InteractionEvent,
@@ -42,7 +42,7 @@ where T: Component + Default
         app.init_resource::<InteractionMaterials>()
             .add_event::<InteractionEvent>()
             .add_event::<SelectEvent>()
-            .init_resource::<DraggingGlobal>()
+            .init_resource::<GlobalDragState>()
             .add_plugin(RayCastPlugin::<T>::default())
             .add_system_set_to_stage(
                 CoreStage::First,
