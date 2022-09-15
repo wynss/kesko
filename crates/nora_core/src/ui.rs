@@ -2,6 +2,7 @@ pub(crate) mod main_menu;
 pub(crate) mod spawn_component;
 pub(crate) mod fps_component;
 pub(crate) mod multibody_component;
+pub(crate) mod about;
 
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext, EguiPlugin};
@@ -23,8 +24,12 @@ impl Plugin for UIPlugin {
             .add_startup_system(initialize_ui_components_system)
 
             // add components
+
             // main menu component
             .add_system(main_menu::MainMenuComponent::update_system.label(UISystems::MainMenu))
+
+            .add_event::<about::AboutEvent>()
+            .add_system(about::AboutComponent::update_system)
 
             // spawn component
             .add_event::<spawn_component::SpawnEvent>()
@@ -53,6 +58,7 @@ fn initialize_ui_components_system(
 ) {
     egui_context.as_mut().ctx_mut().set_visuals(egui::Visuals::dark());
     commands.spawn().insert(main_menu::MainMenuComponent::default());
+    commands.spawn().insert(about::AboutComponent::default());
     commands.spawn().insert(spawn_component::SpawnComponent::default());
     commands.spawn().insert(fps_component::FPSComponent::default());
     commands.spawn().insert(multibody_component::MultibodyUIComponent::default());
