@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
-use crate::ui::spawn_component::SpawnEvent;
-
-use super::fps_component::FPSComponentEvent;
+use crate::ui::{
+    spawn_component::SpawnEvent,
+    fps_component::FPSComponentEvent,
+    about::AboutEvent
+};
 
 
 #[derive(Default)]
@@ -23,20 +25,38 @@ impl MainMenuComponent {
 
     pub(crate) fn update_system(
         mut egui_context: ResMut<EguiContext>,
+        mut about_event_writer: EventWriter<AboutEvent>,
         mut spawn_event_writer: EventWriter<SpawnEvent>,
         mut fps_event_writer: EventWriter<FPSComponentEvent>,
         mut comp: Query<&mut Self>
     ) {
-        comp.get_single_mut().unwrap().show_and_send_system(egui_context.ctx_mut(), &mut spawn_event_writer, &mut fps_event_writer);
+        comp.get_single_mut().unwrap().show_and_send_system(
+            egui_context.ctx_mut(), 
+            &mut about_event_writer,
+            &mut spawn_event_writer, 
+            &mut fps_event_writer
+        );
     }
 
-    fn show_and_send_system(&mut self, ctx: &egui::Context, spawn_event_writer: &mut EventWriter<SpawnEvent>, fps_ew: &mut EventWriter<FPSComponentEvent>) {
+    fn show_and_send_system(&mut self, 
+        ctx: &egui::Context, 
+        about_event_writer: &mut EventWriter<AboutEvent>,
+        spawn_event_writer:&mut EventWriter<SpawnEvent>, 
+        fps_event_writer: &mut EventWriter<FPSComponentEvent>
+    ) {
 
         egui::TopBottomPanel::top("top_menu")
             .show(ctx, |ui| {
                 egui::menu::bar(ui, |ui| {
 
                     egui::widgets::global_dark_light_mode_switch(ui);
+
+                    ui.menu_button("Nora", |ui| {
+                        if ui.button("About").clicked() {
+                            about_event_writer.send(AboutEvent::Open);
+                            ui.close_menu();
+                        }
+                    });
 
                     ui.menu_button("View", |ui| {
                         if ui.button("Show/Hide Panels").clicked() {
@@ -54,7 +74,7 @@ impl MainMenuComponent {
 
                     ui.menu_button("Diagnostics", |ui| {
                         if ui.button("FPS").clicked() {
-                            fps_ew.send(FPSComponentEvent::Open);
+                            fps_event_writer.send(FPSComponentEvent::Open);
                             ui.close_menu();
                         }
                     });
