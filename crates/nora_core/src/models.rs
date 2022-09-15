@@ -10,6 +10,12 @@ use bevy::prelude::*;
 use crate::ui::spawn_component::SpawnEvent;
 
 
+/// Description on how to manually control a robot
+/// The text will be shown in the multibody ui
+#[derive(Component)]
+pub(crate) struct ControlDescription(pub(crate) String);
+
+
 // Enum to represent each default model
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) enum Model {
@@ -51,7 +57,7 @@ pub(crate) fn spawn_model_system(
                 Model::Snake => snake::spawn_snake(&mut commands, material, *transform, &mut meshes),
                 Model::Car => {
                     let wheel_material = materials.add(Color::DARK_GRAY.into());
-                    car::spawn_car(&mut commands, material, wheel_material, *transform, &mut meshes);
+                    car::Car::spawn_car(&mut commands, material, wheel_material, *transform, &mut meshes);
                 },
                 Model::Sphere => sphere::spawn_sphere(&mut commands, material, *transform, &mut meshes),
                 Model::Wheely => {

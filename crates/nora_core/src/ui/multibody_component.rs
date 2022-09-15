@@ -19,7 +19,7 @@ use nora_physics::{
     },
 };
 
-use crate::interaction::multibody_selection::MultibodySelectionEvent;
+use crate::{interaction::multibody_selection::MultibodySelectionEvent, models::ControlDescription};
 
 
 // Joint data to store relevant information and values to display and control the joints
@@ -44,6 +44,7 @@ pub(crate) struct MultibodyUIComponent {
     multibody_root: Option<Entity>,
     multibody_name: Option<String>,
     multibody_joints: Option<HashMap<Entity, JointData>>,
+    control_description: Option<String>
 }
 
 impl MultibodyUIComponent {
@@ -54,7 +55,7 @@ impl MultibodyUIComponent {
         mut joint_motor_event_writer: EventWriter<JointMotorEvent>,
         mut egui_context: ResMut<EguiContext>,
         mut comp: Query<&mut Self>,
-        body_query: Query<&MultibodyRoot>,
+        body_query: Query<(&MultibodyRoot, Option<&ControlDescription>)>,
         joint_query: Query<&Joint>
     ) {
 
@@ -66,7 +67,7 @@ impl MultibodyUIComponent {
 
         // We have a body selected -> update joint data
         if let Some(root_entity) = comp.multibody_root {
-            if let Ok(root) = body_query.get(root_entity) {
+            if let Ok((root, _)) = body_query.get(root_entity) {
 
                 if comp.multibody_joints.is_none() {
                     // Build map with relevant joint data to be displayed
@@ -142,14 +143,17 @@ impl MultibodyUIComponent {
     }
 
     /// read possible events that a multibody has been selected/deselected and update component state
-    fn parse_events(&mut self, body_query: &Query<&MultibodyRoot>, multibody_select_event_reader: &mut EventReader<MultibodySelectionEvent>) {
+    fn parse_events(&mut self, body_query: &Query<(&MultibodyRoot, Option<&ControlDescription>)>, multibody_select_event_reader: &mut EventReader<MultibodySelectionEvent>) {
         for event in multibody_select_event_reader.iter() {
             match event {
                 MultibodySelectionEvent::Selected(root_entity) => {
                     self.ui_open = true;
                     self.multibody_root = Some(*root_entity);
-                    if let Ok(root) = body_query.get(*root_entity) {
+                    if let Ok((root, control_desc)) = body_query.get(*root_entity) {
                         self.multibody_name = Some(root.name.clone());
+                        if let Some(control_desc) = control_desc {
+                            self.control_description = Some(control_desc.0.clone());
+                        }
                     }
                     self.multibody_joints = None;
                 },
@@ -178,6 +182,7 @@ impl MultibodyUIComponent {
             multibody_root,
             multibody_name,
             multibody_joints,
+            control_description
         } = self;
 
         egui::Window::new("Multibody")
@@ -242,6 +247,13 @@ impl MultibodyUIComponent {
                                 }
                             });
                         });
+                        ui.separator();
+                    }
+                    
+                    // display name
+                    if let Some(control_description) = control_description {
+                        ui.heading("Control");
+                        ui.label(format!("{}", control_description));
                         ui.separator();
                     }
 
