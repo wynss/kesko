@@ -410,7 +410,7 @@ struct CarController {
 impl Default for CarController {
     fn default() -> Self {
        Self {
-            max_velocity: 10.0,
+            max_velocity: 12.0,
             max_turn_angle: FRAC_PI_6,
             damping: 0.1,
             stiffness: 1.0

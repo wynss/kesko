@@ -153,6 +153,8 @@ impl MultibodyUIComponent {
                         self.multibody_name = Some(root.name.clone());
                         if let Some(control_desc) = control_desc {
                             self.control_description = Some(control_desc.0.clone());
+                        } else {
+                            self.control_description = None;
                         }
                     }
                     self.multibody_joints = None;
@@ -164,6 +166,7 @@ impl MultibodyUIComponent {
                         self.multibody_root = None;
                         self.multibody_name = None;
                         self.multibody_joints = None;
+                        self.control_description = None;
                     }
                 }
             }

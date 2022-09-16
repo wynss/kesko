@@ -69,7 +69,7 @@ impl Default for WheelyController {
         Self {
             wheel_velocity: 10.0,
             arm_velocity: 1.0,
-            damping: 1.0,
+            damping: 100.0,
         }
     }
 }
@@ -105,14 +105,14 @@ impl Wheely {
 
         let hh = BODY_HEIGHT / 2.0;
         let rh = BODY_RADIUS / 2.0 + 0.2;
-        let wheel_offset = WHEEL_RADIUS / 3.0;
+        let wheel_offset = WHEEL_RADIUS / 4.0;
 
         let body = commands.spawn_bundle(MeshPhysicBodyBundle::from(RigidBody::Dynamic,
             Shape::Cylinder { radius: BODY_RADIUS, length: BODY_HEIGHT, resolution: 21 } , material.clone(), transform, meshes
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName(NAME.to_owned()))
-        .insert(ControlDescription("Right wheel: E-D\nLeft wheel: Q-A\n Arm link 1: R-F\nArm link 2: T-G".to_owned()))
+        .insert(ControlDescription("Use following keys\nRight wheel: E-D\tLeft wheel: Q-A\tArm joint 1: R-F\tArm joint 2: T-G".to_owned()))
         .id();
 
         // left wheel
@@ -135,6 +135,7 @@ impl Wheely {
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName(LEFT_WHEEL.to_owned()));
 
+        // right wheel
         let parent_anchor = Transform::from_translation(Vec3::new(-rh, -hh + wheel_offset, 0.15))
             .with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
         let child_anchor = Transform::default();
@@ -167,14 +168,13 @@ impl Wheely {
             axis: Vec3::Y,
             stiffness: 1.0,
             damping: 0.1,
-            limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("back_wheel_turn".to_owned()))
         .id();
         
-        let parent_anchor = Transform::from_translation(Vec3::new(0.0, -BACK_WHEEL_RADIUS, -BACK_WHEEL_RADIUS))
+        let parent_anchor = Transform::from_translation(Vec3::new(0.0, -BACK_WHEEL_RADIUS - 0.01, -BACK_WHEEL_RADIUS))
             .with_rotation(Quat::from_rotation_z(FRAC_PI_2));
         let child_anchor = Transform::default();
         commands.spawn_bundle(MeshPhysicBodyBundle::from(
