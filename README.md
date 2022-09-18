@@ -7,9 +7,9 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <!-- <a href="https://github.com/wynss/nora">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a> -->
+  <a href="https://github.com/wynss/nora">
+    <img src="media/nora_light.png" alt="Logo" width="300" height="300">
+  </a>
 
 <h3 align="center">NORA</h3>
 
