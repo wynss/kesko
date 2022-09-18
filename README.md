@@ -11,7 +11,7 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a> -->
 
-<h3 align="center">KESKO</h3>
+<h3 align="center">NORA</h3>
 
   <p align="center">
     Experimental robotics simulator written in Rust.
@@ -31,9 +31,11 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
+<img src="media/nora-1.png" alt="drawing" style="width:500px;"/>
+<br />
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-Kesko is currently in its infancy and quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in the programming language Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
+Nora is currently in its infancy and quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in the programming language Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
+
 * Easiest simulator to get started with machine learning and robotics
 * Best simulator for procedurally generate new environments for training
 * Free and open-source
@@ -64,7 +66,7 @@ Kesko is currently in its infancy and quite far from useful (but perhaps a bit f
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Currently you can only play around with some of the built in models and experiment with the physics.
+As stated Nora is quite useless at the moment but you can only play around with some of the built in models and experiment with the physics.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -73,12 +75,13 @@ Currently you can only play around with some of the built in models and experime
 <!-- ROADMAP -->
 ## Roadmap
 
+The roadmap is subject to change, but a very rough version is 
+
 - [ ] URDF Support
-- [ ] locally attached cameras
+- [ ] Locally attached cameras
 - [ ] Python API
     - [ ] GYM integration
-
-See the [open issues](https://github.com/wynss/nora/issues) for a full list of proposed features (and known issues).
+    - [ ] Image data
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -102,7 +105,7 @@ If you have a suggestion that would make this better, please fork the repo and c
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the MIT License. See `LICENSE` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -111,9 +114,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
-
-Project Link: [https://github.com/wynss/nora](https://github.com/wynss/nora)
+Toni Axelsson - [@toniaxelsson](https://twitter.com/toniaxelsson)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -122,7 +123,7 @@ Project Link: [https://github.com/wynss/nora](https://github.com/wynss/nora)
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* [Bevy]([bevyengine.org](https://bevyengine.org))
+* [Bevy](https://bevyengine.org)
 * [Rapier](https://rapier.rs)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -132,3 +133,4 @@ Project Link: [https://github.com/wynss/nora](https://github.com/wynss/nora)
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [ci-shield]: https://img.shields.io/github/workflow/status/wynss/nora/CI?style=flat-square
+[product-screenshot]: media/nora-1.png
