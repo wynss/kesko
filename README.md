@@ -11,7 +11,7 @@
     <img src="media/nora_light.png" alt="Logo" width="200" height="200">
   </a>
 
-<h3 align="center">NORA</h3>
+<h3 align="center">Kesko</h3>
 
   <p align="center">
     Experimental robotics simulator written in Rust.
@@ -34,7 +34,7 @@
 <img src="media/nora-1.png" alt="drawing" style="width:500px;"/>
 <br />
 
-Nora is currently in its infancy and quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
+Kesko is currently in its infancy and quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
 
 * Easiest simulator to get started with machine learning and robotics
 * Best simulator for procedurally generate new environments for training
@@ -65,13 +65,13 @@ Nora is currently in its infancy and quite far from useful (but perhaps a bit fu
 
 ## Usage
 
-As stated Nora is quite useless at the moment but you can only play around with some of the built in models and experiment with the physics.
+As stated Kesko is quite useless at the moment but you can only play around with some of the built in models and experiment with the physics.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Demo
 
-To test Nora in the browser go to [Nora Demo](https://toniaxelsson.com/projects/nora)
+To test Kesko in the browser go to [Kesko Demo](https://toniaxelsson.com/projects/nora)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
