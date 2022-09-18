@@ -34,7 +34,7 @@
 <img src="media/nora-1.png" alt="drawing" style="width:500px;"/>
 <br />
 
-Nora is currently in its infancy and quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in the programming language Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
+Nora is currently in its infancy and quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
 
 * Easiest simulator to get started with machine learning and robotics
 * Best simulator for procedurally generate new environments for training
@@ -63,7 +63,6 @@ Nora is currently in its infancy and quite far from useful (but perhaps a bit fu
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- USAGE EXAMPLES -->
 ## Usage
 
 As stated Nora is quite useless at the moment but you can only play around with some of the built in models and experiment with the physics.
@@ -72,9 +71,10 @@ As stated Nora is quite useless at the moment but you can only play around with 
 
 ## Demo
 
-To test Nora in the browser go to [Nora Demo](http://toniaxelsson.com/projects/nora)
+To test Nora in the browser go to [Nora Demo](https://toniaxelsson.com/projects/nora)
 
-<!-- ROADMAP -->
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Roadmap
 
 The roadmap is subject to change, but a very rough version is 
