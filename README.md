@@ -8,7 +8,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/wynss/nora">
-    <img src="media/nora_light.png" alt="Logo" width="300" height="300">
+    <img src="media/nora_light.png" alt="Logo" width="200" height="200">
   </a>
 
 <h3 align="center">NORA</h3>
