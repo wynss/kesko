@@ -4,6 +4,7 @@ pub mod arena;
 pub mod spider;
 pub mod sphere;
 pub mod wheely;
+pub mod humanoid;
 
 use bevy::prelude::*;
 
