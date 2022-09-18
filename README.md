@@ -23,8 +23,8 @@
     <br />
     <a href="#about-the-project">About The Project</a> |
     <a href="#getting-started">Getting Started</a> |
-    <a href="https://github.com/wynss/nora">View Demo</a>
-    <a href="#roadmap">Roadmap</a>
+    <a href="#demo">Demo</a> |
+    <a href="#roadmap">Roadmap</a> |
     <a href="#acknowledgments">Acknowledgments</a>
   </p>
 </div>
@@ -53,11 +53,11 @@ Nora is currently in its infancy and quite far from useful (but perhaps a bit fu
 ### Installation
 
 1. Clone the repo
-   ```sh
+   ```bash
    git clone https://github.com/wynss/nora.git
    ```
 2. Build and run
-   ```sh
+   ```bash
    cargo run --release
    ```
 
@@ -70,7 +70,9 @@ As stated Nora is quite useless at the moment but you can only play around with 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Demo
 
+To test Nora in the browser go to [Nora Demo](http://toniaxelsson.com/projects/nora)
 
 <!-- ROADMAP -->
 ## Roadmap
