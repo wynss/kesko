@@ -3,8 +3,6 @@
 
 
 <!-- PROJECT SHIELDS -->
-![CI][ci-shield]
-
 
 <!-- PROJECT LOGO -->
 <br />
@@ -18,40 +16,18 @@
   <p align="center">
     Experimental robotics simulator written in Rust.
     <br />
-    <a href="https://github.com/wynss/nora"><strong>Explore the docs »</strong></a>
+    <br />
+    <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/wynss/nora/CI?style=flat-square">
+    <img alt="GitHub" src="https://img.shields.io/github/license/wynss/nora?style=flat-square">
     <br />
     <br />
+    <a href="#about-the-project">About The Project</a> |
+    <a href="#getting-started">Getting Started</a> |
     <a href="https://github.com/wynss/nora">View Demo</a>
-    ·
-    <a href="https://github.com/wynss/nora/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/wynss/nora/issues">Request Feature</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="#acknowledgments">Acknowledgments</a>
   </p>
 </div>
-
-
-
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
-
-
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
@@ -68,10 +44,6 @@ Kesko is currently in its infancy and quite far from useful (but perhaps a bit f
 
 <!-- GETTING STARTED -->
 ## Getting Started
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
-
 ### Prerequisites
  
  Make sure you have the latest stable version of [Rust](https://www.rust-lang.org/learn/get-started) installed.
