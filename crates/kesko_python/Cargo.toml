@@ -1,0 +1,14 @@
+[package]
+name = "kesko_python"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "pykesko"
+crate-type = ["cdylib"]
+
+
+[dependencies]
+kesko = { path= "../.." }
+kesko_core = { path= "../kesko_core" }
+pyo3 = { version = "0.14.1", features = ["extension-module"] }

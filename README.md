@@ -7,7 +7,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/wynss/nora">
+  <a href="https://github.com/wynss/kesko">
     <img src="media/nora_light.png" alt="Logo" width="200" height="200">
   </a>
 

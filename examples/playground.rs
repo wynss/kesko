@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
-use nora_core::{
+use kesko_core::{
     bundle::MeshPhysicBodyBundle,
     shape::Shape,
     orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera},
@@ -10,8 +10,8 @@ use nora_core::{
     interaction::groups::GroupDynamic,
     models
 };
-use nora_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
-use nora_physics::{
+use kesko_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
+use kesko_physics::{
     rigid_body::RigidBody,
 };
 

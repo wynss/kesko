@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use nora_core::{
+use kesko_core::{
     diagnostic::event::DebugEventPlugin,
     plugins::CorePlugins,
     models
