@@ -7,18 +7,19 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <!-- <a href="https://github.com/wynss/nora">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a> -->
+  <a href="https://github.com/wynss/kesko">
+    <img src="media/kesko-light.png" alt="Logo" width="200" height="200">
+  </a>
 
-<h3 align="center">NORA</h3>
+  <h3 align="center">Kesko</h3>
+
 
   <p align="center">
     Experimental robotics simulator written in Rust.
     <br />
     <br />
-    <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/wynss/nora/CI?style=flat-square">
-    <img alt="GitHub" src="https://img.shields.io/github/license/wynss/nora?style=flat-square">
+    <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/wynss/kesko/CI?style=flat-square">
+    <img alt="GitHub" src="https://img.shields.io/github/license/wynss/kesko?style=flat-square">
     <br />
     <br />
     <a href="#about-the-project">About The Project</a> |
@@ -31,15 +32,17 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-<img src="media/nora-1.png" alt="drawing" style="width:500px;"/>
-<br />
 
-Nora is currently in its infancy and quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in the programming language Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
+<img src="media/kesko-1.png" alt="drawing" style="width:500px;"/>
+<br />
+Kesko is pre-release and in its infancy, quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
 
 * Easiest simulator to get started with machine learning and robotics
 * Best simulator for procedurally generate new environments for training
 * Free and open-source
 * Good looking!
+
+Going forward an initial python API is priority so the first machine learning models can be trained.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -54,7 +57,8 @@ Nora is currently in its infancy and quite far from useful (but perhaps a bit fu
 
 1. Clone the repo
    ```bash
-   git clone https://github.com/wynss/nora.git
+   git clone https://github.com/wynss/kesko.git
+
    ```
 2. Build and run
    ```bash
@@ -63,31 +67,30 @@ Nora is currently in its infancy and quite far from useful (but perhaps a bit fu
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- USAGE EXAMPLES -->
+
 ## Usage
 
-As stated Nora is quite useless at the moment but you can only play around with some of the built in models and experiment with the physics.
+As stated Kesko is quite useless at the moment but you can play around with some of the built in models and experiment with the physics.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Demo
 
-To test Nora in the browser go to [Nora Demo](http://toniaxelsson.com/projects/nora)
+Thanks to WebAssembly support Kesko can be run in the browser, try it at [Kesko Demo](https://toniaxelsson.com/projects/kesko)
 
-<!-- ROADMAP -->
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Roadmap
 
 The roadmap is subject to change, but a very rough version is 
 
-- [ ] URDF Support
-- [ ] Locally attached cameras
 - [ ] Python API
     - [ ] GYM integration
     - [ ] Image data
+- [ ] URDF Support
+- [ ] Locally attached cameras
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- CONTRIBUTING -->
 ## Contributing
@@ -125,6 +128,8 @@ Toni Axelsson - [@toniaxelsson](https://twitter.com/toniaxelsson)
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
+Many thanks to the awesome people building
+
 * [Bevy](https://bevyengine.org)
 * [Rapier](https://rapier.rs)
 
@@ -134,5 +139,5 @@ Toni Axelsson - [@toniaxelsson](https://twitter.com/toniaxelsson)
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[ci-shield]: https://img.shields.io/github/workflow/status/wynss/nora/CI?style=flat-square
-[product-screenshot]: media/nora-1.png
+[ci-shield]: https://img.shields.io/github/workflow/status/wynss/kesko/CI?style=flat-square
+[product-screenshot]: media/kesko-1.png

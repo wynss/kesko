@@ -1,21 +1,21 @@
 [workspace]
 members = [
-    "crates/nora_core",
-    "crates/nora_physics",
-    "crates/nora_raycast",
-    "crates/nora_python",
-    "crates/nora_object_interaction",
+    "crates/kesko_core",
+    "crates/kesko_physics",
+    "crates/kesko_raycast",
+    "crates/kesko_python",
+    "crates/kesko_object_interaction",
 ]
 
 [package]
-name = "nora"
+name = "kesko"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 bevy = "0.8.0"
 bevy_egui = "0.16.0"
-nora_physics = { version = "0.1.0", path = "crates/nora_physics" }
-nora_core = { version = "0.1.0", path = "crates/nora_core" }
-nora_object_interaction = { version = "0.1.0", path = "crates/nora_object_interaction"}
-nora_raycast = { version = "0.1.0", path = "crates/nora_raycast"}
+kesko_physics = { version = "0.1.0", path = "crates/kesko_physics" }
+kesko_core = { version = "0.1.0", path = "crates/kesko_core" }
+kesko_object_interaction = { version = "0.1.0", path = "crates/kesko_object_interaction"}
+kesko_raycast = { version = "0.1.0", path = "crates/kesko_raycast"}

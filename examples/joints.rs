@@ -1,47 +1,36 @@
-use std::f32::consts::{FRAC_PI_2, FRAC_PI_4};
+use std::f32::consts::FRAC_PI_2;
+
 use bevy::prelude::*;
-use nora_core::{
-    diagnostic::event::DebugEventPlugin,
-    plugins::CorePlugins,
-    interaction::groups::GroupDynamic,
-    shape::Shape,
-    bundle::MeshPhysicBodyBundle,
-};
-use nora_physics::{
-    rigid_body::{RigidBody, CanSleep},
-    gravity::GravityScale, 
+
+use kesko_physics::{
+    rigid_body::{
+        RigidBody,
+        RigidBodyName
+    },
     joint::{
         Joint,
-        revolute::RevoluteJoint, 
-        JointMotorEvent, 
-        MotorAction
-    }
+        revolute::RevoluteJoint,
+        fixed::FixedJoint, spherical::SphericalJoint
+    }, mass::Mass
 };
-use nora_object_interaction::InteractiveBundle;
+use kesko_object_interaction::InteractiveBundle;
+use kesko_core::{
+    plugins::CorePlugins,
+    models::arena::spawn_arena,
+    shape::Shape,
+    bundle::{
+        MeshPhysicBodyBundle,
+        PhysicBodyBundle
+    },
+    transform::get_world_transform,
+    interaction::groups::GroupDynamic
+};
 
-const STIFFNESS: f32 = 1.0;
-const DAMPING: f32 = 0.1;
-
-
-#[derive(Component)]
-struct TestComp;
-
-#[derive(Component)]
-struct TurnComp;
-
-#[derive(Component)]
-struct LinkXComp;
-
-#[derive(Component)]
-struct LinkZComp;
 
 fn main() {
     App::new()
-    .add_plugins(DefaultPlugins)
     .add_plugins(CorePlugins)
-    .add_plugin(DebugEventPlugin)
     .add_startup_system(setup_scene)
-    .add_system(set_velocity)
     .run();
 }
 
@@ -51,114 +40,195 @@ fn setup_scene(
     mut materials: ResMut<Assets<StandardMaterial>>
 ) {
 
-    let root = commands.spawn().insert_bundle(PbrBundle {
-        material: materials.add(Color::ALICE_BLUE.into()),
-        mesh: meshes.add(Mesh::from(shape::Box::new(1.0, 1.0, 1.0))),
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+    spawn_arena(
+        &mut commands, 
+        materials.add(Color::CRIMSON.into()),
+        &mut meshes,
+        10.0, 10.0, 0.0
+    );
+
+    let material = materials.add(Color::BLUE.into());
+    let origin = Transform::default();
+
+    let bench = build_test_bench(origin, &mut commands, &material, &mut meshes);
+
+    let parent_anchor = Transform::from_translation(Vec3::new(-4.0, 1.2, 0.0));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
+        material.clone(),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        &mut meshes
+    ))
+    .insert(Joint::new(bench, SphericalJoint {
+        parent_anchor,
+        child_anchor,
         ..default()
-    })
-    .insert(RigidBody::Fixed)
-    .insert(CanSleep(false))
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("spherical".to_owned()));
+    
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, 1.2, 0.0));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
+        material.clone(),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        &mut meshes
+    ))
+    .insert(Joint::new(bench, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::Y,
+        ..default()
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("world_aligned_y".to_owned()));
+    
+    let parent_anchor = Transform::from_translation(Vec3::new(2.0, 1.2, 0.0));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
+        material.clone(),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        &mut meshes
+    ))
+    .insert(Joint::new(bench, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::X,
+        ..default()
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("world_aligned_x".to_owned()));
+
+    let parent_anchor = Transform::from_translation(Vec3::new(-2.0, 1.2, 0.0));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
+        material.clone(),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        &mut meshes
+    ))
+    .insert(Joint::new(bench, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::Z,
+        damping: 0.1,
+        stiffness: 1.0,
+        ..default()
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("world_aligned_z".to_owned()));
+    
+    let parent_anchor = Transform::from_translation(Vec3::new(1.0, 1.2, 2.0)).with_rotation(Quat::from_rotation_x(FRAC_PI_2));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
+        material.clone(),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        &mut meshes
+    ))
+    .insert(Joint::new(bench, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::X,
+        damping: 0.1,
+        stiffness: 1.0,
+        ..default()
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("x_90_x_parent_rot".to_owned()));
+    
+    let parent_anchor = Transform::from_translation(Vec3::new(-1.0, 1.2, 2.0));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0)).with_rotation(Quat::from_rotation_x(FRAC_PI_2));
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
+        material.clone(),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        &mut meshes
+    ))
+    .insert(Joint::new(bench, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::X,
+        damping: 0.1,
+        stiffness: 1.0,
+        ..default()
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("x_90_x_child_rot".to_owned()));
+
+
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, 1.2, -2.0));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
+    let stick_1 = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
+        material.clone(),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        &mut meshes
+    ))
+    .insert(Joint::new(bench, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::Z,
+        damping: 0.1,
+        stiffness: 1.0,
+        ..default()
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("stick_1_z".to_owned()))
     .id();
 
-    let link = commands.spawn_bundle( MeshPhysicBodyBundle::from(
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.6, 0.0));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.6, 0.0));
+    let stick_2 = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder {radius: 0.1, length: 0.1, resolution: 5},
-        materials.add(Color::ALICE_BLUE.into()),
-        Transform::default(),
+        Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
+        material.clone(),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
         &mut meshes
     ))
+    .insert(Joint::new(stick_1, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::X,
+        damping: 0.1,
+        stiffness: 1.0,
+        limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
+        ..default()
+    }))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(TurnComp)
-    .insert(CanSleep(false))
-    .insert(Joint::new(
-        root,
-        RevoluteJoint {
-            parent_anchor: Transform::from_translation(Vec3::new(-1.0, 0.0, 0.0)).with_rotation(Quat::from_rotation_z(FRAC_PI_2)),
-            child_anchor: Transform::default(),
-            axis: Vec3::X,
-            limits: Some(Vec2::new(-FRAC_PI_4, FRAC_PI_4)),
-            ..default()
-        }
-    )).id();
+    .insert(RigidBodyName("stick_2_x".to_owned()))
+    .id();
 
-    commands.spawn_bundle( MeshPhysicBodyBundle::from(
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.6, 0.0)).with_rotation(Quat::from_rotation_x(-FRAC_PI_2));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.6, 0.0));
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
-        Shape::Cylinder {radius: 0.3, length: 0.1, resolution: 5},
-        materials.add(Color::ALICE_BLUE.into()),
-        Transform::from_translation(Vec3::new(-1.4, 0.0, 0.0)),
+        Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
+        material.clone(),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
         &mut meshes
     ))
-    .insert(GravityScale::new(0.0))
+    .insert(Joint::new(stick_2, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Vec3::Y,
+        damping: 0.1,
+        stiffness: 1.0,
+        ..default()
+    }))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(TestComp)
-    .insert(CanSleep(false))
-    .insert(Joint::new(
-        link,
-        RevoluteJoint {
-            parent_anchor: Transform::from_translation(Vec3::new(0.0, 0.11, 0.0)),
-            child_anchor: Transform::default(),
-            axis: Vec3::Y,
-            ..default()
-        }
-    ));
+    .insert(RigidBodyName("stick_3_y".to_owned()));
 
-    
-    let base = commands.spawn_bundle( MeshPhysicBodyBundle::from(
-        RigidBody::Dynamic,
-        Shape::Sphere { radius: 0.1, subdivisions: 5 },
-        materials.add(Color::ALICE_BLUE.into()),
-        Transform::default(),
-        &mut meshes
-    ))
-    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(CanSleep(false))
-    .insert(LinkZComp)
-    .insert(Joint::new(
-        root,
-        RevoluteJoint {
-            parent_anchor: Transform::from_translation(Vec3::new(1.0, 0.0, 0.0)),
-            child_anchor: Transform::default(),
-            axis: Vec3::Z,
-            stiffness: 100.0,
-            damping: 100.0,
-            ..default()
-        }
-    )).id();
-
-    commands.spawn_bundle( MeshPhysicBodyBundle::from(
-        RigidBody::Dynamic,
-        Shape::Capsule {radius: 0.1, length: 0.5},
-        materials.add(Color::ALICE_BLUE.into()),
-        Transform::default(),
-        &mut meshes
-    ))
-    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(CanSleep(false))
-    .insert(LinkXComp)
-    .insert(Joint::new(
-        base,
-        RevoluteJoint {
-            parent_anchor: Transform::from_xyz(0.0, 0.0, 0.0),
-            child_anchor: Transform::from_translation(Vec3::new(0.0, -0.47, 0.0)),
-            axis: Vec3::X,
-            stiffness: 100.0,
-            damping: 100.0,
-            ..default()
-        }
-    ));
-
-
-    // poker
-    commands.spawn_bundle( MeshPhysicBodyBundle::from(
-        RigidBody::Dynamic,
-        Shape::Sphere { radius: 0.1, subdivisions: 5 },
-        materials.add(Color::PINK.into()),
-        Transform::from_xyz(2.0, 0.0, 0.0),
-        &mut meshes
-    ))
-    .insert(GravityScale::new(0.0))
-    .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
     // Light
     commands.spawn_bundle(DirectionalLightBundle {
@@ -172,75 +242,62 @@ fn setup_scene(
 }
 
 
-fn set_velocity(
-    keys: Res<Input<KeyCode>>,
-    mut joint_event: EventWriter<JointMotorEvent>,
-    spin_query: Query<Entity, With<TestComp>>,
-    turn_query: Query<Entity, With<TurnComp>>,
-    link_z_query: Query<Entity, With<LinkZComp>>,
-    link_x_query: Query<Entity, With<LinkXComp>>
- ) {
+fn build_test_bench(
+    origin: Transform,
+    commands: &mut Commands,
+    material: &Handle<StandardMaterial>,
+    meshes: &mut ResMut<Assets<Mesh>>,
+) -> Entity {
 
-    let spin_entity = spin_query.get_single().unwrap();
-    let turn_entity = turn_query.get_single().unwrap();
-    let link_x_entity = link_x_query.get_single().unwrap();
-    let link_z_entity = link_z_query.get_single().unwrap();
+    //base 
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.75, 0.0));
+    let child_anchor = Transform::default();
+    let base = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box { x_length: 4.0, y_length: 1.0, z_length: 4.0 },
+        material.clone(),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        meshes
+    ))
+    .insert(Mass { val: 100000.0 })
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("base".to_owned()))
+    .id();
 
-    if keys.just_pressed(KeyCode::W) {
-        joint_event.send( JointMotorEvent {
-            entity: spin_entity,
-            action: MotorAction::VelocityRevolute { velocity: 3.0, factor: 30.0 }
-        });
-        joint_event.send( JointMotorEvent {
-            entity: link_z_entity,
-            action: MotorAction::PositionRevolute { position: -FRAC_PI_4, damping: DAMPING, stiffness: STIFFNESS }
-        });
-    } else if keys.just_pressed(KeyCode::S) {
-        joint_event.send( JointMotorEvent {
-            entity: spin_entity,
-            action: MotorAction::VelocityRevolute { velocity: -3.0, factor: 30.0 }
-        });
-        joint_event.send( JointMotorEvent {
-            entity: link_z_entity,
-            action: MotorAction::PositionRevolute { position: FRAC_PI_4, damping: DAMPING, stiffness: STIFFNESS }
-        });
-    } else if keys.just_released(KeyCode::S) || keys.just_released(KeyCode::W) {
-        joint_event.send( JointMotorEvent {
-            entity: spin_entity,
-            action: MotorAction::VelocityRevolute { velocity: 0.0, factor: 30.0 }
-        });
-        joint_event.send( JointMotorEvent {
-            entity: link_z_entity,
-            action: MotorAction::PositionRevolute { position: 0.0, damping: DAMPING, stiffness: STIFFNESS }
-        });
-    }
+    // base pole
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, 1.0, 0.0));
+    let child_anchor = Transform::default();
+    let base_pole = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box { x_length: 0.2, y_length: 1.0, z_length: 0.2 },
+        material.clone(),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        meshes
+    ))
+    .insert(Joint::new(base, FixedJoint {
+        parent_anchor,
+        child_anchor
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("base".to_owned()))
+    .id();
+    
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.60, 0.0));
+    let child_anchor = Transform::default();
+    let bench = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box { x_length: 6.0, y_length: 0.2, z_length: 0.2 },
+        material.clone(),
+        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        meshes
+    ))
+    .insert(Joint::new(base_pole, FixedJoint {
+        parent_anchor,
+        child_anchor
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("bench".to_owned()))
+    .id();
 
-    if keys.just_pressed(KeyCode::A) {
-        joint_event.send( JointMotorEvent {
-            entity: turn_entity,
-            action: MotorAction::PositionRevolute { position: -FRAC_PI_4, damping: DAMPING, stiffness: STIFFNESS }
-        });
-        joint_event.send( JointMotorEvent {
-            entity: link_x_entity,
-            action: MotorAction::PositionRevolute { position: -FRAC_PI_4, damping: DAMPING, stiffness: STIFFNESS }
-        });
-    } else if keys.just_pressed(KeyCode::D) {
-        joint_event.send( JointMotorEvent {
-            entity: turn_entity,
-            action: MotorAction::PositionRevolute { position: FRAC_PI_4, damping: DAMPING, stiffness: STIFFNESS }
-        });
-        joint_event.send( JointMotorEvent {
-            entity: link_x_entity,
-            action: MotorAction::PositionRevolute { position: FRAC_PI_4, damping: DAMPING, stiffness: STIFFNESS }
-        });
-    } else if keys.just_released(KeyCode::D) || keys.just_released(KeyCode::A) {
-        joint_event.send( JointMotorEvent {
-            entity: turn_entity,
-            action: MotorAction::PositionRevolute { position: 0.0, damping: DAMPING, stiffness: STIFFNESS }
-        });
-        joint_event.send( JointMotorEvent {
-            entity: link_x_entity,
-            action: MotorAction::PositionRevolute { position: 0.0, damping: DAMPING, stiffness: STIFFNESS }
-        });
-    }
+    bench
 }

@@ -1,8 +1,0 @@
-[package]
-name = "nora_raycast"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-bevy = "0.8.0"
-num_cpus = "1.13.1"

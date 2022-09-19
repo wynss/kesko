@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use nora_core::{
+use kesko_core::{
     plugins::CorePlugins,
     diagnostic::DiagnosticsPlugins,
     interaction::groups::GroupDynamic, 
@@ -8,14 +8,14 @@ use nora_core::{
     models::car::CarPlugin,
     models::wheely::WheelyPlugin
 };
-use nora_physics::{
+use kesko_physics::{
     rigid_body::RigidBody,
     force::Force,
     gravity::GravityScale,
     collider::ColliderShape,
     event::GenerateCollisionEvents
 };
-use nora_object_interaction::InteractiveBundle;
+use kesko_object_interaction::InteractiveBundle;
 
 
 fn main() {
