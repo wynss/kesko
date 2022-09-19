@@ -42,7 +42,7 @@ Kesko is pre-release and in its infancy, quite far from useful (but perhaps a bi
 * Free and open-source
 * Good looking!
 
-Going forward an initial python API is priority to enable the first support for reinforcement learning training.
+Going forward an initial python API is priority to enable the first support for training reinforcement learning models.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
