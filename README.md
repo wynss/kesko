@@ -33,7 +33,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-<img src="media/kesko-1.png" alt="drawing" style="width:500px;"/>
+<img src="media/kesko-2.png" alt="drawing" style="width:500px;"/>
 <br />
 Kesko is pre-release and in its infancy, quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
 
@@ -42,7 +42,7 @@ Kesko is pre-release and in its infancy, quite far from useful (but perhaps a bi
 * Free and open-source
 * Good looking!
 
-Going forward an initial python API is priority so the first machine learning models can be trained.
+Going forward an initial python API is priority to enable the first support for reinforcement learning training.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
