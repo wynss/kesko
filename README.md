@@ -11,7 +11,8 @@
     <img src="media/kesko-light.png" alt="Logo" width="200" height="200">
   </a>
 
-<h3 align="center">Kesko</h3>
+  <h3 align="center">Kesko</h3>
+
 
   <p align="center">
     Experimental robotics simulator written in Rust.
@@ -31,9 +32,9 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
+
 <img src="media/kesko-1.png" alt="drawing" style="width:500px;"/>
 <br />
-
 Kesko is pre-release and in its infancy, quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
 
 * Easiest simulator to get started with machine learning and robotics
@@ -57,6 +58,7 @@ Going forward an initial python API is priority so the first machine learning mo
 1. Clone the repo
    ```bash
    git clone https://github.com/wynss/kesko.git
+
    ```
 2. Build and run
    ```bash
@@ -64,6 +66,7 @@ Going forward an initial python API is priority so the first machine learning mo
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 
 ## Usage
 
@@ -73,7 +76,7 @@ As stated Kesko is quite useless at the moment but you can play around with some
 
 ## Demo
 
-Thanks to WebAssembly support Kesko can run in the browser, try it at [Kesko Demo](https://toniaxelsson.com/projects/kesko)
+Thanks to WebAssembly support Kesko can be run in the browser, try it at [Kesko Demo](https://toniaxelsson.com/projects/kesko)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -88,7 +91,6 @@ The roadmap is subject to change, but a very rough version is
 - [ ] Locally attached cameras
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 <!-- CONTRIBUTING -->
 ## Contributing
@@ -127,6 +129,7 @@ Toni Axelsson - [@toniaxelsson](https://twitter.com/toniaxelsson)
 ## Acknowledgments
 
 Many thanks to the awesome people building
+
 * [Bevy](https://bevyengine.org)
 * [Rapier](https://rapier.rs)
 
