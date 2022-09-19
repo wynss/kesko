@@ -8,7 +8,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/wynss/kesko">
-    <img src="media/nora_light.png" alt="Logo" width="200" height="200">
+    <img src="media/kesko-light.png" alt="Logo" width="200" height="200">
   </a>
 
 <h3 align="center">Kesko</h3>
@@ -17,8 +17,8 @@
     Experimental robotics simulator written in Rust.
     <br />
     <br />
-    <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/wynss/nora/CI?style=flat-square">
-    <img alt="GitHub" src="https://img.shields.io/github/license/wynss/nora?style=flat-square">
+    <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/wynss/kesko/CI?style=flat-square">
+    <img alt="GitHub" src="https://img.shields.io/github/license/wynss/kesko?style=flat-square">
     <br />
     <br />
     <a href="#about-the-project">About The Project</a> |
@@ -31,7 +31,7 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-<img src="media/nora-1.png" alt="drawing" style="width:500px;"/>
+<img src="media/kesko-1.png" alt="drawing" style="width:500px;"/>
 <br />
 
 Kesko is pre-release and in its infancy, quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
@@ -56,7 +56,7 @@ Going forward an initial python API is priority so the first machine learning mo
 
 1. Clone the repo
    ```bash
-   git clone https://github.com/wynss/nora.git
+   git clone https://github.com/wynss/kesko.git
    ```
 2. Build and run
    ```bash
@@ -73,7 +73,7 @@ As stated Kesko is quite useless at the moment but you can play around with some
 
 ## Demo
 
-Thanks to WebAssembly support Kesko can run in the browser, try it at [Kesko Demo](https://toniaxelsson.com/projects/nora)
+Thanks to WebAssembly support Kesko can run in the browser, try it at [Kesko Demo](https://toniaxelsson.com/projects/kesko)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -136,5 +136,5 @@ Many thanks to the awesome people building
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[ci-shield]: https://img.shields.io/github/workflow/status/wynss/nora/CI?style=flat-square
-[product-screenshot]: media/nora-1.png
+[ci-shield]: https://img.shields.io/github/workflow/status/wynss/kesko/CI?style=flat-square
+[product-screenshot]: media/kesko-1.png
