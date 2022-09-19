@@ -34,12 +34,14 @@
 <img src="media/nora-1.png" alt="drawing" style="width:500px;"/>
 <br />
 
-Kesko is currently in its infancy and quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
+Kesko is pre-release and in its infancy, quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
 
 * Easiest simulator to get started with machine learning and robotics
 * Best simulator for procedurally generate new environments for training
 * Free and open-source
 * Good looking!
+
+Going forward an initial python API is priority so the first machine learning models can be trained.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -65,13 +67,13 @@ Kesko is currently in its infancy and quite far from useful (but perhaps a bit f
 
 ## Usage
 
-As stated Kesko is quite useless at the moment but you can only play around with some of the built in models and experiment with the physics.
+As stated Kesko is quite useless at the moment but you can play around with some of the built in models and experiment with the physics.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Demo
 
-To test Kesko in the browser go to [Kesko Demo](https://toniaxelsson.com/projects/nora)
+Thanks to WebAssembly support Kesko can run in the browser, try it at [Kesko Demo](https://toniaxelsson.com/projects/nora)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -79,14 +81,13 @@ To test Kesko in the browser go to [Kesko Demo](https://toniaxelsson.com/project
 
 The roadmap is subject to change, but a very rough version is 
 
-- [ ] URDF Support
-- [ ] Locally attached cameras
 - [ ] Python API
     - [ ] GYM integration
     - [ ] Image data
+- [ ] URDF Support
+- [ ] Locally attached cameras
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- CONTRIBUTING -->
@@ -125,6 +126,7 @@ Toni Axelsson - [@toniaxelsson](https://twitter.com/toniaxelsson)
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
+Many thanks to the awesome people building
 * [Bevy](https://bevyengine.org)
 * [Rapier](https://rapier.rs)
 
