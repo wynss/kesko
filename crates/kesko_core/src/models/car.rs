@@ -13,7 +13,7 @@ use kesko_physics::{
         revolute::RevoluteJoint,
         JointMotorEvent, MotorAction
     },
-    multibody::MultibodyRoot
+    multibody::MultibodyRoot, mass::Mass
 };
 use kesko_object_interaction::InteractiveBundle;
 use crate::{
@@ -85,6 +85,7 @@ impl Car {
             meshes
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+        .insert(Mass { val: 1.0 })
         .insert(RigidBodyName(NAME.to_owned()))
         .insert(ControlDescription("Use the WASD keys to manoeuver the car".to_owned()))
         .id();

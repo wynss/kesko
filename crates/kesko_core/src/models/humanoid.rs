@@ -1,4 +1,4 @@
-use std::f32::consts::{FRAC_PI_2, FRAC_PI_6, FRAC_PI_4, FRAC_1_PI, PI};
+use std::f32::consts::{FRAC_PI_2, FRAC_PI_6, FRAC_PI_4, PI};
 
 use bevy::prelude::*;
 
@@ -15,19 +15,18 @@ use crate::{
         PhysicBodyBundle
     },
     interaction::groups::GroupDynamic,
-    transform::get_world_transform
+    transform::get_world_transform,
+    models::Model
 };
+
+// For some reason we need to set the mass of the bodies, otherwise it behaves like there is almost
+// no gravity, seems like a bug in Rapier. For now use the same mass for all bodies
+const MASS: f32 = 0.1;
 
 const STIFFNESS: f32 = 1.0;
 
-const NAME: &str = "humanoid";
 const HEAD_RADIUS: f32 = 0.13;
 const NECK_LENGTH: f32 = 0.13;
-
-
-const NECK_X: &str = "neck_x";
-const NECK_Y: &str = "neck_y";
-const NECK_Z: &str = "neck_z";
 
 const SHOULDER_WIDTH: f32 = 0.28;
 const SHOULDER_RADIUS: f32 = 0.04;
@@ -56,8 +55,8 @@ impl Humanoid {
             meshes
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName(NAME.to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(RigidBodyName(Model::Humanoid.name().to_owned()))
+        .insert(Mass {val: MASS})
         .id();
 
         let shoulder = Self::build_neck(head, commands, material.clone(), origin, meshes);
@@ -92,7 +91,7 @@ impl Humanoid {
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName(NECK_X.to_owned()))
+        .insert(RigidBodyName("neck_x".to_owned()))
         .id();
 
         // neck y
@@ -112,7 +111,7 @@ impl Humanoid {
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName(NECK_Y.to_owned()))
+        .insert(RigidBodyName("neck_y".to_owned()))
         .id();
         
         // neck z
@@ -134,8 +133,8 @@ impl Humanoid {
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName(NECK_Z.to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(RigidBodyName("neck_z".to_owned()))
+        .insert(Mass {val: MASS})
         .id();
 
         shoulder
@@ -167,7 +166,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("body_1".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(-should_dist, 0.0, 0.0));
@@ -185,7 +184,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("body_2".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(-should_dist, 0.0, 0.0));
@@ -203,7 +202,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("body_3".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
 
         hip
@@ -241,7 +240,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_upper_arm_z".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -2.0*ARM_RADIUS, 0.0));
@@ -263,7 +262,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_upper_arm_x".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
 
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -half_upper_arm, 0.0));
@@ -285,7 +284,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_lower_arm_x".to_owned()))
-        .insert(Mass {val: 1.0});
+        .insert(Mass {val: MASS});
         
         // right arm
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, should_to_arm, 0.0)).with_rotation(Quat::from_rotation_z(FRAC_PI_2));
@@ -307,7 +306,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_upper_arm_z".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 2.0*ARM_RADIUS, 0.0));
@@ -329,7 +328,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_upper_arm_x".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
 
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, half_upper_arm, 0.0));
@@ -351,7 +350,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_lower_arm_x".to_owned()))
-        .insert(Mass {val: 1.0});
+        .insert(Mass {val: MASS});
 
     }
 
@@ -388,7 +387,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_upper_leg_z".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -2.0*LEG_RADIUS, 0.0));
@@ -410,7 +409,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_upper_leg_x".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -half_upper_leg, 0.0));
@@ -432,7 +431,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_lower_leg_x".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
 
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -half_upper_leg, 0.0)).with_rotation(Quat::from_rotation_x(-FRAC_PI_2));
@@ -454,7 +453,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_foot_x".to_owned()))
-        .insert(Mass {val: 1.0});
+        .insert(Mass {val: MASS});
         
         // right leg
         let parent_anchor = Transform::from_translation(Vec3::new(-2.0*LEG_RADIUS, should_to_arm, 0.0)).with_rotation(Quat::from_rotation_z(FRAC_PI_2));
@@ -476,7 +475,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_upper_leg_z".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 2.0*LEG_RADIUS, 0.0));
@@ -498,7 +497,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_upper_leg_x".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, half_upper_leg, 0.0));
@@ -520,7 +519,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_lower_leg_x".to_owned()))
-        .insert(Mass {val: 1.0})
+        .insert(Mass {val: MASS})
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, half_upper_leg, 0.0)).with_rotation(Quat::from_rotation_x(-FRAC_PI_2));
@@ -542,7 +541,7 @@ impl Humanoid {
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_foot_x".to_owned()))
-        .insert(Mass {val: 1.0});
+        .insert(Mass {val: MASS});
 
     }
 }

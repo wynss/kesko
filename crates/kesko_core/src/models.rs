@@ -24,7 +24,8 @@ pub(crate) enum Model {
     Snake,
     Spider,
     Sphere,
-    Wheely
+    Wheely,
+    Humanoid
 }
 
 impl Model {
@@ -36,7 +37,8 @@ impl Model {
             Self::Snake => "Snake",
             Self::Spider => "Spider",
             Self::Sphere => "Sphere",
-            Self::Wheely => "Wheely"
+            Self::Wheely => "Wheely",
+            Self::Humanoid => "Humanoid"
         }
     }
 }
@@ -64,7 +66,8 @@ pub(crate) fn spawn_model_system(
                 Model::Wheely => {
                     let wheel_material = materials.add(Color::DARK_GRAY.into());
                     wheely::Wheely::spawn_wheely(&mut commands, material, wheel_material, *transform, &mut meshes);
-                }
+                },
+                Model::Humanoid => humanoid::Humanoid::spawn(&mut commands, material, *transform, &mut meshes)
             }
         }
     }
