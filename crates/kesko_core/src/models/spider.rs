@@ -39,12 +39,14 @@ pub fn spawn_spider(
 
     // Frame
     let body = commands.spawn_bundle(MeshPhysicBodyBundle::from(RigidBody::Dynamic,
-        Shape::Sphere { radius: body_radius, subdivisions: 7 }, material.clone(), transform, meshes
+        Shape::Sphere { radius: body_radius, subdivisions: 7 }, 
+        material.clone(), 
+        transform, 
+        meshes
     ))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("spider".to_owned()))
     .id();
-
 
     // left front leg x
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(1.0, 0.0, 1.0).normalize())
