@@ -66,7 +66,7 @@ fn test_scene(
 
     models::humanoid::Humanoid::spawn(
         &mut commands,
-        materials.add(Color::CYAN.into()), 
+        materials.add(Color::ORANGE.into()), 
         Transform::from_xyz(2.0, 2.0, 2.0),
         &mut meshes
     );

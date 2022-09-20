@@ -1,4 +1,4 @@
-use std::f32::consts::FRAC_PI_2;
+use std::f32::consts::{FRAC_PI_2, FRAC_PI_6, FRAC_PI_4, FRAC_1_PI, PI};
 
 use bevy::prelude::*;
 
@@ -18,18 +18,25 @@ use crate::{
     transform::get_world_transform
 };
 
+const STIFFNESS: f32 = 1.0;
 
 const NAME: &str = "humanoid";
-const HEAD_RADIUS: f32 = 0.1;
-const NECK_LENGTH: f32 = 0.1;
-const SHOULDER_WIDTH: f32 = 0.3;
-const SHOULDER_RADIUS: f32 = 0.03;
+const HEAD_RADIUS: f32 = 0.13;
+const NECK_LENGTH: f32 = 0.13;
+
 
 const NECK_X: &str = "neck_x";
 const NECK_Y: &str = "neck_y";
-const NECK_Z: &str = "neck_Z";
+const NECK_Z: &str = "neck_z";
 
-const STIFFNESS: f32 = 1.0;
+const SHOULDER_WIDTH: f32 = 0.28;
+const SHOULDER_RADIUS: f32 = 0.04;
+
+const ARM_RADIUS: f32 = 0.035;
+const ARM_UPPER_LENGTH: f32 = 0.24;
+const ARM_LOWER_LENGTH: f32 = 0.18;
+
+const LEG_RADIUS: f32 = 0.04;
 
 
 pub struct Humanoid;
@@ -41,7 +48,6 @@ impl Humanoid {
         origin: Transform,
         meshes: &mut Assets<Mesh>
     ) {
-
 
         let head = commands.spawn_bundle(MeshPhysicBodyBundle::from(RigidBody::Dynamic,
             Shape::Sphere { radius: HEAD_RADIUS, subdivisions: 7 }, 
@@ -55,8 +61,9 @@ impl Humanoid {
         .id();
 
         let shoulder = Self::build_neck(head, commands, material.clone(), origin, meshes);
-        Self::build_arms(shoulder, commands, material.clone(), origin, meshes);
         let hip = Self::build_upper_body(shoulder, commands, material.clone(), origin, meshes);
+
+        Self::build_arms(shoulder, commands, material.clone(), origin, meshes);
         Self::build_legs(hip, commands, material.clone(), origin, meshes);
     }
 
@@ -71,18 +78,17 @@ impl Humanoid {
         // neck x
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -(HEAD_RADIUS + NECK_LENGTH / 4.0), 0.0));
         let child_anchor = Transform::default();
-        let neck_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        let neck_x = commands.spawn_bundle(PhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere { radius: 0.01, subdivisions: 5 },
-            material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
-            meshes
         ))
         .insert(Joint::new(head, RevoluteJoint {
             parent_anchor,
             child_anchor,
             axis: Vec3::X,
             stiffness: STIFFNESS,
+            limits: Some(Vec2::new(-FRAC_PI_4, FRAC_PI_4)),
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -92,18 +98,17 @@ impl Humanoid {
         // neck y
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -0.02, 0.0));
         let child_anchor = Transform::default();
-        let neck_y = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        let neck_y = commands.spawn_bundle(PhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere { radius: 0.01, subdivisions: 5 },
-            material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
-            meshes
         ))
         .insert(Joint::new(neck_x, RevoluteJoint {
             parent_anchor,
             child_anchor,
             axis: Vec3::Y,
             stiffness: STIFFNESS,
+            limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -125,6 +130,7 @@ impl Humanoid {
             child_anchor,
             axis: Vec3::Z,
             stiffness: STIFFNESS,
+            limits: Some(Vec2::new(-FRAC_PI_6, FRAC_PI_6)),
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -211,16 +217,16 @@ impl Humanoid {
         origin: Transform,
         meshes: &mut Assets<Mesh>
     ) {
-        let arm_radius = 0.025;
-        let upper_arm_length = 0.20;
-        let lower_arm_length = 0.15;
-        let should_to_arm = SHOULDER_WIDTH / 2.0 + arm_radius + 0.02;
+        
+        let should_to_arm = SHOULDER_WIDTH / 2.0 + ARM_RADIUS + SHOULDER_RADIUS;
+        let half_upper_arm = ARM_UPPER_LENGTH / 2.0 + ARM_RADIUS;
+        let half_lower_arm = ARM_LOWER_LENGTH / 2.0 + ARM_RADIUS;
 
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -should_to_arm, 0.0)).with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.0, 0.0));
         let left_upper_arm_z = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Sphere { radius: arm_radius, subdivisions: 7 },
+            Shape::Sphere { radius: ARM_RADIUS, subdivisions: 7 },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -230,7 +236,7 @@ impl Humanoid {
             child_anchor,
             axis: Vec3::Z,
             stiffness: STIFFNESS,
-            limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
+            limits: Some(Vec2::new(-FRAC_PI_6, PI)),
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -238,11 +244,11 @@ impl Humanoid {
         .insert(Mass {val: 1.0})
         .id();
         
-        let parent_anchor = Transform::from_translation(Vec3::new(0.0, -2.0*arm_radius, 0.0));
-        let child_anchor = Transform::from_translation(Vec3::new(0.0, upper_arm_length / 2.0, 0.0));
+        let parent_anchor = Transform::from_translation(Vec3::new(0.0, -2.0*ARM_RADIUS, 0.0));
+        let child_anchor = Transform::from_translation(Vec3::new(0.0, ARM_UPPER_LENGTH / 2.0, 0.0));
         let left_upper_arm_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: arm_radius, length: upper_arm_length },
+            Shape::Capsule { radius: ARM_RADIUS, length: ARM_UPPER_LENGTH },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -259,15 +265,12 @@ impl Humanoid {
         .insert(RigidBodyName("left_upper_arm_x".to_owned()))
         .insert(Mass {val: 1.0})
         .id();
-        
-        let dist_upper = upper_arm_length / 2.0 + arm_radius;
-        let dist_lower = lower_arm_length / 2.0 + arm_radius;
 
-        let parent_anchor = Transform::from_translation(Vec3::new(0.0, -dist_upper, 0.0));
-        let child_anchor = Transform::from_translation(Vec3::new(0.0, dist_lower, 0.0));
+        let parent_anchor = Transform::from_translation(Vec3::new(0.0, -half_upper_arm, 0.0));
+        let child_anchor = Transform::from_translation(Vec3::new(0.0, half_lower_arm, 0.0));
         commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: arm_radius, length: lower_arm_length },
+            Shape::Capsule { radius: ARM_RADIUS, length: ARM_LOWER_LENGTH },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -289,7 +292,7 @@ impl Humanoid {
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.0, 0.0));
         let right_upper_arm_z = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Sphere { radius: arm_radius, subdivisions: 7 },
+            Shape::Sphere { radius: ARM_RADIUS, subdivisions: 7 },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -299,7 +302,7 @@ impl Humanoid {
             child_anchor,
             axis: Vec3::Z,
             stiffness: STIFFNESS,
-            limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
+            limits: Some(Vec2::new(-PI, FRAC_PI_6)),
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -307,11 +310,11 @@ impl Humanoid {
         .insert(Mass {val: 1.0})
         .id();
         
-        let parent_anchor = Transform::from_translation(Vec3::new(0.0, 2.0*arm_radius, 0.0));
-        let child_anchor = Transform::from_translation(Vec3::new(0.0, -upper_arm_length / 2.0, 0.0));
+        let parent_anchor = Transform::from_translation(Vec3::new(0.0, 2.0*ARM_RADIUS, 0.0));
+        let child_anchor = Transform::from_translation(Vec3::new(0.0, -ARM_UPPER_LENGTH / 2.0, 0.0));
         let right_upper_arm_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: arm_radius, length: upper_arm_length },
+            Shape::Capsule { radius: ARM_RADIUS, length: ARM_UPPER_LENGTH },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -325,18 +328,15 @@ impl Humanoid {
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("left_upper_arm_x".to_owned()))
+        .insert(RigidBodyName("right_upper_arm_x".to_owned()))
         .insert(Mass {val: 1.0})
         .id();
-        
-        let dist_upper = upper_arm_length / 2.0 + arm_radius;
-        let dist_lower = lower_arm_length / 2.0 + arm_radius;
 
-        let parent_anchor = Transform::from_translation(Vec3::new(0.0, dist_upper, 0.0));
-        let child_anchor = Transform::from_translation(Vec3::new(0.0, -dist_lower, 0.0));
+        let parent_anchor = Transform::from_translation(Vec3::new(0.0, half_upper_arm, 0.0));
+        let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_lower_arm, 0.0));
         commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: arm_radius, length: lower_arm_length },
+            Shape::Capsule { radius: ARM_RADIUS, length: ARM_LOWER_LENGTH },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -346,7 +346,7 @@ impl Humanoid {
             child_anchor,
             axis: Vec3::X,
             stiffness: STIFFNESS,
-            limits: Some(Vec2::new(-FRAC_PI_2, 0.0)),
+            limits: Some(Vec2::new(0.0, FRAC_PI_2)),
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -362,19 +362,18 @@ impl Humanoid {
         origin: Transform,
         meshes: &mut Assets<Mesh>
     ) {
-        let leg_radius = 0.03;
         let upper_leg_length = 0.3;
         let lower_leg_length = 0.25;
         let foot_length = 0.1;
         let should_to_arm = SHOULDER_WIDTH / 4.0 + 0.02;
-        let half_upper_leg = upper_leg_length / 2.0 + leg_radius;
-        let half_lower_leg = lower_leg_length / 2.0 + leg_radius;
+        let half_upper_leg = upper_leg_length / 2.0 + LEG_RADIUS;
+        let half_lower_leg = lower_leg_length / 2.0 + LEG_RADIUS;
 
-        let parent_anchor = Transform::from_translation(Vec3::new(-2.0*leg_radius, -should_to_arm, 0.0)).with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
+        let parent_anchor = Transform::from_translation(Vec3::new(-2.0*LEG_RADIUS, -should_to_arm, 0.0)).with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.0, 0.0));
         let left_upper_leg_z = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Sphere { radius: leg_radius, subdivisions: 7 },
+            Shape::Sphere { radius: LEG_RADIUS, subdivisions: 7 },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -392,11 +391,11 @@ impl Humanoid {
         .insert(Mass {val: 1.0})
         .id();
         
-        let parent_anchor = Transform::from_translation(Vec3::new(0.0, -2.0*leg_radius, 0.0));
+        let parent_anchor = Transform::from_translation(Vec3::new(0.0, -2.0*LEG_RADIUS, 0.0));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, upper_leg_length / 2.0, 0.0));
         let left_upper_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: leg_radius, length: upper_leg_length },
+            Shape::Capsule { radius: LEG_RADIUS, length: upper_leg_length },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -418,7 +417,7 @@ impl Humanoid {
         let child_anchor = Transform::from_translation(Vec3::new(0.0, half_lower_leg, 0.0));
         let left_lower_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: leg_radius, length: lower_leg_length },
+            Shape::Capsule { radius: LEG_RADIUS, length: lower_leg_length },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -428,7 +427,7 @@ impl Humanoid {
             child_anchor,
             axis: Vec3::X,
             stiffness: STIFFNESS,
-            limits: Some(Vec2::new(-FRAC_PI_2, 0.0)),
+            limits: Some(Vec2::new(0.0, FRAC_PI_2)),
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -440,7 +439,7 @@ impl Humanoid {
         let child_anchor = Transform::from_translation(Vec3::new(0.0, foot_length / 2.0, 0.0));
         commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: leg_radius, length: foot_length },
+            Shape::Capsule { radius: LEG_RADIUS, length: foot_length },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -450,7 +449,7 @@ impl Humanoid {
             child_anchor,
             axis: Vec3::X,
             stiffness: STIFFNESS,
-            limits: Some(Vec2::new(-FRAC_PI_2, 0.0)),
+            limits: Some(Vec2::new(0.0, FRAC_PI_2)),
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -458,11 +457,11 @@ impl Humanoid {
         .insert(Mass {val: 1.0});
         
         // right leg
-        let parent_anchor = Transform::from_translation(Vec3::new(-2.0*leg_radius, should_to_arm, 0.0)).with_rotation(Quat::from_rotation_z(FRAC_PI_2));
+        let parent_anchor = Transform::from_translation(Vec3::new(-2.0*LEG_RADIUS, should_to_arm, 0.0)).with_rotation(Quat::from_rotation_z(FRAC_PI_2));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.0, 0.0));
         let right_upper_arm_z = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Sphere { radius: leg_radius, subdivisions: 7 },
+            Shape::Sphere { radius: LEG_RADIUS, subdivisions: 7 },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -476,15 +475,15 @@ impl Humanoid {
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("right_upper_arm_z".to_owned()))
+        .insert(RigidBodyName("right_upper_leg_z".to_owned()))
         .insert(Mass {val: 1.0})
         .id();
         
-        let parent_anchor = Transform::from_translation(Vec3::new(0.0, 2.0*leg_radius, 0.0));
+        let parent_anchor = Transform::from_translation(Vec3::new(0.0, 2.0*LEG_RADIUS, 0.0));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, -upper_leg_length / 2.0, 0.0));
         let right_upper_arm_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: leg_radius, length: upper_leg_length },
+            Shape::Capsule { radius: LEG_RADIUS, length: upper_leg_length },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -498,18 +497,15 @@ impl Humanoid {
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("left_upper_arm_x".to_owned()))
+        .insert(RigidBodyName("right_upper_leg_x".to_owned()))
         .insert(Mass {val: 1.0})
         .id();
         
-        let dist_upper = upper_leg_length / 2.0 + leg_radius;
-        let dist_lower = lower_leg_length / 2.0 + leg_radius;
-
-        let parent_anchor = Transform::from_translation(Vec3::new(0.0, dist_upper, 0.0));
-        let child_anchor = Transform::from_translation(Vec3::new(0.0, -dist_lower, 0.0));
+        let parent_anchor = Transform::from_translation(Vec3::new(0.0, half_upper_leg, 0.0));
+        let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_lower_leg, 0.0));
         let right_lower_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: leg_radius, length: lower_leg_length },
+            Shape::Capsule { radius: LEG_RADIUS, length: lower_leg_length },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -531,7 +527,7 @@ impl Humanoid {
         let child_anchor = Transform::from_translation(Vec3::new(0.0, foot_length / 2.0, 0.0));
         commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: leg_radius, length: foot_length },
+            Shape::Capsule { radius: LEG_RADIUS, length: foot_length },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
