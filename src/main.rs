@@ -64,6 +64,13 @@ fn test_scene(
         &mut meshes,
     );
 
+    models::humanoid::Humanoid::spawn(
+        &mut commands,
+        materials.add(Color::ORANGE.into()), 
+        Transform::from_xyz(2.0, 2.0, 2.0),
+        &mut meshes
+    );
+
     // spawn sphere that will generate collision events
     commands.spawn_bundle(PbrBundle {
         material: materials.add(Color::PURPLE.into()),

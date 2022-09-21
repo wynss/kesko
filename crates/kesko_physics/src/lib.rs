@@ -68,7 +68,10 @@ impl Plugin for PhysicsPlugin {
             .init_resource::<rapier::PhysicsPipeline>()         // Runs the complete simulation
             .init_resource::<rapier::RigidBodySet>()            // Holds all the rigid bodies
             .init_resource::<rapier::ColliderSet>()             // Holds all the colliders
-            .init_resource::<rapier::IntegrationParameters>()   // sets the parameters that controls the simulation
+            .insert_resource(rapier::IntegrationParameters {
+                erp: 0.99,
+                ..default()
+            })   // sets the parameters that controls the simulation
             .init_resource::<rapier::IslandManager>()           // Keeps track of which dynamic rigid bodies that are moving and which are not
             .init_resource::<rapier::BroadPhase>()              // Detects pairs of colliders that are potentially in contact
             .init_resource::<rapier::NarrowPhase>()             // Calculates contact points of colliders and generate collision events

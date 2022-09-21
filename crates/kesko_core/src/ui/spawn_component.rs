@@ -75,6 +75,7 @@ impl SpawnComponent {
                             ui.selectable_value(model, Model::Snake, Model::Snake.name());
                             ui.selectable_value(model, Model::Spider, Model::Spider.name());
                             ui.selectable_value(model, Model::Wheely, Model::Wheely.name());
+                            ui.selectable_value(model, Model::Humanoid, Model::Humanoid.name());
                     });
                 });
                 ui.horizontal(|ui| {

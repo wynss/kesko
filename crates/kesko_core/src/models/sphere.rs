@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use kesko_physics::{
     rigid_body::RigidBody,
-    collider::ColliderShape,
+    collider::{ColliderShape, ColliderPhysicalProperties},
     force::Force,
     gravity::GravityScale
 };
@@ -26,5 +26,9 @@ pub fn spawn_sphere(
     .insert(ColliderShape::Sphere { radius: 0.2 })
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(Force::default())
+    .insert(ColliderPhysicalProperties {
+        restitution: 0.7,
+        ..default()
+    })
     .insert(GravityScale::default());
 }

@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::BTreeMap,
     ops::RangeInclusive
 };
 
@@ -43,7 +43,7 @@ pub(crate) struct MultibodyUIComponent {
     ui_open: bool,
     multibody_root: Option<Entity>,
     multibody_name: Option<String>,
-    multibody_joints: Option<HashMap<Entity, JointData>>,
+    multibody_joints: Option<BTreeMap<Entity, JointData>>,
     control_description: Option<String>
 }
 
@@ -71,7 +71,7 @@ impl MultibodyUIComponent {
 
                 if comp.multibody_joints.is_none() {
                     // Build map with relevant joint data to be displayed
-                    let mut joints = HashMap::<Entity, JointData>::new();
+                    let mut joints = BTreeMap::<Entity, JointData>::new();
                     for (name, entity) in root.joint_name_2_entity.iter() {
                         if let Ok(joint) = joint_query.get(*entity) {
 
