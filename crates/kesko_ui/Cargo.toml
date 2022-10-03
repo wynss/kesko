@@ -6,7 +6,8 @@ edition = "2021"
 [dependencies]
 bevy = "0.8.0"
 bevy_egui = "0.16.1"
-kesko_core = { version = "0.1.0", path = "../kesko_core" }
+
+kesko_core = { path = "../kesko_core" }
 kesko_models = { path = "../kesko_models" }
 kesko_object_interaction = { path = "../kesko_object_interaction"}
 kesko_physics = { path = "../kesko_physics" }

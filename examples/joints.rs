@@ -15,16 +15,14 @@ use kesko_physics::{
 };
 use kesko_object_interaction::InteractiveBundle;
 use kesko_core::{
-    plugins::CorePlugins,
-    models::arena::spawn_arena,
     shape::Shape,
-    bundle::{
-        MeshPhysicBodyBundle,
-        PhysicBodyBundle
-    },
+    bundle::MeshPhysicBodyBundle,
     transform::get_world_transform,
     interaction::groups::GroupDynamic
 };
+
+use kesko_models::arena::spawn_arena;
+use kesko_plugins::CorePlugins;
 
 
 fn main() {
