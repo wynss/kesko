@@ -7,17 +7,17 @@ use kesko_physics::{rigid_body::{
     RigidBodyName
 }, joint::{Joint, revolute::RevoluteJoint, fixed::FixedJoint}, mass::Mass};
 use kesko_object_interaction::InteractiveBundle;
-
-use crate::{
+use kesko_core::{
     shape::Shape,
     bundle::{
         MeshPhysicBodyBundle,
         PhysicBodyBundle
     },
     interaction::groups::GroupDynamic,
-    transform::get_world_transform,
-    models::Model
+    transform::get_world_transform
 };
+
+use super::Model;
 
 // For some reason we need to set the mass of the bodies, otherwise it behaves like there is almost
 // no gravity, seems like a bug in Rapier. For now use the same mass for all bodies
@@ -36,6 +36,9 @@ const ARM_UPPER_LENGTH: f32 = 0.24;
 const ARM_LOWER_LENGTH: f32 = 0.18;
 
 const LEG_RADIUS: f32 = 0.04;
+const UPPER_LEG_LENGTH: f32 = 0.3;
+const LOWER_LEG_LENGTH: f32 = 0.25;
+const FOOT_LENGTH: f32 = 0.15;
 
 
 pub struct Humanoid;
@@ -361,12 +364,9 @@ impl Humanoid {
         origin: Transform,
         meshes: &mut Assets<Mesh>
     ) {
-        let upper_leg_length = 0.3;
-        let lower_leg_length = 0.25;
-        let foot_length = 0.1;
         let should_to_arm = SHOULDER_WIDTH / 4.0 + 0.02;
-        let half_upper_leg = upper_leg_length / 2.0 + LEG_RADIUS;
-        let half_lower_leg = lower_leg_length / 2.0 + LEG_RADIUS;
+        let half_upper_leg = UPPER_LEG_LENGTH / 2.0 + LEG_RADIUS;
+        let half_lower_leg = LOWER_LEG_LENGTH / 2.0 + LEG_RADIUS;
 
         let parent_anchor = Transform::from_translation(Vec3::new(-2.0*LEG_RADIUS, -should_to_arm, 0.0)).with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.0, 0.0));
@@ -391,10 +391,10 @@ impl Humanoid {
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -2.0*LEG_RADIUS, 0.0));
-        let child_anchor = Transform::from_translation(Vec3::new(0.0, upper_leg_length / 2.0, 0.0));
+        let child_anchor = Transform::from_translation(Vec3::new(0.0, UPPER_LEG_LENGTH / 2.0, 0.0));
         let left_upper_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: LEG_RADIUS, length: upper_leg_length },
+            Shape::Capsule { radius: LEG_RADIUS, length: UPPER_LEG_LENGTH },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -416,7 +416,7 @@ impl Humanoid {
         let child_anchor = Transform::from_translation(Vec3::new(0.0, half_lower_leg, 0.0));
         let left_lower_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: LEG_RADIUS, length: lower_leg_length },
+            Shape::Capsule { radius: LEG_RADIUS, length: LOWER_LEG_LENGTH },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -435,10 +435,10 @@ impl Humanoid {
         .id();
 
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -half_upper_leg, 0.0)).with_rotation(Quat::from_rotation_x(-FRAC_PI_2));
-        let child_anchor = Transform::from_translation(Vec3::new(0.0, foot_length / 2.0, 0.0));
+        let child_anchor = Transform::from_translation(Vec3::new(0.0, FOOT_LENGTH / 2.0, 0.0));
         commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: LEG_RADIUS, length: foot_length },
+            Shape::Capsule { radius: LEG_RADIUS, length: FOOT_LENGTH },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -479,10 +479,10 @@ impl Humanoid {
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 2.0*LEG_RADIUS, 0.0));
-        let child_anchor = Transform::from_translation(Vec3::new(0.0, -upper_leg_length / 2.0, 0.0));
+        let child_anchor = Transform::from_translation(Vec3::new(0.0, -UPPER_LEG_LENGTH / 2.0, 0.0));
         let right_upper_arm_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: LEG_RADIUS, length: upper_leg_length },
+            Shape::Capsule { radius: LEG_RADIUS, length: UPPER_LEG_LENGTH },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -504,7 +504,7 @@ impl Humanoid {
         let child_anchor = Transform::from_translation(Vec3::new(0.0, -half_lower_leg, 0.0));
         let right_lower_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: LEG_RADIUS, length: lower_leg_length },
+            Shape::Capsule { radius: LEG_RADIUS, length: LOWER_LEG_LENGTH },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes
@@ -523,10 +523,10 @@ impl Humanoid {
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, half_upper_leg, 0.0)).with_rotation(Quat::from_rotation_x(-FRAC_PI_2));
-        let child_anchor = Transform::from_translation(Vec3::new(0.0, foot_length / 2.0, 0.0));
+        let child_anchor = Transform::from_translation(Vec3::new(0.0, FOOT_LENGTH / 2.0, 0.0));
         commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Capsule { radius: LEG_RADIUS, length: foot_length },
+            Shape::Capsule { radius: LEG_RADIUS, length: FOOT_LENGTH },
             material.clone(),
             get_world_transform(&origin, &parent_anchor, &child_anchor),
             meshes

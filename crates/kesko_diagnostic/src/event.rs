@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use kesko_object_interaction::event::{InteractionEvent, SelectEvent};
 use kesko_physics::{event::CollisionEvent, joint::JointMotorEvent};
-use crate::interaction::multibody_selection::MultibodySelectionEvent;
+use kesko_core::interaction::multibody_selection::MultibodySelectionEvent;
 
 
 pub struct DebugEventPlugin;

@@ -17,7 +17,7 @@ use kesko_physics::{
     multibody::MultibodyRoot
 };
 use kesko_object_interaction::InteractiveBundle;
-use crate::{
+use kesko_core::{
     shape::Shape,
     bundle::{
         MeshPhysicBodyBundle, PhysicBodyBundle
@@ -27,15 +27,16 @@ use crate::{
         multibody_selection::MultibodySelectionEvent
     },
     transform::get_world_transform,
-    models::ControlDescription
 };
+
+use super::ControlDescription;
 
 
 const NAME: &str = "wheely";
 const LEFT_WHEEL: &str = "left_wheel";
 const RIGHT_WHEEL: &str = "right_wheel";
-const ARM_LINK_1: &str = "arm_link_1";
-const ARM_LINK_2: &str = "arm_link_2";
+const ARM_LINK_1: &str = "arm_joint_1";
+const ARM_LINK_2: &str = "arm_joint_2";
 
 const BODY_RADIUS: f32 = 0.3;
 const BODY_HEIGHT: f32 = 0.3;

@@ -1,7 +1,9 @@
 use bevy::app::{App, Plugin};
 use kesko_physics::PhysicsPlugin;
-use crate::cursor_tracking::GrabablePlugin;
-use crate::interaction::groups::GroupDynamic;
+use kesko_core::{
+    cursor_tracking::GrabablePlugin,
+    interaction::groups::GroupDynamic
+};
 
 
 #[derive(Default)]

@@ -4,14 +4,14 @@ pub mod physics;
 
 use bevy::app::{PluginGroup, PluginGroupBuilder};
 use kesko_object_interaction::InteractionPlugin;
-use crate::{
+use kesko_core::{
     interaction::groups::{GroupDynamic, GroupStatic},
-    plugins::{
-        core::CorePlugin,
-        main_camera::MainCameraPlugin,
-        physics::DefaultPhysicsPlugin
-    },
-    ui::UIPlugin
+};
+use kesko_ui::UIPlugin;
+use self::{
+    core::CorePlugin,
+    main_camera::MainCameraPlugin,
+    physics::DefaultPhysicsPlugin
 };
 
 

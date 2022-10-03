@@ -1,9 +1,8 @@
 use bevy::prelude::*;
-use kesko_core::{
-    diagnostic::event::DebugEventPlugin,
-    plugins::CorePlugins,
-    models
-};
+
+use kesko_models as models;
+use kesko_diagnostic::event::DebugEventPlugin;
+use kesko_plugins::CorePlugins;
 
 
 fn main() {

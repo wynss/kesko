@@ -19,7 +19,8 @@ use kesko_physics::{
     },
 };
 
-use crate::{interaction::multibody_selection::MultibodySelectionEvent, models::ControlDescription};
+use kesko_core::interaction::multibody_selection::MultibodySelectionEvent;
+use kesko_models::ControlDescription;
 
 
 // Joint data to store relevant information and values to display and control the joints

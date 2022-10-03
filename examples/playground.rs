@@ -5,15 +5,13 @@ use kesko_core::{
     bundle::MeshPhysicBodyBundle,
     shape::Shape,
     orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera},
-    plugins::physics::DefaultPhysicsPlugin,
-    diagnostic::DiagnosticsPlugins,
     interaction::groups::GroupDynamic,
-    models
 };
 use kesko_object_interaction::{InteractionPlugin, InteractiveBundle, InteractorBundle};
-use kesko_physics::{
-    rigid_body::RigidBody,
-};
+use kesko_physics::rigid_body::RigidBody;
+use kesko_plugins::physics::DefaultPhysicsPlugin;
+use kesko_diagnostic::DiagnosticsPlugins;
+use kesko_models as models;
 
 
 fn main() {

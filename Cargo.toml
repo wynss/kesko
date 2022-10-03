@@ -3,8 +3,11 @@ members = [
     "crates/kesko_core",
     "crates/kesko_physics",
     "crates/kesko_raycast",
-    "crates/kesko_python",
     "crates/kesko_object_interaction",
+    "crates/kesko_models",
+    "crates/kesko_plugins",
+    "crates/kesko_ui",
+    "crates/kesko_diagnostic"
 ]
 
 [package]
@@ -14,8 +17,10 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.8.0"
-bevy_egui = "0.16.0"
 kesko_physics = { version = "0.1.0", path = "crates/kesko_physics" }
 kesko_core = { version = "0.1.0", path = "crates/kesko_core" }
 kesko_object_interaction = { version = "0.1.0", path = "crates/kesko_object_interaction"}
 kesko_raycast = { version = "0.1.0", path = "crates/kesko_raycast"}
+kesko_models = { version = "0.1.0", path = "crates/kesko_models"}
+kesko_plugins = { version = "0.1.0", path="crates/kesko_plugins"}
+kesko_diagnostic = { version = "0.1.0", path="crates/kesko_diagnostic"}

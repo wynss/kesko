@@ -97,7 +97,7 @@ impl FPSComponent {
     }
 }
 
-pub(crate) enum FPSComponentEvent {
+pub enum FPSComponentEvent {
     /// will open the component
     Open,
     /// send fps to uppate the component
