@@ -1,7 +1,7 @@
 use bevy::diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 
-use crate::ui::fps_component::FPSComponentEvent;
+use kesko_ui::fps_component::FPSComponentEvent;
 
 
 #[derive(Default)]

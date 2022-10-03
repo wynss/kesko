@@ -1,11 +1,13 @@
 pub(crate) mod main_menu;
 pub(crate) mod spawn_component;
-pub(crate) mod fps_component;
+pub mod fps_component;
 pub(crate) mod multibody_component;
 pub(crate) mod about;
 
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext, EguiPlugin};
+
+use kesko_models::SpawnEvent;
 
 
 #[derive(SystemLabel, Debug, PartialEq, Eq, Clone, Hash)]
@@ -15,7 +17,7 @@ enum UISystems {
 
 
 /// Plugin responsible to add all UI components and resources
-pub(crate) struct UIPlugin;
+pub struct UIPlugin;
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(EguiPlugin)
@@ -32,7 +34,7 @@ impl Plugin for UIPlugin {
             .add_system(about::AboutComponent::update_system)
 
             // spawn component
-            .add_event::<spawn_component::SpawnEvent>()
+            .add_event::<SpawnEvent>()
             .add_system(spawn_component::SpawnComponent::update_system.after(UISystems::MainMenu))
             .add_system(spawn_component::SpawnComponent::show_and_send_system)
 

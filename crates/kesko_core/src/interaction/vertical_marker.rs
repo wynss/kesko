@@ -4,9 +4,9 @@ use kesko_object_interaction::event::InteractionEvent;
 
 
 #[derive(Component)]
-pub(crate) struct VerticalMarker(Entity);
+pub struct VerticalMarker(Entity);
 
-pub(crate) fn handle_vertical_marker_spawning<T: Component + Default>(
+pub fn handle_vertical_marker_spawning<T: Component + Default>(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut event_reader: EventReader<InteractionEvent>,
@@ -46,7 +46,7 @@ pub(crate) fn handle_vertical_marker_spawning<T: Component + Default>(
     }
 }
 
-pub(crate) fn update_vertical_marker_pos_system<T: Component + Default>(
+pub fn update_vertical_marker_pos_system<T: Component + Default>(
     ray_query: Query<&RayCastSource<T>, Without<Camera>>,
     mut marker_query: Query<(&VerticalMarker, &mut Transform), With<VerticalMarker>>,
 ) {

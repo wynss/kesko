@@ -4,17 +4,20 @@ use bevy::{
     app::{App, Plugin},
     window::WindowDescriptor, DefaultPlugins
 };
-use crate::{interaction::{
-    groups::GroupStatic,
-    vertical_marker::{
-        update_vertical_marker_pos_system,
-        handle_vertical_marker_spawning
-    },
-    multibody_selection::{
-        multibody_selection_system, 
-        MultibodySelectionEvent
+use kesko_core::{
+    interaction::{
+        groups::GroupStatic,
+        vertical_marker::{
+            update_vertical_marker_pos_system,
+            handle_vertical_marker_spawning
+        },
+        multibody_selection::{
+            multibody_selection_system, 
+            MultibodySelectionEvent
+        }
     }
-}, models::spawn_model_system};
+};
+use kesko_models::spawn_model_system;
 
 
 #[derive(Default)]
@@ -43,10 +46,9 @@ impl Plugin for CorePlugin {
             .add_system(multibody_selection_system)
             .add_event::<MultibodySelectionEvent>()
 
-            // spawn default models system
             .add_system(spawn_model_system)
 
-            //// close on ESC
+            // close on ESC
             .add_system(bevy::window::close_on_esc);
     }
 }

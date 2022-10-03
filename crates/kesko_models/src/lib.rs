@@ -8,18 +8,26 @@ pub mod humanoid;
 
 use bevy::prelude::*;
 
-use crate::ui::spawn_component::SpawnEvent;
+
+pub enum SpawnEvent {
+    OpenWindow,
+    Spawn {
+        model: Model,
+        transform: Transform,
+        color: Color
+    }
+}
 
 
 /// Description on how to manually control a robot
 /// The text will be shown in the multibody ui
 #[derive(Component)]
-pub(crate) struct ControlDescription(pub(crate) String);
+pub struct ControlDescription(pub String);
 
 
 // Enum to represent each default model
 #[derive(Debug, PartialEq, Clone)]
-pub(crate) enum Model {
+pub enum Model {
     Car,
     Snake,
     Spider,
@@ -44,7 +52,7 @@ impl Model {
 }
 
 /// System to spawn a model given an spawn event
-pub(crate) fn spawn_model_system(
+pub fn spawn_model_system(
     mut ui_event_reader: EventReader<SpawnEvent>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,

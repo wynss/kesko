@@ -7,7 +7,7 @@ use kesko_physics::{
     gravity::GravityScale
 };
 use kesko_object_interaction::InteractiveBundle;
-use crate::interaction::groups::GroupDynamic;
+use kesko_core::interaction::groups::GroupDynamic;
 
 
 pub fn spawn_sphere(
@@ -27,7 +27,7 @@ pub fn spawn_sphere(
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(Force::default())
     .insert(ColliderPhysicalProperties {
-        restitution: 0.7,
+        restitution: 0.0,
         ..default()
     })
     .insert(GravityScale::default());

@@ -7,7 +7,7 @@ use kesko_physics::{
     }
 };
 use kesko_object_interaction::InteractiveBundle;
-use crate::{
+use kesko_core::{
     bundle::MeshPhysicBodyBundle,
     shape::Shape,
     transform::get_world_transform,

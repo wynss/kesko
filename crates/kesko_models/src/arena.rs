@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use kesko_physics::rigid_body::RigidBody;
-use crate::{
+use kesko_core::{
     bundle::MeshPhysicBodyBundle,
     shape::Shape,
     interaction::groups::GroupStatic

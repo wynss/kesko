@@ -16,7 +16,7 @@ use kesko_physics::{
     multibody::MultibodyRoot, mass::Mass
 };
 use kesko_object_interaction::InteractiveBundle;
-use crate::{
+use kesko_core::{
     shape::Shape,
     bundle::{MeshPhysicBodyBundle, PhysicBodyBundle},
     interaction::{

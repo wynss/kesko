@@ -1,12 +1,16 @@
 use bevy::prelude::*;
 
 use kesko_core::{
-    plugins::CorePlugins,
-    diagnostic::DiagnosticsPlugins,
     interaction::groups::GroupDynamic, 
-    models,
-    models::car::CarPlugin,
-    models::wheely::WheelyPlugin
+};
+
+use kesko_plugins::CorePlugins;
+use kesko_diagnostic::DiagnosticsPlugins;
+
+use kesko_models::{
+    self,
+    car::CarPlugin,
+    wheely::WheelyPlugin
 };
 use kesko_physics::{
     rigid_body::RigidBody,
@@ -34,14 +38,14 @@ fn test_scene(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
 
-    models::arena::spawn_arena(
+    kesko_models::arena::spawn_arena(
         &mut commands,
         materials.add(Color::WHITE.into()), 
         &mut meshes, 
         20.0, 20.0, 1.0
     );
 
-    models::car::Car::spawn_car(
+    kesko_models::car::Car::spawn_car(
         &mut commands,
         materials.add(Color::SEA_GREEN.into()), 
         materials.add(Color::DARK_GRAY.into()), 
@@ -49,14 +53,14 @@ fn test_scene(
         &mut meshes,
     );
 
-    models::spider::spawn_spider(
+    kesko_models::spider::spawn_spider(
         &mut commands,
         materials.add(Color::CRIMSON.into()), 
         Transform::from_xyz(2.0, 2.0, 0.0),
         &mut meshes,
     );
 
-    models::wheely::Wheely::spawn_wheely(
+    kesko_models::wheely::Wheely::spawn_wheely(
         &mut commands,
         materials.add(Color::FUCHSIA.into()), 
         materials.add(Color::DARK_GRAY.into()), 
@@ -64,7 +68,7 @@ fn test_scene(
         &mut meshes,
     );
 
-    models::humanoid::Humanoid::spawn(
+    kesko_models::humanoid::Humanoid::spawn(
         &mut commands,
         materials.add(Color::ORANGE.into()), 
         Transform::from_xyz(2.0, 2.0, 2.0),

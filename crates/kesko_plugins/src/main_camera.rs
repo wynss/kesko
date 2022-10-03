@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 use kesko_object_interaction::InteractorBundle;
 
-use crate::orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera};
-use crate::interaction::groups::GroupDynamic;
+use kesko_core::{
+    orbit_camera::{PanOrbitCameraPlugin, PanOrbitCamera},
+    interaction::groups::GroupDynamic
+};
 
 
 pub(crate) struct MainCameraPlugin;

@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
-use crate::models::Model;
+use kesko_models::{
+    Model, 
+    SpawnEvent
+};
 
 
 #[derive(Component)]
@@ -111,11 +114,3 @@ impl SpawnComponent {
 
 }
 
-pub(crate) enum SpawnEvent {
-    OpenWindow,
-    Spawn {
-        model: Model,
-        transform: Transform,
-        color: Color
-    }
-}

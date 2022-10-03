@@ -1,11 +1,12 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
 
-use crate::ui::{
-    spawn_component::SpawnEvent,
+use super::{
     fps_component::FPSComponentEvent,
     about::AboutEvent
 };
+
+use kesko_models::SpawnEvent;
 
 
 #[derive(Default)]
