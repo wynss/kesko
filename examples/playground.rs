@@ -37,14 +37,14 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>
 ) {
 
-    models::arena::spawn_arena(
+    models::arena::spawn(
         &mut commands,
         materials.add(Color::ALICE_BLUE.into()), 
         &mut meshes,
         10.0, 10.0, 0.5
     );
 
-    models::car::Car::spawn_car(
+    models::car::Car::spawn(
         &mut commands,
         materials.add(Color::GOLD.into()),
         materials.add(Color::BLACK.into()),
@@ -52,14 +52,14 @@ fn setup(
         &mut meshes
     );
 
-    models::spider::spawn_spider(
+    models::spider::spawn(
         &mut commands,
         materials.add(Color::ORANGE_RED.into()),
         Transform::from_xyz(0.0, 1.0, 2.0),
         &mut meshes
     );
 
-    models::snake::spawn_snake(
+    models::snake::spawn(
         &mut commands,
         materials.add(Color::PINK.into()),
         Transform::from_xyz(0.0, 1.0, 0.0),

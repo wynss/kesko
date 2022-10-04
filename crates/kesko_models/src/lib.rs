@@ -5,8 +5,10 @@ pub mod spider;
 pub mod sphere;
 pub mod wheely;
 pub mod humanoid;
+pub mod plane;
 
 use bevy::prelude::*;
+use serde::{Serialize, Deserialize};
 
 
 pub enum SpawnEvent {
@@ -26,14 +28,16 @@ pub struct ControlDescription(pub String);
 
 
 // Enum to represent each default model
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Model {
     Car,
     Snake,
     Spider,
     Sphere,
     Wheely,
-    Humanoid
+    Humanoid,
+    Arena,
+    Plane
 }
 
 impl Model {
@@ -46,7 +50,9 @@ impl Model {
             Self::Spider => "Spider",
             Self::Sphere => "Sphere",
             Self::Wheely => "Wheely",
-            Self::Humanoid => "Humanoid"
+            Self::Humanoid => "Humanoid",
+            Self::Arena => "Arena",
+            Self::Plane => "Plane"
         }
     }
 }
@@ -64,18 +70,20 @@ pub fn spawn_model_system(
             let material = materials.add(color.clone().into());
 
             match model {
-                Model::Spider => spider::spawn_spider(&mut commands, material, *transform, &mut meshes),
-                Model::Snake => snake::spawn_snake(&mut commands, material, *transform, &mut meshes),
+                Model::Spider => spider::spawn(&mut commands, material, *transform, &mut meshes),
+                Model::Snake => snake::spawn(&mut commands, material, *transform, &mut meshes),
                 Model::Car => {
                     let wheel_material = materials.add(Color::DARK_GRAY.into());
-                    car::Car::spawn_car(&mut commands, material, wheel_material, *transform, &mut meshes);
+                    car::Car::spawn(&mut commands, material, wheel_material, *transform, &mut meshes);
                 },
-                Model::Sphere => sphere::spawn_sphere(&mut commands, material, *transform, &mut meshes),
+                Model::Sphere => sphere::spawn(&mut commands, material, *transform, &mut meshes),
                 Model::Wheely => {
                     let wheel_material = materials.add(Color::DARK_GRAY.into());
-                    wheely::Wheely::spawn_wheely(&mut commands, material, wheel_material, *transform, &mut meshes);
+                    wheely::Wheely::spawn(&mut commands, material, wheel_material, *transform, &mut meshes);
                 },
-                Model::Humanoid => humanoid::Humanoid::spawn(&mut commands, material, *transform, &mut meshes)
+                Model::Humanoid => humanoid::Humanoid::spawn(&mut commands, material, *transform, &mut meshes),
+                Model::Arena => arena::spawn(&mut commands, material, &mut meshes, 10.0, 10.0, 1.0),
+                Model::Plane => plane::spawn(&mut commands, material, &mut meshes)
             }
         }
     }

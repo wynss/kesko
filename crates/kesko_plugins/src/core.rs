@@ -16,7 +16,8 @@ use kesko_core::{
             multibody_selection_system, 
             MultibodySelectionEvent
         }
-    }
+    }, 
+    event
 };
 use kesko_models::spawn_model_system;
 
@@ -51,6 +52,10 @@ impl Plugin for CorePlugin {
             .add_event::<MultibodySelectionEvent>()
 
             .add_system(spawn_model_system)
+
+            // simulator system events
+            .add_event::<event::SystemEvent>()
+            .add_system(event::handle_system_events)
 
             // close on ESC
             .add_system(bevy::window::close_on_esc);

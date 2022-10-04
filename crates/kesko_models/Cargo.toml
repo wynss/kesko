@@ -5,6 +5,8 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.8.1"
+serde = "1.0.137"
+serde_json = "1.0.81"
 kesko_physics = { path = "../kesko_physics" }
 kesko_object_interaction = { path = "../kesko_object_interaction"}
 kesko_raycast = { path = "../kesko_raycast"}

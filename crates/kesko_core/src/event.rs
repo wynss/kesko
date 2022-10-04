@@ -6,7 +6,7 @@ pub enum SystemEvent {
     Exit = 0
 }
 
-pub(crate) fn handle_system_events(
+pub fn handle_system_events(
     mut system_events: EventReader<SystemEvent>,
     mut app_exit_events: EventWriter<AppExit>
 ) {
