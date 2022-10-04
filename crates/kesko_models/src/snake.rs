@@ -15,7 +15,7 @@ use kesko_core::{
 };
 
 
-pub fn spawn_snake(
+pub fn spawn(
     commands: &mut Commands,
     material: Handle<StandardMaterial>,
     transform: Transform,

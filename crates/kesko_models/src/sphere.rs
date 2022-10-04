@@ -10,7 +10,7 @@ use kesko_object_interaction::InteractiveBundle;
 use kesko_core::interaction::groups::GroupDynamic;
 
 
-pub fn spawn_sphere(
+pub fn spawn(
     commands: &mut Commands,
     material: Handle<StandardMaterial>,
     transform: Transform,

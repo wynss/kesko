@@ -6,7 +6,6 @@ use kesko_tcp::TCPPlugin;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
         .add_plugins(CorePlugins)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(TCPPlugin)

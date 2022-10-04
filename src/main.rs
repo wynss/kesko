@@ -38,14 +38,13 @@ fn test_scene(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
 
-    kesko_models::arena::spawn_arena(
+    kesko_models::plane::spawn(
         &mut commands,
-        materials.add(Color::WHITE.into()), 
+        materials.add(Color::DARK_GRAY.into()), 
         &mut meshes, 
-        20.0, 20.0, 1.0
     );
 
-    kesko_models::car::Car::spawn_car(
+    kesko_models::car::Car::spawn(
         &mut commands,
         materials.add(Color::SEA_GREEN.into()), 
         materials.add(Color::DARK_GRAY.into()), 
@@ -53,14 +52,14 @@ fn test_scene(
         &mut meshes,
     );
 
-    kesko_models::spider::spawn_spider(
+    kesko_models::spider::spawn(
         &mut commands,
         materials.add(Color::CRIMSON.into()), 
         Transform::from_xyz(2.0, 2.0, 0.0),
         &mut meshes,
     );
 
-    kesko_models::wheely::Wheely::spawn_wheely(
+    kesko_models::wheely::Wheely::spawn(
         &mut commands,
         materials.add(Color::FUCHSIA.into()), 
         materials.add(Color::DARK_GRAY.into()), 

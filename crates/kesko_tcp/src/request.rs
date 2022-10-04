@@ -1,64 +1,47 @@
+use bevy::prelude::*;
 use serde::{Serialize, Deserialize};
-use serde_json::Value;
+
+use kesko_models::Model;
 
 
-#[derive(Default)]
-pub(crate) struct HttpRequest {
-    json: Option<String>
-}
 
-impl HttpRequest {
-    pub(crate) fn parse(request_str: String) -> Result<Self, String> {
-
-        for line in request_str.lines() {
-            if line.starts_with("{") {
-
-                return Ok(Self {json: Some(line.to_owned())});
-
-            }
-        }
-
-        Err("Failed to parse http request".to_owned())
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub(crate) enum SimAction {
     Close,
     GetState,
     Restart,
+    SpawnModel {
+        model: Model,
+        position: Vec3,
+        color: Color
+    },
     None
 }
 
-impl From<&str> for SimAction {
-    fn from(s: &str) -> Self {
-        match s {
-            "close" => Self::Close,
-            "get_state" => Self::GetState,
-            "restart" => Self::Restart,
-            &_ => Self::None
-        } 
+#[derive(Debug, Deserialize, Serialize)]
+pub(crate) struct SimHttpRequest {
+    pub(crate) actions: Vec<SimAction>
+}
+
+impl SimHttpRequest {
+    pub(crate) fn parse(request_str: String) -> Result<String, String> {
+        for line in request_str.lines() {
+            if line.starts_with("{") {
+                return Ok(line.to_owned());
+            }
+        }
+        Err("Failed to parse http request".to_owned())
     }
-}
 
-#[derive(Debug)]
-pub(crate) struct SimRequest {
-    pub(crate) action: SimAction
-}
-
-impl SimRequest {
-    pub(crate) fn from_http_request(req: &HttpRequest) -> Option<Self> {
-
-        match &req.json {
-            Some(json) => {
-
-                let json: Value = serde_json::from_str(json.as_str()).unwrap();
-                let action: SimAction = json["action"].as_str().unwrap().into();
-                Some(Self {
-                    action
-                })
-            },
-            None => None
+    pub(crate) fn from_http_request(req: String) -> Result<SimHttpRequest, String> {
+        match Self::parse(req) {
+            Ok(json) =>{
+                match serde_json::from_str::<SimHttpRequest>(json.as_str()) {
+                    Ok(req) => Ok(req),
+                    Err(e) => Err(format!("Failed to convert http request to SimHttpRequest: {}", e))
+                }
+            }
+            Err(e) => Err(format!("{}", e))
         }
     }
 }

@@ -50,7 +50,7 @@ impl Plugin for CarPlugin {
 
 pub struct Car;
 impl Car {
-    pub fn spawn_car(
+    pub fn spawn(
         commands: &mut Commands,
         material_body: Handle<StandardMaterial>,
         material_wheel: Handle<StandardMaterial>,

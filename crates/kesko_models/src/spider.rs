@@ -20,7 +20,7 @@ use kesko_core::{
     interaction::groups::GroupDynamic
 };
 
-pub fn spawn_spider(
+pub fn spawn(
     commands: &mut Commands,
     material: Handle<StandardMaterial>,
     transform: Transform,

@@ -9,7 +9,7 @@ use kesko_core::{
 use kesko_raycast::RayVisible;
 
 
-pub fn spawn_arena(
+pub fn spawn(
     commands: &mut Commands,
     material: Handle<StandardMaterial>,
     meshes: &mut ResMut<Assets<Mesh>>,

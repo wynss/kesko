@@ -96,7 +96,7 @@ enum WheelyControlEvent {
 pub struct Wheely;
 impl Wheely {
 
-    pub fn spawn_wheely(
+    pub fn spawn(
         commands: &mut Commands,
         material: Handle<StandardMaterial>,
         wheel_material: Handle<StandardMaterial>,

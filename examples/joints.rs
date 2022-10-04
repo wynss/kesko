@@ -20,7 +20,7 @@ use kesko_core::{
     transform::get_world_transform,
     interaction::groups::GroupDynamic
 };
-use kesko_models::arena::spawn_arena;
+use kesko_models::arena::spawn;
 use kesko_plugins::CorePlugins;
 
 
@@ -37,7 +37,7 @@ fn setup_scene(
     mut materials: ResMut<Assets<StandardMaterial>>
 ) {
 
-    spawn_arena(
+    spawn(
         &mut commands, 
         materials.add(Color::CRIMSON.into()),
         &mut meshes,
