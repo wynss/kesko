@@ -8,4 +8,5 @@ serde = "1.0.137"
 serde_json = "1.0.81"
 bevy = "0.8.0"
 kesko_core = { version = "0.1.0", path = "../kesko_core" }
-kesko_models = { path = "../kesko_models"}
+kesko_physics = { path = "../kesko_physics" }
+kesko_models = { path = "../kesko_models" }
