@@ -9,3 +9,4 @@ class KeskoModel(Enum):
     Humanoid = auto()
     Arena = auto()
     Snake = auto()
+    Plane = auto()

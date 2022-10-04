@@ -34,6 +34,20 @@ class CloseAction:
 class GetStateAction:
     def to_json(self):
         return "GetState"
+    
+    
+class ApplyControlAction:
+    def __init__(self, name, values: dict[str, float]):
+        self.name = name
+        self.values = values
+    
+    def to_json(self):
+        return {
+            "ApplyControl": {
+                "name": self.name,
+                "values": self.values
+            }
+        }
 
 
 class KeskoRequest:

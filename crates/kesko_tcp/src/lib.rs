@@ -5,9 +5,14 @@ use std::net::{TcpListener, TcpStream};
 use std::io::prelude::*;
 
 use bevy::prelude::*;
-use kesko_models::SpawnEvent;
-use request::{SimHttpRequest, SimAction};
+use bevy::utils::hashbrown::HashMap;
+use kesko_physics::joint::JointMotorEvent;
+use serde::Serialize;
+use serde_json;
 
+use kesko_models::SpawnEvent;
+use kesko_physics::multibody::{MultibodyRoot, MultiBodyChild};
+use request::{SimHttpRequest, SimAction};
 use kesko_core::event::SystemEvent;
 
 
@@ -47,7 +52,7 @@ impl Plugin for TCPPlugin {
                 )
                 .add_system_set(
                     SystemSet::on_update(TCPConnectionState::Connected)
-                        .with_system(Self::communication_system)
+                        .with_system(Self::handle_requests_system)
                 );
             },
             Err(e) => {
@@ -79,12 +84,15 @@ impl TCPPlugin {
         }
     }
 
-    fn communication_system(
+    fn handle_requests_system(
         mut tcp_connection_state: ResMut<State<TCPConnectionState>>,
         mut tcp_stream: ResMut<TcpStream>,
         mut tcp_buffer: ResMut<TcpBuffer>,
         mut system_event_writer: EventWriter<SystemEvent>,
-        mut spawn_event_writer: EventWriter<SpawnEvent>
+        mut spawn_event_writer: EventWriter<SpawnEvent>,
+        mut motor_event_writer: EventWriter<JointMotorEvent>,
+        multibody_root_query: Query<(&MultibodyRoot, &Transform)>,
+        multibody_child_query: Query<(&MultiBodyChild, &Transform)>
     ) {
         match tcp_stream.read(&mut tcp_buffer.data) {
             Ok(msg_len) => {
@@ -94,25 +102,32 @@ impl TCPPlugin {
                 match SimHttpRequest::from_http_request(http_str) {
                     Ok(sim_req) => {
 
-                        Self::handle_request(sim_req, &mut system_event_writer, &mut spawn_event_writer);
+                        if let Some(response) = Self::handle_request(
+                            sim_req, &mut system_event_writer, 
+                            &mut spawn_event_writer, 
+                            multibody_root_query,
+                            multibody_child_query
+                        ) {
 
-                        // create response
-                        let contents = "Hello from Nora";
-                        let response = format!(
-                            "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
-                            contents.len(),
-                            contents
-                        );
+                            // create response
+                            let response = format!(
+                                "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nContent-Type: application/json\r\n\r\n{}",
+                                response.len(),
+                                response
+                            );
 
-                        // send response 
-                        tcp_stream.write(response.as_bytes()).unwrap();
-                        tcp_stream.flush().unwrap();
+                            // info!("Sending: {}", response);
+
+                            // send response 
+                            tcp_stream.write(response.as_bytes()).unwrap();
+                            tcp_stream.flush().unwrap();
+                        }
                     },
                     Err(e) => error!("{}", e)
                 }
             },
             Err(e) => {
-                error!("{}", e);
+                error!("Could not read tcp stream: {}", e);
 
                 // set state to not connected
                 if let Err(e) = tcp_connection_state.set(TCPConnectionState::NotConnected) {
@@ -125,9 +140,14 @@ impl TCPPlugin {
     fn handle_request(
         mut req: SimHttpRequest, 
         system_event_writer: &mut EventWriter<SystemEvent>,
-        spawn_event_writer: &mut EventWriter<SpawnEvent>
-    ) {
+        spawn_event_writer: &mut EventWriter<SpawnEvent>,
+        multibody_root_query: Query<(&MultibodyRoot, &Transform)>,
+        multibody_child_query: Query<(&MultiBodyChild, &Transform)>
+    ) -> Option<String> {
+
         info!("Got Request: {:?}", req.actions);
+
+        let mut response = Response::new();
 
         for action in req.actions.drain(..) {
             match action {
@@ -135,11 +155,53 @@ impl TCPPlugin {
                     system_event_writer.send(SystemEvent::Exit)
                 },
                 SimAction::SpawnModel { model, position: pos, color } => {
-                    info!("{:?}", color);
                     spawn_event_writer.send(SpawnEvent::Spawn { model, transform: Transform::from_translation(pos), color })
                 }
+                SimAction::GetState => {
+
+                    let states = multibody_root_query.iter().map(|(root, transform)| {
+
+                        let child_positions: HashMap<String, Vec3> = root.joint_name_2_entity.iter().map(|(name, entity)| {
+                            let position = match multibody_child_query.get(*entity) {
+                                Ok((_, transform)) => transform.translation,
+                                Err(_) => Vec3::ZERO
+                            };
+                            (name.clone(), position)
+                        }).collect();
+                        MultiBodyState {
+                            name: root.name.clone(),
+                            global_position: transform.translation,
+                            position: Some(child_positions)
+                        }
+
+                    }).collect::<Vec<MultiBodyState>>();
+                    response.multibody_states = Some(states);
+                },
                 _ => {}
             }
         }
+
+        Some(serde_json::to_string_pretty(&response).unwrap())
     }
+}
+
+
+#[derive(Serialize)]
+#[serde(rename_all = "lowercase")]
+struct Response {
+    multibody_states: Option<Vec<MultiBodyState>>
+}
+impl Response {
+    fn new() -> Self {
+        Self {
+            multibody_states: None
+        }
+    }
+}
+
+#[derive(Serialize)]
+struct MultiBodyState {
+    name: String,
+    global_position: Vec3,
+    position: Option<HashMap<String, Vec3>>,
 }
