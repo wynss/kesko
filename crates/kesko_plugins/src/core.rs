@@ -2,7 +2,12 @@ use bevy::{
     core_pipeline::clear_color::ClearColor,
     render::{color::Color, view::Msaa},
     app::{App, Plugin},
-    window::WindowDescriptor, DefaultPlugins
+    window::{
+        WindowDescriptor,
+        WindowPosition,
+        MonitorSelection
+    }, 
+    DefaultPlugins,
 };
 use kesko_core::{
     interaction::{
@@ -29,8 +34,9 @@ impl Plugin for CorePlugin {
         app.insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
             .insert_resource(WindowDescriptor {
                 title: String::from("Kesko 0.1-alpha"),
-                width: 1280.0,
-                height: 720.0,
+                width: 1920.0,
+                height: 1080.0,
+                position: WindowPosition::Centered(MonitorSelection::Primary),
                 fit_canvas_to_parent: true,
                 canvas: Some("#kesko-wasm".to_string()),
                 ..Default::default()

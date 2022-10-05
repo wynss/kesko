@@ -41,7 +41,7 @@ impl Default for PanOrbitCamera {
             distance: 5.0,
             orbit_sensitivity: 1.0,
             pan_sensitivity: 40.0,
-            zoom_sensitivity: 0.01,
+            zoom_sensitivity: 0.1,
             orbit_button: MouseButton::Right,
             pan_button: MouseButton::Middle
         }

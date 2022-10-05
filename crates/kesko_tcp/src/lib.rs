@@ -7,11 +7,15 @@ use std::io::prelude::*;
 use bevy::prelude::*;
 use bevy::utils::hashbrown::HashMap;
 use kesko_physics::joint::JointMotorEvent;
+use kesko_physics::joint::revolute::RevoluteJoint;
 use serde::Serialize;
 use serde_json;
 
 use kesko_models::SpawnEvent;
-use kesko_physics::multibody::{MultibodyRoot, MultiBodyChild};
+use kesko_physics::{
+    multibody::{MultibodyRoot, MultiBodyChild},
+    joint::Joint
+};
 use request::{SimHttpRequest, SimAction};
 use kesko_core::event::SystemEvent;
 
@@ -92,7 +96,8 @@ impl TCPPlugin {
         mut spawn_event_writer: EventWriter<SpawnEvent>,
         mut motor_event_writer: EventWriter<JointMotorEvent>,
         multibody_root_query: Query<(&MultibodyRoot, &Transform)>,
-        multibody_child_query: Query<(&MultiBodyChild, &Transform)>
+        multibody_child_query: Query<(&MultiBodyChild, &Transform)>,
+        joint_query: Query<&Joint>
     ) {
         match tcp_stream.read(&mut tcp_buffer.data) {
             Ok(msg_len) => {
@@ -102,21 +107,20 @@ impl TCPPlugin {
                 match SimHttpRequest::from_http_request(http_str) {
                     Ok(sim_req) => {
 
-                        if let Some(response) = Self::handle_request(
+                        if let Some(response_content) = Self::handle_request(
                             sim_req, &mut system_event_writer, 
                             &mut spawn_event_writer, 
                             multibody_root_query,
-                            multibody_child_query
+                            multibody_child_query,
+                            joint_query
                         ) {
 
                             // create response
                             let response = format!(
                                 "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nContent-Type: application/json\r\n\r\n{}",
-                                response.len(),
-                                response
+                                response_content.len(),
+                                response_content
                             );
-
-                            // info!("Sending: {}", response);
 
                             // send response 
                             tcp_stream.write(response.as_bytes()).unwrap();
@@ -142,7 +146,8 @@ impl TCPPlugin {
         system_event_writer: &mut EventWriter<SystemEvent>,
         spawn_event_writer: &mut EventWriter<SpawnEvent>,
         multibody_root_query: Query<(&MultibodyRoot, &Transform)>,
-        multibody_child_query: Query<(&MultiBodyChild, &Transform)>
+        multibody_child_query: Query<(&MultiBodyChild, &Transform)>,
+        joint_query: Query<&Joint>
     ) -> Option<String> {
 
         info!("Got Request: {:?}", req.actions);
@@ -168,10 +173,23 @@ impl TCPPlugin {
                             };
                             (name.clone(), position)
                         }).collect();
+
+                        let joint_orientations: HashMap<String, f32> = root.joint_name_2_entity.iter().map(|(name, e)| {
+                            let orientation = match joint_query.get(*e) {
+                                Ok(joint) => {
+                                    // TODO: Implement this when joints are restructured
+                                    0.0
+                                }
+                                Err(_) => 0.0
+                            };
+                            (name.clone(), orientation)
+                        }).collect();
+
                         MultiBodyState {
                             name: root.name.clone(),
                             global_position: transform.translation,
-                            position: Some(child_positions)
+                            position: Some(child_positions),
+                            joint_orientations: Some(joint_orientations)
                         }
 
                     }).collect::<Vec<MultiBodyState>>();
@@ -204,4 +222,5 @@ struct MultiBodyState {
     name: String,
     global_position: Vec3,
     position: Option<HashMap<String, Vec3>>,
+    joint_orientations: Option<HashMap<String, f32>>
 }
