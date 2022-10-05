@@ -1,9 +1,10 @@
-from telnetlib import IP
-
+from pathlib import Path
 
 
 IP = "http://localhost"
 PORT = 8080
 URL = f"{IP}:{PORT}"
 
-KESKO_BIN_PATH = "/Users/toniaxelsson/dev/projects/kesko/target/release/kesko_tcp"
+ROOT = Path(__file__).parent.parent.parent
+
+KESKO_BIN_PATH = ROOT / "target" / "release" / "kesko_tcp"
