@@ -9,6 +9,7 @@ use kesko_physics::{
     },
     joint::{
         Joint,
+        Axis,
         fixed::FixedJoint,
         revolute::RevoluteJoint,
         JointMotorEvent, MotorAction
@@ -171,7 +172,7 @@ impl Car {
         .insert(Joint::new(frame, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             limits: Some(Vec2::new(-FRAC_PI_6, FRAC_PI_6)),
             stiffness: 1.0,
             ..default()
@@ -192,7 +193,7 @@ impl Car {
         .insert(Joint::new(left_front_link, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Y,
+            axis: Axis::Y,
             ..default()
         }))
         .insert(RigidBodyName(LEFT_FRONT_WHEEL.to_owned()))
@@ -210,7 +211,7 @@ impl Car {
         .insert(Joint::new(frame, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             limits: Some(Vec2::new(-FRAC_PI_6, FRAC_PI_6)),
             stiffness: 1.0,
             ..default()
@@ -232,7 +233,7 @@ impl Car {
         .insert(Joint::new(right_front_link, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Y,
+            axis: Axis::Y,
             ..default()
         }))
         .insert(RigidBodyName(RIGHT_FRONT_WHEEL.to_owned()))
@@ -251,7 +252,7 @@ impl Car {
         .insert(Joint::new(frame, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Y,
+            axis: Axis::Y,
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -271,7 +272,7 @@ impl Car {
         .insert(Joint::new(frame, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Y,
+            axis: Axis::Y,
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())

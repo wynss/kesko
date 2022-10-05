@@ -6,8 +6,7 @@ use std::io::prelude::*;
 
 use bevy::prelude::*;
 use bevy::utils::hashbrown::HashMap;
-use kesko_physics::joint::JointMotorEvent;
-use kesko_physics::joint::revolute::RevoluteJoint;
+use kesko_physics::joint::JointState;
 use serde::Serialize;
 use serde_json;
 
@@ -94,7 +93,6 @@ impl TCPPlugin {
         mut tcp_buffer: ResMut<TcpBuffer>,
         mut system_event_writer: EventWriter<SystemEvent>,
         mut spawn_event_writer: EventWriter<SpawnEvent>,
-        mut motor_event_writer: EventWriter<JointMotorEvent>,
         multibody_root_query: Query<(&MultibodyRoot, &Transform)>,
         multibody_child_query: Query<(&MultiBodyChild, &Transform)>,
         joint_query: Query<&Joint>
@@ -174,13 +172,12 @@ impl TCPPlugin {
                             (name.clone(), position)
                         }).collect();
 
-                        let joint_orientations: HashMap<String, f32> = root.joint_name_2_entity.iter().map(|(name, e)| {
+                        let joint_orientations: HashMap<String, Option<JointState>> = root.joint_name_2_entity.iter().map(|(name, e)| {
                             let orientation = match joint_query.get(*e) {
                                 Ok(joint) => {
-                                    // TODO: Implement this when joints are restructured
-                                    0.0
+                                    Some(joint.get_state())
                                 }
-                                Err(_) => 0.0
+                                Err(_) => None
                             };
                             (name.clone(), orientation)
                         }).collect();
@@ -189,7 +186,7 @@ impl TCPPlugin {
                             name: root.name.clone(),
                             global_position: transform.translation,
                             position: Some(child_positions),
-                            joint_orientations: Some(joint_orientations)
+                            joint_states: Some(joint_orientations)
                         }
 
                     }).collect::<Vec<MultiBodyState>>();
@@ -222,5 +219,5 @@ struct MultiBodyState {
     name: String,
     global_position: Vec3,
     position: Option<HashMap<String, Vec3>>,
-    joint_orientations: Option<HashMap<String, f32>>
+    joint_states: Option<HashMap<String, Option<JointState>>>
 }

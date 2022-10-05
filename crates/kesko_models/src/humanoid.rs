@@ -2,10 +2,19 @@ use std::f32::consts::{FRAC_PI_2, FRAC_PI_6, FRAC_PI_4, PI};
 
 use bevy::prelude::*;
 
-use kesko_physics::{rigid_body::{
-    RigidBody,
-    RigidBodyName
-}, joint::{Joint, revolute::RevoluteJoint, fixed::FixedJoint}, mass::Mass};
+use kesko_physics::{
+    rigid_body::{
+        RigidBody,
+        RigidBodyName
+    }, 
+    joint::{
+        Axis,
+        Joint, 
+        revolute::RevoluteJoint, 
+        fixed::FixedJoint
+    }, 
+    mass::Mass
+};
 use kesko_object_interaction::InteractiveBundle;
 use kesko_core::{
     shape::Shape,
@@ -88,7 +97,7 @@ impl Humanoid {
         .insert(Joint::new(head, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_4, FRAC_PI_4)),
             ..default()
@@ -108,7 +117,7 @@ impl Humanoid {
         .insert(Joint::new(neck_x, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Y,
+            axis: Axis::Y,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
@@ -130,7 +139,7 @@ impl Humanoid {
         .insert(Joint::new(neck_y, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Z,
+            axis: Axis::Z,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_6, FRAC_PI_6)),
             ..default()
@@ -236,7 +245,7 @@ impl Humanoid {
         .insert(Joint::new(shoulder, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Z,
+            axis: Axis::Z,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_6, PI)),
             ..default()
@@ -258,7 +267,7 @@ impl Humanoid {
         .insert(Joint::new(left_upper_arm_z, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
@@ -280,7 +289,7 @@ impl Humanoid {
         .insert(Joint::new(left_upper_arm_x, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_2, 0.0)),
             ..default()
@@ -302,7 +311,7 @@ impl Humanoid {
         .insert(Joint::new(shoulder, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Z,
+            axis: Axis::Z,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-PI, FRAC_PI_6)),
             ..default()
@@ -324,7 +333,7 @@ impl Humanoid {
         .insert(Joint::new(right_upper_arm_z, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
@@ -346,7 +355,7 @@ impl Humanoid {
         .insert(Joint::new(right_upper_arm_x, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(0.0, FRAC_PI_2)),
             ..default()
@@ -380,7 +389,7 @@ impl Humanoid {
         .insert(Joint::new(hip, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Z,
+            axis: Axis::Z,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
@@ -402,7 +411,7 @@ impl Humanoid {
         .insert(Joint::new(left_upper_leg_z, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
@@ -424,7 +433,7 @@ impl Humanoid {
         .insert(Joint::new(left_upper_leg_x, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(0.0, FRAC_PI_2)),
             ..default()
@@ -446,7 +455,7 @@ impl Humanoid {
         .insert(Joint::new(left_lower_leg_x, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(0.0, FRAC_PI_2)),
             ..default()
@@ -468,7 +477,7 @@ impl Humanoid {
         .insert(Joint::new(hip, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Z,
+            axis: Axis::Z,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
@@ -490,7 +499,7 @@ impl Humanoid {
         .insert(Joint::new(right_upper_arm_z, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
@@ -512,7 +521,7 @@ impl Humanoid {
         .insert(Joint::new(right_upper_arm_x, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_2, 0.0)),
             ..default()
@@ -534,7 +543,7 @@ impl Humanoid {
         .insert(Joint::new(right_lower_leg_x, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_2, 0.0)),
             ..default()

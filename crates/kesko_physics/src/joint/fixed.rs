@@ -1,20 +1,16 @@
 use bevy::prelude::*;
-use rapier3d::prelude::{GenericJoint, FixedJointBuilder};
+use rapier3d::prelude::{
+    GenericJoint, 
+    FixedJointBuilder
+};
 
 use crate::conversions::{IntoRapier, IntoBevy};
-
-use super::{AsAnyJoint, JointTrait};
+use super::{JointTrait, Axis};
 
 
 pub struct FixedJoint {
     pub parent_anchor: Transform,
     pub child_anchor: Transform,
-}
-
-impl AsAnyJoint for FixedJoint {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
 }
 
 impl JointTrait for FixedJoint {
@@ -24,6 +20,10 @@ impl JointTrait for FixedJoint {
 
     fn child_anchor(&self) -> Transform {
         self.child_anchor
+    }
+
+    fn get_axis(&self) -> Option<Axis> {
+        None
     }
 }
 
