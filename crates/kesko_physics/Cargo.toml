@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.8.0"
-rapier3d = "0.14.0"
+bevy = "0.8.1"
+rapier3d = "0.15.0"
 nalgebra = "0.31.0"
 fnv = "1.0.7"
 crossbeam = "0.8.1"
