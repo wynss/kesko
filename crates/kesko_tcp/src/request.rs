@@ -15,6 +15,8 @@ pub(crate) enum SimAction {
         position: Vec3,
         color: Color
     },
+    PausePhysics,
+    RunPhysics,
     None
 }
 

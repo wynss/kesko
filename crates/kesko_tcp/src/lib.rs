@@ -41,8 +41,8 @@ impl TcpBuffer {
 
 /// Plugin for adding a tcp server that will progress the simulation only when getting a step request.
 /// It is mainly used for the python API
-pub struct TCPPlugin;
-impl Plugin for TCPPlugin {
+pub struct TcpPlugin;
+impl Plugin for TcpPlugin {
     fn build(&self, app: &mut App) {
 
         match TcpListener::bind(URL) {
@@ -70,7 +70,7 @@ impl Plugin for TCPPlugin {
     }
 }
 
-impl TCPPlugin {
+impl TcpPlugin {
 
     fn handle_incoming_system(
         mut commands: Commands,
@@ -197,6 +197,12 @@ impl TCPPlugin {
                     }).collect::<Vec<MultiBodyState>>();
                     response.multibody_states = Some(states);
                 },
+                SimAction::PausePhysics => {
+                    system_event_writer.send(SystemEvent::PausePhysics)
+                },
+                SimAction::RunPhysics => {
+                    system_event_writer.send(SystemEvent::RunPhysics)
+                }
                 _ => {}
             }
         }

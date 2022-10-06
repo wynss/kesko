@@ -7,7 +7,7 @@ use kesko_core::{
 };
 
 
-pub(crate) struct MainCameraPlugin;
+pub struct MainCameraPlugin;
 
 impl Plugin for MainCameraPlugin {
     fn build(&self, app: &mut App) {

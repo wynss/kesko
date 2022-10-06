@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 
 use kesko_object_interaction::event::{InteractionEvent, SelectEvent};
-use kesko_physics::{event::CollisionEvent, joint::JointMotorEvent};
+use kesko_physics::{
+    event::collision::CollisionEvent, 
+    joint::JointMotorEvent
+};
 use kesko_core::interaction::multibody_selection::MultibodySelectionEvent;
 
 

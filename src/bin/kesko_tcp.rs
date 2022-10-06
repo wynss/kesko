@@ -1,14 +1,35 @@
 use bevy::prelude::*;
-use bevy::diagnostic::LogDiagnosticsPlugin;
-use kesko_plugins::CorePlugins;
-use kesko_tcp::TCPPlugin;
+
+use kesko_plugins::{
+    main_camera::MainCameraPlugin,
+    UIPlugin,
+    core::CorePlugin,
+    InteractionPlugin
+};
+use kesko_physics::PhysicsPlugin;
+use kesko_core::{
+    cursor_tracking::GrabablePlugin,
+    interaction::groups::{GroupDynamic, GroupStatic}
+};
+use kesko_diagnostic::DiagnosticsPlugins;
+use kesko_tcp::TcpPlugin;
 
 
 fn main() {
     App::new()
-        .add_plugins(CorePlugins)
-        .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(TCPPlugin)
+        .add_plugin(UIPlugin)
+        .add_plugin(CorePlugin)
+        .add_plugin(MainCameraPlugin)
+        .add_plugin(PhysicsPlugin {
+            initial_state: kesko_physics::PhysicState::Pause,
+            ..default()
+        })
+        .add_plugin(GrabablePlugin::<GroupDynamic>::default())
+        .add_plugin(InteractionPlugin::<GroupDynamic>::default())
+        .add_plugin(InteractionPlugin::<GroupStatic>::default())
+
+        .add_plugins(DiagnosticsPlugins)
+        .add_plugin(TcpPlugin)
         .add_startup_system(setup)
         .run();
 }

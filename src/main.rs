@@ -17,7 +17,7 @@ use kesko_physics::{
     force::Force,
     gravity::GravityScale,
     collider::ColliderShape,
-    event::GenerateCollisionEvents
+    event::collision::GenerateCollisionEvents
 };
 use kesko_object_interaction::InteractiveBundle;
 

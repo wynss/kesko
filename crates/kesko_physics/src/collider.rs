@@ -3,7 +3,10 @@ use rapier3d::prelude as rapier;
 use fnv::FnvHashMap;
 
 use super::rigid_body::RigidBodyHandle;
-use crate::{mass::Mass, event::GenerateCollisionEvents};
+use crate::{
+    mass::Mass, 
+    event::collision::GenerateCollisionEvents
+};
 
 
 pub type EntityColliderMap = FnvHashMap<Entity, rapier::ColliderHandle>;

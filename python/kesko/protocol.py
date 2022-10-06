@@ -10,6 +10,11 @@ from .model import KeskoModel
 
 logger = logging.getLogger(__name__)
 
+MULTIBODY_NAME = "name"
+JOINT_STATES = "joint_states"
+MULTIBODY_STATES = "multibody_states"
+GLOBAL_POSITION = "global_position"
+
 
 class SpawnAction:
     def __init__(self, model: KeskoModel, position: list[int], color: Union[Rgba, Color]):
@@ -37,17 +42,24 @@ class GetStateAction:
     
     
 class ApplyControlAction:
-    def __init__(self, name, values: dict[str, float]):
-        self.name = name
+    def __init__(self, values):
         self.values = values
     
     def to_json(self):
         return {
             "ApplyControl": {
-                "name": self.name,
+                "body_name": self.name,
                 "values": self.values
             }
         }
+
+class PausePhysics:
+    def to_json(self):
+        return "PausePhysics"
+
+class RunPhysics:
+    def to_json(self):
+        return "RunPhysics"
 
 
 class KeskoRequest:
