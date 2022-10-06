@@ -5,6 +5,7 @@ use bevy::{
     window::WindowDescriptor, DefaultPlugins
 };
 use kesko_core::{
+    change_physic_state,
     interaction::{
         groups::GroupStatic,
         vertical_marker::{
@@ -41,6 +42,9 @@ impl Plugin for CorePlugin {
             // vertical marker systems
             .add_system(handle_vertical_marker_spawning::<GroupStatic>)
             .add_system(update_vertical_marker_pos_system::<GroupStatic>)
+
+            // physics related
+            .add_system(change_physic_state)
 
             // multibody selection systems and events
             .add_system(multibody_selection_system)
