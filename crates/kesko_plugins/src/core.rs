@@ -2,7 +2,12 @@ use bevy::{
     core_pipeline::clear_color::ClearColor,
     render::{color::Color, view::Msaa},
     app::{App, Plugin},
-    window::WindowDescriptor, DefaultPlugins
+    window::{
+        WindowDescriptor,
+        WindowPosition,
+        MonitorSelection
+    }, 
+    DefaultPlugins,
 };
 use kesko_core::{
     change_physic_state,
@@ -16,7 +21,8 @@ use kesko_core::{
             multibody_selection_system, 
             MultibodySelectionEvent
         }
-    }
+    }, 
+    event
 };
 use kesko_models::spawn_model_system;
 
@@ -29,8 +35,9 @@ impl Plugin for CorePlugin {
         app.insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
             .insert_resource(WindowDescriptor {
                 title: String::from("Kesko 0.1-alpha"),
-                width: 1280.0,
-                height: 720.0,
+                width: 1920.0,
+                height: 1080.0,
+                position: WindowPosition::Centered(MonitorSelection::Primary),
                 fit_canvas_to_parent: true,
                 canvas: Some("#kesko-wasm".to_string()),
                 ..Default::default()
@@ -51,6 +58,10 @@ impl Plugin for CorePlugin {
             .add_event::<MultibodySelectionEvent>()
 
             .add_system(spawn_model_system)
+
+            // simulator system events
+            .add_event::<event::SystemEvent>()
+            .add_system(event::handle_system_events)
 
             // close on ESC
             .add_system(bevy::window::close_on_esc);

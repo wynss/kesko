@@ -9,6 +9,7 @@ use kesko_physics::{
     },
     joint::{
         Joint,
+        Axis,
         revolute::RevoluteJoint,
         fixed::FixedJoint, spherical::SphericalJoint
     }, mass::Mass
@@ -20,8 +21,7 @@ use kesko_core::{
     transform::get_world_transform,
     interaction::groups::GroupDynamic
 };
-
-use kesko_models::arena::spawn_arena;
+use kesko_models::arena::spawn;
 use kesko_plugins::CorePlugins;
 
 
@@ -38,7 +38,7 @@ fn setup_scene(
     mut materials: ResMut<Assets<StandardMaterial>>
 ) {
 
-    spawn_arena(
+    spawn(
         &mut commands, 
         materials.add(Color::CRIMSON.into()),
         &mut meshes,
@@ -79,7 +79,7 @@ fn setup_scene(
     .insert(Joint::new(bench, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::Y,
+        axis: Axis::Y,
         ..default()
     }))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -97,7 +97,7 @@ fn setup_scene(
     .insert(Joint::new(bench, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::X,
+        axis: Axis::X,
         ..default()
     }))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -115,7 +115,7 @@ fn setup_scene(
     .insert(Joint::new(bench, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::Z,
+        axis: Axis::Z,
         damping: 0.1,
         stiffness: 1.0,
         ..default()
@@ -135,7 +135,7 @@ fn setup_scene(
     .insert(Joint::new(bench, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::X,
+        axis: Axis::X,
         damping: 0.1,
         stiffness: 1.0,
         ..default()
@@ -155,7 +155,7 @@ fn setup_scene(
     .insert(Joint::new(bench, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::X,
+        axis: Axis::X,
         damping: 0.1,
         stiffness: 1.0,
         ..default()
@@ -176,7 +176,7 @@ fn setup_scene(
     .insert(Joint::new(bench, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::Z,
+        axis: Axis::Z,
         damping: 0.1,
         stiffness: 1.0,
         ..default()
@@ -197,7 +197,7 @@ fn setup_scene(
     .insert(Joint::new(stick_1, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::X,
+        axis: Axis::X,
         damping: 0.1,
         stiffness: 1.0,
         limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
@@ -219,7 +219,7 @@ fn setup_scene(
     .insert(Joint::new(stick_2, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::Y,
+        axis: Axis::Y,
         damping: 0.1,
         stiffness: 1.0,
         ..default()

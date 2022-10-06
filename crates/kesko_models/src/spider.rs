@@ -9,6 +9,7 @@ use kesko_physics::{
     },
     joint::{
         Joint,
+        Axis,
         revolute::RevoluteJoint
     }
 };
@@ -20,7 +21,7 @@ use kesko_core::{
     interaction::groups::GroupDynamic
 };
 
-pub fn spawn_spider(
+pub fn spawn(
     commands: &mut Commands,
     material: Handle<StandardMaterial>,
     transform: Transform,
@@ -63,7 +64,7 @@ pub fn spawn_spider(
     .insert(Joint::new(body, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::X,
+        axis: Axis::X,
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
@@ -84,7 +85,7 @@ pub fn spawn_spider(
     .insert(Joint::new(left_front_x, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::Z,
+        axis: Axis::Z,
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
@@ -106,7 +107,7 @@ pub fn spawn_spider(
     .insert(Joint::new(body, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::X,
+        axis: Axis::X,
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
@@ -127,7 +128,7 @@ pub fn spawn_spider(
     .insert(Joint::new(right_front_x, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::Z,
+        axis: Axis::Z,
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
@@ -149,7 +150,7 @@ pub fn spawn_spider(
     .insert(Joint::new(body, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::X,
+        axis: Axis::X,
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
@@ -170,7 +171,7 @@ pub fn spawn_spider(
     .insert(Joint::new(left_rear_leg_x, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::Z,
+        axis: Axis::Z,
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
@@ -192,7 +193,7 @@ pub fn spawn_spider(
     .insert(Joint::new(body, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::X,
+        axis: Axis::X,
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()
@@ -213,7 +214,7 @@ pub fn spawn_spider(
     .insert(Joint::new(right_rear_leg_x, RevoluteJoint {
         parent_anchor,
         child_anchor,
-        axis: Vec3::Z,
+        axis: Axis::Z,
         stiffness: leg_stiffness,
         damping: leg_damping,
         ..default()

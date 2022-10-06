@@ -10,6 +10,7 @@ use kesko_physics::{
         JointMotorEvent,
         MotorAction,
         Joint, 
+        Axis,
         revolute::RevoluteJoint, 
         prismatic::PrismaticJoint, 
         fixed::FixedJoint
@@ -96,7 +97,7 @@ enum WheelyControlEvent {
 pub struct Wheely;
 impl Wheely {
 
-    pub fn spawn_wheely(
+    pub fn spawn(
         commands: &mut Commands,
         material: Handle<StandardMaterial>,
         wheel_material: Handle<StandardMaterial>,
@@ -130,7 +131,7 @@ impl Wheely {
         .insert(Joint::new(body, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Y,
+            axis: Axis::Y,
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -150,7 +151,7 @@ impl Wheely {
         .insert(Joint::new(body, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Y,
+            axis: Axis::Y,
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -166,7 +167,7 @@ impl Wheely {
         .insert(Joint::new(body, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Y,
+            axis: Axis::Y,
             stiffness: 1.0,
             damping: 0.1,
             ..default()
@@ -188,7 +189,7 @@ impl Wheely {
         .insert(Joint::new(back_wheel_turn, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::Y,
+            axis: Axis::Y,
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -234,7 +235,7 @@ impl Wheely {
         .insert(Joint::new(arm_base, RevoluteJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::X,
+            axis: Axis::X,
             stiffness: 0.1,
             limits: Some(Vec2::new(0.0, PI)),
             ..default()
@@ -255,7 +256,7 @@ impl Wheely {
         .insert(Joint::new(arm_link_1, PrismaticJoint {
             parent_anchor,
             child_anchor,
-            axis: Vec3::NEG_Y,
+            axis: Axis::NegY,
             limits: Some(Vec2::new(0.0, 0.45)),
             stiffness: 0.1,
             ..default()

@@ -3,23 +3,17 @@ use rapier3d::prelude::*;
 
 use crate::conversions::IntoRapier;
 
-use super::{AsAnyJoint, JointTrait};
+use super::{JointTrait, AxisIntoVec, Axis};
 
 
 pub struct RevoluteJoint {
     pub parent_anchor: Transform,
     pub child_anchor: Transform,
-    pub axis: Vec3,
+    pub axis: Axis,
     pub limits: Option<Vec2>,
     pub damping: f32,
     pub stiffness: f32,
     pub max_motor_force: Real
-}
-
-impl AsAnyJoint for RevoluteJoint {
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
 }
 
 impl Default for RevoluteJoint {
@@ -27,7 +21,7 @@ impl Default for RevoluteJoint {
         Self { 
             parent_anchor: Transform::default(), 
             child_anchor: Transform::default(), 
-            axis: Vec3::X, 
+            axis: Axis::X, 
             limits: None,
             damping: 0.0,
             stiffness: 0.0,
@@ -43,12 +37,15 @@ impl JointTrait for RevoluteJoint {
     fn child_anchor(&self) -> Transform {
         self.child_anchor
     }
+    fn get_axis(&self) -> Option<Axis> {
+        Some(self.axis)
+    }
 }
 
 impl From<RevoluteJoint> for GenericJoint {
     fn from(joint: RevoluteJoint) -> GenericJoint {
         
-        let mut builder = RevoluteJointBuilder::new(joint.axis.into_rapier())
+        let mut builder = RevoluteJointBuilder::new(joint.axis.into_unitvec())
             .local_anchor1(joint.parent_anchor.translation.into_rapier())
             .local_anchor2(joint.child_anchor.translation.into_rapier());
 
@@ -81,7 +78,7 @@ mod tests {
     use bevy::prelude::{Transform, Vec3};
     use rapier3d::dynamics::JointAxis;
     use rapier3d::prelude::GenericJoint;
-    use crate::{default, IntoRapier};
+    use crate::{default, IntoRapier, joint::Axis};
     use super::RevoluteJoint;
 
     #[test]
@@ -93,7 +90,7 @@ mod tests {
         let fixed_joint = RevoluteJoint {
             parent_anchor: expected_parent_transform,
             child_anchor: expected_child_transform,
-            axis: Vec3::X,
+            axis: Axis::X,
             ..default()
         };
 
@@ -111,7 +108,7 @@ mod tests {
         let limit_max = 1.0;
 
         let fixed_joint = RevoluteJoint {
-            axis: Vec3::X,
+            axis: Axis::X,
             limits: Some(Vec2::new(-1.0, 1.0)),
             ..default()
         };

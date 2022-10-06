@@ -21,7 +21,7 @@ fn setup_scene(
     mut materials: ResMut<Assets<StandardMaterial>>
 ) {
 
-    models::arena::spawn_arena(
+    models::arena::spawn(
         &mut commands, 
         materials.add(Color::SALMON.into()), 
         &mut meshes, 

@@ -15,7 +15,7 @@ use rapier3d::prelude as rapier;
 
 use conversions::{IntoRapier, IntoBevy};
 use gravity::Gravity;
-use event::send_collision_events_system;
+use event::collision::send_collision_events_system;
 
 
 /// State to control the physics system
@@ -32,7 +32,8 @@ pub enum PhysicsSystem {
     AddJoints,
     AddColliders,
     AddMultibodies,
-    
+
+    UpdateMultibodyVelAngVel,
     UpdateImpulse,
     UpdateForce,
     UpdateGravityScale,
@@ -47,13 +48,15 @@ pub enum PhysicsSystem {
 }
 
 pub struct PhysicsPlugin {
-    pub gravity: Vec3
+    pub gravity: Vec3,
+    pub initial_state: PhysicState
 }
 
 impl PhysicsPlugin {
     pub fn gravity() -> Self {
         Self {
-            gravity: Vec3::new(0.0, -9.81, 0.0)
+            gravity: Vec3::new(0.0, -9.81, 0.0),
+            initial_state: PhysicState::Run,
         }
     }
 }
@@ -61,7 +64,8 @@ impl PhysicsPlugin {
 impl Default for PhysicsPlugin {
     fn default() -> Self {
         Self {
-            gravity: Vec3::ZERO
+            gravity: Vec3::new(0.0, -9.81, 0.0),
+            initial_state: PhysicState::Run
         }
     }
 }
@@ -75,10 +79,10 @@ impl Plugin for PhysicsPlugin {
             .init_resource::<rapier::PhysicsPipeline>()         // Runs the complete simulation
             .init_resource::<rapier::RigidBodySet>()            // Holds all the rigid bodies
             .init_resource::<rapier::ColliderSet>()             // Holds all the colliders
-            .insert_resource(rapier::IntegrationParameters {
+            .insert_resource(rapier::IntegrationParameters {            // sets the parameters that controls the simulation
                 erp: 0.99,
                 ..default()
-            })   // sets the parameters that controls the simulation
+            })   
             .init_resource::<rapier::IslandManager>()           // Keeps track of which dynamic rigid bodies that are moving and which are not
             .init_resource::<rapier::BroadPhase>()              // Detects pairs of colliders that are potentially in contact
             .init_resource::<rapier::NarrowPhase>()             // Calculates contact points of colliders and generate collision events
@@ -86,17 +90,19 @@ impl Plugin for PhysicsPlugin {
             .init_resource::<rapier::MultibodyJointSet>()
             .init_resource::<rapier::CCDSolver>()
 
-            .insert_resource(event::CollisionEventHandler::new())
-            .add_event::<event::CollisionEvent>()
+            .insert_resource(event::collision::CollisionEventHandler::new())
+            .add_event::<event::collision::CollisionEvent>()
 
             .insert_resource(Gravity::new(self.gravity))
 
             // state for controlling the physics
-            .add_state(PhysicState::Run)
+            .add_state(self.initial_state.clone())
+            .add_system(event::change_physic_state)
 
             // Multibody name registry, making sure all multibodies have unique names
             .insert_resource(multibody::MultibodyNameRegistry::new())
 
+            .add_event::<event::PhysicStateEvent>()
             .add_event::<joint::JointMotorEvent>()
             
             .add_system_set(
@@ -118,6 +124,10 @@ impl Plugin for PhysicsPlugin {
                     .with_system(
                         multibody::add_multibody_components_system 
                             .label(PhysicsSystem::AddMultibodies)
+                            .after(PhysicsSystem::AddJoints))
+                    .with_system(
+                        multibody::update_multibody_vel_angvel 
+                            .label(PhysicsSystem::UpdateMultibodyVelAngVel)
                             .after(PhysicsSystem::AddJoints))
                     .with_system(
                         impulse::update_impulse
@@ -176,7 +186,7 @@ fn physics_pipeline_step(
     mut impulse_joints: ResMut<rapier::ImpulseJointSet>,
     mut multibody_joints: ResMut<rapier::MultibodyJointSet>,
     mut ccd_solver: ResMut<rapier::CCDSolver>,
-    collision_event_handler: Res<event::CollisionEventHandler>
+    collision_event_handler: Res<event::collision::CollisionEventHandler>
 ) {
     let gravity = gravity.get().into_rapier();
 

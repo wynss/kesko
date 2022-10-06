@@ -3,15 +3,56 @@ pub mod fixed;
 pub mod revolute;
 pub mod prismatic;
 
-use std::any::Any;
-
 use bevy::prelude::*;
 use rapier3d::prelude as rapier;
 use rapier3d::dynamics::GenericJoint;
-pub use rapier3d::prelude::{JointAxis, JointLimits};
+pub use rapier3d::prelude::{JointLimits, JointAxis};
+use serde::Serialize;
 
 use crate::rigid_body::{Entity2BodyHandle, RigidBodyHandle};
 use crate::conversions::{IntoBevy, IntoRapier};
+
+
+/// trait for converting an axis into a unit vector
+pub(crate) trait AxisIntoVec {
+    fn into_unitvec(self) -> rapier::UnitVector<rapier::Real>;
+}
+impl AxisIntoVec for Axis {
+    fn into_unitvec(self) -> rapier::UnitVector<rapier::Real> {
+        match self {
+            Axis::X => rapier::Vector::x_axis(),
+            Axis::Y => rapier::Vector::y_axis(),
+            Axis::Z => rapier::Vector::z_axis(),
+            Axis::NegX => -rapier::Vector::x_axis(),
+            Axis::NegY => -rapier::Vector::y_axis(),
+            Axis::NegZ => -rapier::Vector::z_axis()
+        }
+    }
+}
+
+/// Override Rapiers JointAxis since it did not inlcude negative axis
+#[derive(Clone, Copy, Serialize)]
+pub enum Axis {
+    X,
+    Y,
+    Z,
+    NegX,
+    NegY,
+    NegZ
+}
+
+/// used to send joint state outside Kesko
+#[derive(Serialize)]
+#[serde(rename_all = "lowercase", tag = "type")]
+pub enum JointState {
+    Spherical{ 
+        angle: Vec3
+    },
+    Revolute{ 
+        axis: Axis,
+        angle: f32,
+    }
+}
 
 
 /// Enum to indicate joint type
@@ -23,14 +64,10 @@ pub enum JointType {
     Spherical
 }
 
-// trait to convert to an Any trait object
-pub trait AsAnyJoint {
-    fn as_any(&self) -> &dyn Any;
-}
-
 pub trait JointTrait {
     fn parent_anchor(&self) -> Transform;
     fn child_anchor(&self) -> Transform;
+    fn get_axis(&self) -> Option<Axis>;
 }
 
 /// Component for connecting two bodies with a joint. This component should be added to the body that wants to connect
@@ -46,7 +83,9 @@ pub struct Joint {
     /// parent anchor
     parent_anchor: Transform,
     /// child anchor
-    child_anchor: Transform
+    child_anchor: Transform,
+    /// axis that the joint is constrained to move around/along
+    axis: Option<Axis>
 }
 
 impl Joint {
@@ -55,13 +94,15 @@ impl Joint {
 
         let parent_anchor = joint.parent_anchor();
         let child_anchor = joint.child_anchor();
+        let axis = joint.get_axis();
 
         Self {
             parent,
             joint: joint.into(),
             local_joint_rot: Quat::default(),
             parent_anchor,
-            child_anchor
+            child_anchor,
+            axis
         }
     }
 
@@ -103,9 +144,17 @@ impl Joint {
         self.local_joint_rot.to_euler(EulerRot::XYZ).2
     }
 
-    /// Get a the joint as a trait object, this can then be downcasted to the real type using Any.
-    pub fn get(&self) -> Box<dyn AsAnyJoint> {
-        todo!("Implement when we need to obtain the specific joint by down casting");
+    pub fn get_state(&self) -> JointState {
+        match self.axis {
+            Some(axis) => {
+                match axis {
+                    Axis::X | Axis::NegX => JointState::Revolute{ axis, angle: self.get_rot_x() },
+                    Axis::Y | Axis::NegY => JointState::Revolute{ axis, angle: self.get_rot_y() },
+                    Axis::Z | Axis::NegZ => JointState::Revolute{ axis, angle: self.get_rot_z() },
+                }
+            }
+            None => JointState::Spherical{ angle: self.local_joint_rot.to_euler(EulerRot::XYZ).into() }
+        }
     }
 }
 
@@ -137,6 +186,8 @@ pub(crate) fn add_multibody_joints_system(
 }
 
 /// System that updates the joints positions and velocities
+/// 
+/// TODO: Add velocity
 pub(crate) fn update_joint_pos_system(
     multibody_joint_set: Res<rapier::MultibodyJointSet>,
     mut handle_query: Query<(&mut Joint, &MultibodyJointHandle), (With<MultibodyJointHandle>, With<Joint>)>,

@@ -1,10 +1,8 @@
-use std::any::Any;
-
 use bevy::prelude::*;
 use rapier3d::prelude::{GenericJoint, JointAxis, SphericalJointBuilder};
 
 use crate::conversions::IntoRapier;
-use super::{AsAnyJoint, JointTrait};
+use super::{JointTrait, Axis};
 
 
 #[derive(Default)]
@@ -22,11 +20,6 @@ pub struct SphericalJoint {
     pub z_damping: f32,
 }
 
-impl AsAnyJoint for SphericalJoint {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-}
 
 impl JointTrait for SphericalJoint {
     fn parent_anchor(&self) -> Transform {
@@ -34,6 +27,10 @@ impl JointTrait for SphericalJoint {
     }
     fn child_anchor(&self) -> Transform {
         self.child_anchor
+    }
+
+    fn get_axis(&self) -> Option<Axis> {
+        None
     }
 }
 

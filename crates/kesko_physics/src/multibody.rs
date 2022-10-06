@@ -1,9 +1,30 @@
-use std::collections::HashMap;
-
 use bevy::prelude::*;
+use bevy::utils::hashbrown::HashMap;
 use rapier3d::prelude as rapier;
+use serde::Serialize;
 
-use crate::rigid_body::{RigidBodyHandle, BodyHandle2Entity, RigidBodyName};
+use crate::{
+    rigid_body::{
+        RigidBodyHandle, 
+        BodyHandle2Entity, 
+        RigidBodyName, 
+        Entity2BodyHandle
+    }, 
+    conversions::IntoBevy,
+    joint::JointState
+};
+
+
+/// Used for sending data outside of Kesko
+#[derive(Serialize)]
+pub struct MultiBodyState {
+    pub name: String,
+    pub global_position: Vec3,
+    pub global_orientation: Vec3,
+    pub global_angular_velocity: Vec3,
+    pub relative_positions: Option<HashMap<String, Vec3>>,
+    pub joint_states: Option<HashMap<String, Option<JointState>>>
+}
 
 
 /// Component to indicate that the entity is a multibody root entity
@@ -11,7 +32,11 @@ use crate::rigid_body::{RigidBodyHandle, BodyHandle2Entity, RigidBodyName};
 pub struct MultibodyRoot {
     // Name of the multibody
     pub name: String,
-    /// map from rigidbody name to entity that has a reference to a joint
+    /// Linear velocity of body
+    pub linvel: Vec3,
+    /// Angular velocity of body
+    pub angvel: Vec3,
+    /// Map from rigidbody name to entity that has a reference to a joint
     pub joint_name_2_entity: HashMap<String, Entity>
 }
 
@@ -54,13 +79,13 @@ pub(crate) fn add_multibody_components_system(
     mut name_registry: ResMut<MultibodyNameRegistry>,
     multibody_joint_set: Res<rapier::MultibodyJointSet>,
     body_2_entity: Res<BodyHandle2Entity>,
-    query: Query<
+    rigid_body_query: Query<
         (Entity, &RigidBodyHandle, Option<&RigidBodyName>), 
         (With<RigidBodyHandle>, Without<MultiBodyChild>, Without<MultibodyRoot>)
     >
 ) {
 
-    for (entity, handle, body_name) in query.iter() {
+    for (entity, handle, body_name) in rigid_body_query.iter() {
 
         // get the multibodyjoint link for the rigidbody handle.
         if let Some(body_joint_link) = multibody_joint_set.rigid_body_link(handle.0) {
@@ -75,7 +100,7 @@ pub(crate) fn add_multibody_components_system(
 
                     let link_entity = body_2_entity.get(&link.rigid_body_handle()).expect("body should be in body to entity map");
 
-                    match query.get(*link_entity) {
+                    match rigid_body_query.get(*link_entity) {
                         Ok((_, _, name)) => {
                             if let Some(name) = name {
                                 joints.insert(name.0.clone(), *link_entity);
@@ -98,7 +123,12 @@ pub(crate) fn add_multibody_components_system(
                     // We have a root
                     // make the name unique
                     name = name_registry.create_unique_name(&name);
-                    commands.entity(entity).insert(MultibodyRoot { name, joint_name_2_entity: joints });
+                    commands.entity(entity).insert(MultibodyRoot { 
+                        name, 
+                        linvel: Vec3::ZERO,
+                        angvel: Vec3::ZERO,
+                        joint_name_2_entity: joints 
+                    });
                 } else {
                     // not a root
                     let root_rigid_body_handle = multibody.root().rigid_body_handle();
@@ -109,6 +139,22 @@ pub(crate) fn add_multibody_components_system(
                         joints
                     });
                 }
+            }
+        }
+    }
+}
+
+pub(crate) fn update_multibody_vel_angvel(
+    rigid_body_set: ResMut<rapier::RigidBodySet>,
+    e2b: Res<Entity2BodyHandle>,
+    mut multibodies: Query<(Entity, &mut MultibodyRoot)>
+) {
+
+    for (e, mut multibody) in multibodies.iter_mut() {
+        if let Some(handle) = e2b.get(&e) {
+            if let Some(rigid_body) = rigid_body_set.get(*handle) {
+                multibody.linvel = rigid_body.linvel().into_bevy();
+                multibody.angvel = rigid_body.angvel().into_bevy();
             }
         }
     }

@@ -2,13 +2,15 @@ use bevy::prelude::*;
 use rapier3d::prelude::{GenericJoint, PrismaticJointBuilder, Real};
 use crate::conversions::IntoRapier;
 
-use super::JointTrait;
+use super::{
+    JointTrait, AxisIntoVec, Axis
+};
 
 
 pub struct PrismaticJoint {
     pub parent_anchor: Transform,
     pub child_anchor: Transform,
-    pub axis: Vec3,
+    pub axis: Axis,
     pub limits: Option<Vec2>,
     pub stiffness: f32,
     pub damping: f32,
@@ -20,7 +22,7 @@ impl Default for PrismaticJoint {
         Self { 
             parent_anchor: Transform::default(), 
             child_anchor: Transform::default(), 
-            axis: Vec3::X, 
+            axis: Axis::X, 
             limits: None,
             damping: 0.0,
             stiffness: 0.0,
@@ -31,7 +33,7 @@ impl Default for PrismaticJoint {
 
 impl From<PrismaticJoint> for GenericJoint {
     fn from(joint: PrismaticJoint) -> GenericJoint {
-        let mut builder = PrismaticJointBuilder::new(joint.axis.into_rapier())
+        let mut builder = PrismaticJointBuilder::new(joint.axis.into_unitvec())
             .local_anchor1(joint.parent_anchor.translation.into_rapier())
             .local_anchor2(joint.child_anchor.translation.into_rapier());
         
@@ -58,6 +60,10 @@ impl JointTrait for PrismaticJoint {
     fn child_anchor(&self) -> Transform {
         self.child_anchor
     }
+
+    fn get_axis(&self) -> Option<Axis> {
+        Some(self.axis)
+    }
 }
 
 
@@ -67,7 +73,7 @@ mod tests {
     use bevy::prelude::{Transform, Vec3};
     use rapier3d::dynamics::JointAxis;
     use rapier3d::prelude::GenericJoint;
-    use crate::{default, IntoRapier};
+    use crate::{default, IntoRapier, joint::Axis};
     use super::PrismaticJoint;
 
     #[test]
@@ -96,7 +102,7 @@ mod tests {
         let limit_max = 1.0;
 
         let fixed_joint = PrismaticJoint {
-            axis: Vec3::X,
+            axis: Axis::X,
             limits: Some(Vec2::new(-1.0, 1.0)),
             ..default()
         };

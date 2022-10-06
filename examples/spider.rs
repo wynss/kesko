@@ -20,14 +20,14 @@ fn setup_scene(
     mut materials: ResMut<Assets<StandardMaterial>>
 ) {
 
-    models::arena::spawn_arena(
+    models::arena::spawn(
         &mut commands, 
         materials.add(Color::SALMON.into()), 
         &mut meshes, 
         20.0, 20.0, 1.0
     );
 
-    models::spider::spawn_spider(
+    models::spider::spawn(
         &mut commands, 
         materials.add(Color::ALICE_BLUE.into()),
         Transform::from_xyz(0.0, 1.0, 0.0),
