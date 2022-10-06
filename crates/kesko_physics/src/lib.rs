@@ -32,7 +32,8 @@ pub enum PhysicsSystem {
     AddJoints,
     AddColliders,
     AddMultibodies,
-    
+
+    UpdateMultibodyVelAngVel,
     UpdateImpulse,
     UpdateForce,
     UpdateGravityScale,
@@ -118,6 +119,10 @@ impl Plugin for PhysicsPlugin {
                     .with_system(
                         multibody::add_multibody_components_system 
                             .label(PhysicsSystem::AddMultibodies)
+                            .after(PhysicsSystem::AddJoints))
+                    .with_system(
+                        multibody::update_multibody_vel_angvel 
+                            .label(PhysicsSystem::UpdateMultibodyVelAngVel)
                             .after(PhysicsSystem::AddJoints))
                     .with_system(
                         impulse::update_impulse

@@ -7,16 +7,17 @@ use std::io::prelude::*;
 use bevy::prelude::*;
 use bevy::utils::hashbrown::HashMap;
 use kesko_physics::joint::JointState;
-use serde::Serialize;
 use serde_json;
 
 use kesko_models::SpawnEvent;
 use kesko_physics::{
-    multibody::{MultibodyRoot, MultiBodyChild},
+    multibody::{MultibodyRoot, MultiBodyChild, MultiBodyState},
     joint::Joint
 };
-use request::{SimHttpRequest, SimAction};
 use kesko_core::event::SystemEvent;
+
+use request::{SimHttpRequest, SimAction};
+use response::Response;
 
 
 const URL: &str = "127.0.0.1:8080";
@@ -102,7 +103,7 @@ impl TCPPlugin {
 
                 let http_str = String::from_utf8_lossy(&tcp_buffer.data[..msg_len]).to_string();
 
-                match SimHttpRequest::from_http_request(http_str) {
+                match SimHttpRequest::from_http_str(http_str) {
                     Ok(sim_req) => {
 
                         if let Some(response_content) = Self::handle_request(
@@ -163,7 +164,8 @@ impl TCPPlugin {
                 SimAction::GetState => {
 
                     let states = multibody_root_query.iter().map(|(root, transform)| {
-
+                        
+                        // get positions of all the child bodies
                         let child_positions: HashMap<String, Vec3> = root.joint_name_2_entity.iter().map(|(name, entity)| {
                             let position = match multibody_child_query.get(*entity) {
                                 Ok((_, transform)) => transform.translation,
@@ -172,7 +174,8 @@ impl TCPPlugin {
                             (name.clone(), position)
                         }).collect();
 
-                        let joint_orientations: HashMap<String, Option<JointState>> = root.joint_name_2_entity.iter().map(|(name, e)| {
+                        // Get joint angles
+                        let joint_states: HashMap<String, Option<JointState>> = root.joint_name_2_entity.iter().map(|(name, e)| {
                             let orientation = match joint_query.get(*e) {
                                 Ok(joint) => {
                                     Some(joint.get_state())
@@ -185,8 +188,10 @@ impl TCPPlugin {
                         MultiBodyState {
                             name: root.name.clone(),
                             global_position: transform.translation,
-                            position: Some(child_positions),
-                            joint_states: Some(joint_orientations)
+                            global_orientation: transform.rotation.to_euler(EulerRot::XYZ).into(),
+                            global_angular_velocity: root.angvel,
+                            relative_positions: Some(child_positions),
+                            joint_states: Some(joint_states)
                         }
 
                     }).collect::<Vec<MultiBodyState>>();
@@ -200,24 +205,3 @@ impl TCPPlugin {
     }
 }
 
-
-#[derive(Serialize)]
-#[serde(rename_all = "lowercase")]
-struct Response {
-    multibody_states: Option<Vec<MultiBodyState>>
-}
-impl Response {
-    fn new() -> Self {
-        Self {
-            multibody_states: None
-        }
-    }
-}
-
-#[derive(Serialize)]
-struct MultiBodyState {
-    name: String,
-    global_position: Vec3,
-    position: Option<HashMap<String, Vec3>>,
-    joint_states: Option<HashMap<String, Option<JointState>>>
-}

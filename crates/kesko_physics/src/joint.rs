@@ -46,11 +46,11 @@ pub enum Axis {
 #[serde(rename_all = "lowercase", tag = "type")]
 pub enum JointState {
     Spherical{ 
-        val: Vec3
+        angle: Vec3
     },
     Revolute{ 
         axis: Axis,
-        val: f32,
+        angle: f32,
     }
 }
 
@@ -148,12 +148,12 @@ impl Joint {
         match self.axis {
             Some(axis) => {
                 match axis {
-                    Axis::X | Axis::NegX => JointState::Revolute{ axis, val: self.get_rot_x() },
-                    Axis::Y | Axis::NegY => JointState::Revolute{ axis, val: self.get_rot_y() },
-                    Axis::Z | Axis::NegZ => JointState::Revolute{ axis, val: self.get_rot_z() },
+                    Axis::X | Axis::NegX => JointState::Revolute{ axis, angle: self.get_rot_x() },
+                    Axis::Y | Axis::NegY => JointState::Revolute{ axis, angle: self.get_rot_y() },
+                    Axis::Z | Axis::NegZ => JointState::Revolute{ axis, angle: self.get_rot_z() },
                 }
             }
-            None => JointState::Spherical{ val: self.local_joint_rot.to_euler(EulerRot::XYZ).into() }
+            None => JointState::Spherical{ angle: self.local_joint_rot.to_euler(EulerRot::XYZ).into() }
         }
     }
 }

@@ -33,7 +33,7 @@ impl SimHttpRequest {
         Err("Failed to parse http request".to_owned())
     }
 
-    pub(crate) fn from_http_request(req: String) -> Result<SimHttpRequest, String> {
+    pub(crate) fn from_http_str(req: String) -> Result<SimHttpRequest, String> {
         match Self::parse(req) {
             Ok(json) =>{
                 match serde_json::from_str::<SimHttpRequest>(json.as_str()) {
