@@ -18,6 +18,13 @@ use gravity::Gravity;
 use event::send_collision_events_system;
 
 
+/// State to control the physics system
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum PhysicState {
+    Run,
+    Pause
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
 pub enum PhysicsSystem {
 
@@ -84,14 +91,16 @@ impl Plugin for PhysicsPlugin {
 
             .insert_resource(Gravity::new(self.gravity))
 
+            // state for controlling the physics
+            .add_state(PhysicState::Run)
+
             // Multibody name registry, making sure all multibodies have unique names
             .insert_resource(multibody::MultibodyNameRegistry::new())
 
             .add_event::<joint::JointMotorEvent>()
             
-            .add_system_set_to_stage(
-                CoreStage::PreUpdate,
-                SystemSet::new()
+            .add_system_set(
+                SystemSet::on_update(PhysicState::Run)
                     .label("physics-systems")
                     .with_system(
                         rigid_body::add_rigid_bodies_system
@@ -169,7 +178,6 @@ fn physics_pipeline_step(
     mut ccd_solver: ResMut<rapier::CCDSolver>,
     collision_event_handler: Res<event::CollisionEventHandler>
 ) {
-
     let gravity = gravity.get().into_rapier();
 
     pipeline.step(
