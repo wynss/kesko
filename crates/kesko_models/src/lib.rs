@@ -11,6 +11,14 @@ use bevy::prelude::*;
 use serde::{Serialize, Deserialize};
 
 
+pub struct ModelPlugin;
+impl Plugin for ModelPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system_to_stage(CoreStage::PreUpdate, spawn_model_system);
+    }
+}
+
+
 pub enum SpawnEvent {
     OpenWindow,
     Spawn {
