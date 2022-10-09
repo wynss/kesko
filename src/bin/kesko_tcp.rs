@@ -3,22 +3,24 @@ use bevy::prelude::*;
 use kesko_plugins::{
     main_camera::MainCameraPlugin,
     UIPlugin,
-    core::CorePlugin,
     InteractionPlugin
 };
 use kesko_physics::PhysicsPlugin;
 use kesko_core::{
+    CorePlugin,
     cursor_tracking::GrabablePlugin,
     interaction::groups::{GroupDynamic, GroupStatic}
 };
 use kesko_diagnostic::DiagnosticsPlugins;
 use kesko_tcp::TcpPlugin;
+use kesko_models::ModelPlugin;
 
 
 fn main() {
     App::new()
-        .add_plugin(UIPlugin)
         .add_plugin(CorePlugin)
+        .add_plugin(UIPlugin)
+        .add_plugin(ModelPlugin)
         .add_plugin(MainCameraPlugin)
         .add_plugin(PhysicsPlugin {
             initial_state: kesko_physics::PhysicState::Pause,

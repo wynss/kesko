@@ -1,4 +1,3 @@
-pub mod core;
 pub mod main_camera;
 pub mod physics;
 
@@ -9,11 +8,12 @@ use kesko_core::{
     interaction::groups::{GroupDynamic, GroupStatic},
 };
 pub use kesko_ui::UIPlugin;
+use kesko_core::CorePlugin;
 use self::{
-    core::CorePlugin,
     main_camera::MainCameraPlugin,
     physics::DefaultPhysicsPlugin
 };
+use kesko_models::ModelPlugin;
 
 
 pub struct CorePlugins;
@@ -26,5 +26,6 @@ impl PluginGroup for CorePlugins {
         group.add(DefaultPhysicsPlugin);
         group.add(InteractionPlugin::<GroupDynamic>::default());
         group.add(InteractionPlugin::<GroupStatic>::default());
+        group.add(ModelPlugin);
     }
 }
