@@ -7,7 +7,7 @@ use bevy::prelude::*;
 use rapier3d::prelude as rapier;
 use rapier3d::dynamics::GenericJoint;
 pub use rapier3d::prelude::{JointLimits, JointAxis};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
 use crate::rigid_body::{Entity2BodyHandle, RigidBodyHandle};
 use crate::conversions::{IntoBevy, IntoRapier};
@@ -31,7 +31,7 @@ impl AxisIntoVec for Axis {
 }
 
 /// Override Rapiers JointAxis since it did not inlcude negative axis
-#[derive(Clone, Copy, Serialize)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub enum Axis {
     X,
     Y,
@@ -42,7 +42,7 @@ pub enum Axis {
 }
 
 /// used to send joint state outside Kesko
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "lowercase", tag = "type")]
 pub enum JointState {
     Spherical{ 

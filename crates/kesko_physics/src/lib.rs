@@ -105,7 +105,8 @@ impl Plugin for PhysicsPlugin {
             .add_event::<event::PhysicStateEvent>()
             .add_event::<joint::JointMotorEvent>()
             
-            .add_system_set(
+            .add_system_set_to_stage(
+                CoreStage::Update,
                 SystemSet::on_update(PhysicState::Run)
                     .label("physics-systems")
                     .with_system(

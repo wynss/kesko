@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 use bevy::utils::hashbrown::HashMap;
 use rapier3d::prelude as rapier;
-use serde::Serialize;
+use serde::{
+    Serialize, Deserialize
+};
 
 use crate::{
     rigid_body::{
@@ -14,9 +16,13 @@ use crate::{
     joint::JointState
 };
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct MultiBodyStates {
+    pub multibody_states: Vec<MultiBodyState>
+}
 
 /// Used for sending data outside of Kesko
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MultiBodyState {
     pub name: String,
     pub global_position: Vec3,

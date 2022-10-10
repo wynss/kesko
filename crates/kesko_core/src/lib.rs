@@ -67,11 +67,21 @@ impl Plugin for CorePlugin {
             .add_system(multibody_selection_system)
             .add_event::<MultibodySelectionEvent>()
 
+            // simulator system events
+            .add_event::<event::SystemRequestEvent>()
+            .add_event::<event::SystemResponseEvent>()
+            .add_system_set_to_stage(
+                CoreStage::Last,
+                SystemSet::new()
+                    .with_system(event::handle_system_events)
+                    .with_system(event::handle_serializable_state_request)
+                    .with_system(event::handle_motor_command_requests)
+            )
+
             // close on ESC
             .add_system(bevy::window::close_on_esc);
     }
 }
-
 
 pub fn change_physic_state(
     mut keys: ResMut<Input<KeyCode>>,
