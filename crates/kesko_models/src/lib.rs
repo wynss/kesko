@@ -14,7 +14,7 @@ use serde::{Serialize, Deserialize};
 pub struct ModelPlugin;
 impl Plugin for ModelPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(CoreStage::PreUpdate, spawn_model_system);
+        app.add_system_to_stage(CoreStage::PreUpdate, spawn_system);
     }
 }
 
@@ -66,13 +66,13 @@ impl Model {
 }
 
 /// System to spawn a model given an spawn event
-pub fn spawn_model_system(
-    mut ui_event_reader: EventReader<SpawnEvent>,
+pub fn spawn_system(
+    mut spawn_event_reader: EventReader<SpawnEvent>,
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
-    for event in ui_event_reader.iter() {
+    for event in spawn_event_reader.iter() {
         if let SpawnEvent::Spawn { model, transform, color} = event {
 
             let material = materials.add(color.clone().into());
