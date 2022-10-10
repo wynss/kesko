@@ -11,6 +11,7 @@ mod conversions;
 
 use bevy::prelude::*;
 use bevy::math::Vec3;
+use iyes_loopless::prelude::*;
 use rapier3d::prelude as rapier;
 
 use conversions::{IntoRapier, IntoBevy};
@@ -40,7 +41,9 @@ pub enum PhysicsSystem {
     UpdateMultibodyMass,
     UpdateJointMotors,
     
+    PrePipelineSet,
     PipelineStep,
+    PostPipelineSet,
 
     SendCollisionEvents,
     
@@ -96,19 +99,18 @@ impl Plugin for PhysicsPlugin {
             .insert_resource(Gravity::new(self.gravity))
 
             // state for controlling the physics
-            .add_state(self.initial_state.clone())
+            .add_event::<event::PhysicStateEvent>()
+            .add_loopless_state(self.initial_state.clone())
             .add_system(event::change_physic_state)
 
             // Multibody name registry, making sure all multibodies have unique names
             .insert_resource(multibody::MultibodyNameRegistry::new())
 
-            .add_event::<event::PhysicStateEvent>()
             .add_event::<joint::JointMotorEvent>()
-            
             .add_system_set_to_stage(
-                CoreStage::Update,
-                SystemSet::on_update(PhysicState::Run)
-                    .label("physics-systems")
+                CoreStage::Update, 
+                SystemSet::new()
+                    .label(PhysicsSystem::PrePipelineSet)
                     .with_system(
                         rigid_body::add_rigid_bodies_system
                         .label(PhysicsSystem::AddRigidBodies)
@@ -126,51 +128,35 @@ impl Plugin for PhysicsPlugin {
                         multibody::add_multibody_components_system 
                             .label(PhysicsSystem::AddMultibodies)
                             .after(PhysicsSystem::AddJoints))
-                    .with_system(
-                        multibody::update_multibody_vel_angvel 
-                            .label(PhysicsSystem::UpdateMultibodyVelAngVel)
-                            .after(PhysicsSystem::AddJoints))
-                    .with_system(
-                        impulse::update_impulse
-                            .label(PhysicsSystem::UpdateImpulse)
-                            .after(PhysicsSystem::AddColliders)
-                    )
-                    .with_system(
-                        force::update_force_system
-                            .label(PhysicsSystem::UpdateForce)
-                            .after(PhysicsSystem::AddColliders)
-                    )
-                    .with_system(gravity::update_gravity_scale_system
-                        .label(PhysicsSystem::UpdateGravityScale)
-                        .after(PhysicsSystem::AddColliders)
-                    )
-                    .with_system(mass::update_multibody_mass_system
-                        .label(PhysicsSystem::UpdateMultibodyMass)
-                        .after(PhysicsSystem::AddColliders)
-                    )
-                    .with_system(joint::update_joint_motors_system
-                        .label(PhysicsSystem::UpdateJointMotors)
-                        .after(PhysicsSystem::AddColliders)
-                    )
-                    .with_system(joint::update_joint_pos_system
-                        .after(PhysicsSystem::AddColliders)
-                    )
-                    .with_system(
-                        physics_pipeline_step
-                            .label(PhysicsSystem::PipelineStep)
-                            .after(PhysicsSystem::UpdateImpulse)
-                    )
-                    .with_system(
-                        send_collision_events_system
-                            .label(PhysicsSystem::SendCollisionEvents)
-                            .after(PhysicsSystem::PipelineStep)
-                    )
-                    .with_system(
-                        update_bevy_world
-                            .label(PhysicsSystem::UpdateBevyWorld)
-                            .after(PhysicsSystem::PipelineStep)
-                    )
+            )
+
+            .add_system_to_stage(
+                CoreStage::Update, 
+                physics_pipeline_step
+                    .run_in_state(PhysicState::Run)
+                    .label(PhysicsSystem::PipelineStep)
+                    .after(PhysicsSystem::PrePipelineSet)
+            )
+            
+            .add_system_set_to_stage(
+                CoreStage::Update, 
+                ConditionSet::new()
+                    .run_in_state(PhysicState::Run)
+                    .label(PhysicsSystem::PostPipelineSet)
+                    .after(PhysicsSystem::PipelineStep)
+
+                    .with_system(update_bevy_world)
+                    .with_system(multibody::update_multibody_vel_angvel)
+                    .with_system(impulse::update_impulse)
+                    .with_system(force::update_force_system)
+                    .with_system(gravity::update_gravity_scale_system)
+                    .with_system(mass::update_multibody_mass_system)
+                    .with_system(joint::update_joint_motors_system)
+                    .with_system(joint::update_joint_pos_system)
+                    .with_system(send_collision_events_system)
+                    .into()
             );
+
     }
 }
 
