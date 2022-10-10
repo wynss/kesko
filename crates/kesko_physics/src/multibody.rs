@@ -102,7 +102,13 @@ pub(crate) fn add_multibody_components_system(
                 // build a hash map with names and entity to store in the component.
                 // the component can later be used to easy get hold of different links and joints
                 let mut joints = HashMap::<String, Entity>::new();
+
                 for link in multibody.links() {
+
+                    // don't add root to joints since it cannot have a joint
+                    if link.is_root() {
+                        continue;
+                    }
 
                     let link_entity = body_2_entity.get(&link.rigid_body_handle()).expect("body should be in body to entity map");
 
