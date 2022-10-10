@@ -1,6 +1,8 @@
 import logging
 from typing import Union
 
+import torch
+
 import requests
 from requests.adapters import HTTPAdapter, Retry
 
@@ -15,6 +17,12 @@ JOINT_STATES = "joint_states"
 MULTIBODY_STATES = "multibody_states"
 GLOBAL_POSITION = "global_position"
 
+
+class CheckAliveAction:
+    def to_json(self):
+        return CheckAliveAction.to_json()
+    def to_json():
+        return "IsAlive"
 
 class SpawnAction:
     def __init__(self, model: KeskoModel, position: list[int], color: Union[Rgba, Color]):
@@ -42,32 +50,39 @@ class Despawn:
             }
         }
  
-class CloseAction:
+class Shutdown:
     def to_json(self):
+        return Shutdown.to_json()
+    
+    def to_json():
         return "Close"
 
 
-class GetStateAction:
+class GetState:
     def to_json(self):
+        return GetState.to_json()
+
+    def to_json():
         return "GetState"
     
     
 class ApplyControlAction:
-    def __init__(self, values):
+    def __init__(self, name: str, values: Union[dict[str, float], torch.Tensor]):
+        self.name = name
         self.values = values
     
     def to_json(self):
         return {
-            "ApplyControl": {
+            "ApplyMotorCommand": {
                 "body_name": self.name,
-                "values": self.values
+                "command": self.values
             }
         }
 
 class PausePhysics:
     def to_json(self):
         return PausePhysics.to_json()
-
+    
     def to_json():
         return "PausePhysics"
 
@@ -106,6 +121,6 @@ class Communicator:
             logger.error(e, exc_info=True)
 
 if __name__ == '__main__':
-    request = KeskoRequest([GetStateAction(), CloseAction()])
+    request = KeskoRequest([GetState(), Shutdown()])
     print(request.to_json())
         
