@@ -54,6 +54,7 @@ class SpiderEnv(gym.Env):
         self.observation_space = gym.spaces.Space(tensor_state.shape)
 
     def _to_tensor(self, state: dict):
+
         position = state["global_position"]
         orientation = state["global_orientation"]
         angular_velocity = state["global_angular_velocity"]
@@ -66,12 +67,16 @@ class SpiderEnv(gym.Env):
     def step(self, action: Union[np.ndarray, torch.Tensor]):
 
         state = self._kesko.step(ApplyControlAction(self.spider_name, action))[0][MULTIBODY_STATES][0]
-        state = self._to_tensor(state)
 
+        # TODO: Distance moved during one step
         reward = None
-        terminated = False
 
-        return state, reward, terminated, False, {}
+        # TODO: Kesko need support to send collision events back
+        terminated = False
+        done = False
+
+        state = self._to_tensor(state)
+        return state, reward, terminated, done, {}
     
     def reset(self):
         # TODO: Kesko needs to support despawning before implementing this

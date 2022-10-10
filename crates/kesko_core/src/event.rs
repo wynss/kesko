@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use bevy::prelude::*;
 use bevy::app::AppExit;
 use bevy::utils::hashbrown::HashMap;
@@ -111,7 +113,7 @@ pub fn handle_serializable_state_request(
             let states = multibody_root_query.iter().map(|(root, transform)| {
                 
                 // get positions of all the child bodies
-                let child_positions: HashMap<String, Vec3> = root.child_map.iter().map(|(name, entity)| {
+                let child_positions: BTreeMap<String, Vec3> = root.child_map.iter().map(|(name, entity)| {
                     let position = match multibody_child_query.get(*entity) {
                         Ok((_, transform)) => transform.translation,
                         Err(_) => Vec3::ZERO
@@ -120,7 +122,7 @@ pub fn handle_serializable_state_request(
                 }).collect();
 
                 // Get joint angles
-                let joint_states: HashMap<String, Option<JointState>> = root.child_map.iter().map(|(name, e)| {
+                let joint_states: BTreeMap<String, Option<JointState>> = root.child_map.iter().map(|(name, e)| {
                     let orientation = match joint_query.get(*e) {
                         Ok(joint) => {
                             Some(joint.get_state())

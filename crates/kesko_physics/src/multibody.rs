@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use bevy::prelude::*;
 use bevy::utils::hashbrown::HashMap;
 use rapier3d::prelude as rapier;
@@ -28,8 +30,8 @@ pub struct MultiBodyState {
     pub global_position: Vec3,
     pub global_orientation: Vec3,
     pub global_angular_velocity: Vec3,
-    pub relative_positions: Option<HashMap<String, Vec3>>,
-    pub joint_states: Option<HashMap<String, Option<JointState>>>
+    pub relative_positions: Option<BTreeMap<String, Vec3>>,
+    pub joint_states: Option<BTreeMap<String, Option<JointState>>>
 }
 
 
