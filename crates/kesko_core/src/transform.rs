@@ -26,6 +26,8 @@ mod tests {
     use bevy::prelude::*;
     use super::world_transform_from_joint_anchors;
 
+    const DIFF_LIMIT: f32 = 2.0 * f32::EPSILON;
+
     #[test]
     fn no_transform() {
         let origin = Transform::default();
@@ -102,33 +104,33 @@ mod tests {
 
         // check translation
         assert!(
-            (result.translation.x - expected.translation.x).abs() < f32::EPSILON, 
+            (result.translation.x - expected.translation.x).abs() < DIFF_LIMIT, 
             "X coordinate was wrong, expected {} was {}", expected.translation.x, result.translation.x
         );
         assert!(
-            (result.translation.y - expected.translation.y).abs() < f32::EPSILON, 
+            (result.translation.y - expected.translation.y).abs() < DIFF_LIMIT, 
             "Y coordinate was wrong, expected {} was {}", expected.translation.y, result.translation.y
         );
         assert!(
-            (result.translation.z - expected.translation.z).abs() < f32::EPSILON, 
+            (result.translation.z - expected.translation.z).abs() < DIFF_LIMIT, 
             "Z coordinate was wrong, expected {} was {}", expected.translation.z, result.translation.z
         );
 
         // check rotation
         assert!(
-            (result.rotation.x - expected.rotation.x).abs() < f32::EPSILON, 
+            (result.rotation.x - expected.rotation.x).abs() < DIFF_LIMIT, 
             "X coordinate was wrong, expected {} was {}", expected.rotation.x, result.rotation.x
         );
         assert!(
-            (result.rotation.y - expected.rotation.y).abs() < f32::EPSILON, 
+            (result.rotation.y - expected.rotation.y).abs() < DIFF_LIMIT, 
             "Y rotation coordinate was wrong, expected {} was {}", expected.rotation.y, result.rotation.y
         );
         assert!(
-            (result.rotation.z - expected.rotation.z).abs() < f32::EPSILON, 
+            (result.rotation.z - expected.rotation.z).abs() < DIFF_LIMIT, 
             "Z rotation coordinate was wrong, expected {} was {}", expected.rotation.z, result.translation.z
         );
         assert!(
-            (result.rotation.w - expected.rotation.w).abs() < f32::EPSILON, 
+            (result.rotation.w - expected.rotation.w).abs() < DIFF_LIMIT, 
             "W rotation coordinate was wrong, expected {} was {}", expected.rotation.w, result.rotation.w
         );
     }
