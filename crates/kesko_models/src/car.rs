@@ -349,13 +349,13 @@ impl Car {
                             CarVelocity::NoVelocity => (0.0, controller.damping)
                         };
 
-                        if let Some(entity) = car_body.joint_name_2_entity.get(RIGHT_REAR_WHEEL) {
+                        if let Some(entity) = car_body.child_map.get(RIGHT_REAR_WHEEL) {
                             joint_event_writer.send(JointMotorEvent {
                                 entity: *entity,
                                 action: MotorAction::VelocityRevolute { velocity: -velocity, factor }
                             });
                         }
-                        if let Some(entity) = car_body.joint_name_2_entity.get(LEFT_REAR_WHEEL) {
+                        if let Some(entity) = car_body.child_map.get(LEFT_REAR_WHEEL) {
                             joint_event_writer.send(JointMotorEvent {
                                 entity: *entity,
                                 action: MotorAction::VelocityRevolute { velocity, factor }
@@ -376,7 +376,7 @@ impl Car {
                             }
                         };
 
-                        if let Some(entity) = car_body.joint_name_2_entity.get(LEFT_FRONT_WHEEL_TURN) {
+                        if let Some(entity) = car_body.child_map.get(LEFT_FRONT_WHEEL_TURN) {
                             joint_event_writer.send(JointMotorEvent { 
                                 entity: *entity,
                                 action: MotorAction::PositionRevolute { position: -position, damping, stiffness } })
@@ -384,7 +384,7 @@ impl Car {
                             error!("Could not get {}", LEFT_FRONT_WHEEL_TURN);
                         }
 
-                        if let Some(entity) = car_body.joint_name_2_entity.get(RIGHT_FRONT_WHEEL_TURN) {
+                        if let Some(entity) = car_body.child_map.get(RIGHT_FRONT_WHEEL_TURN) {
                             joint_event_writer.send(JointMotorEvent { 
                                 entity: *entity,
                                 action: MotorAction::PositionRevolute { position, damping, stiffness } })

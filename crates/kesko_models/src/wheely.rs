@@ -342,84 +342,84 @@ impl Wheely {
             for event in wheely_event_reader.iter() {
                 let (entity, action) = match event {
                     WheelyControlEvent::LeftWheelForward => {
-                        let entity = root.joint_name_2_entity.get(LEFT_WHEEL).expect("");
+                        let entity = root.child_map.get(LEFT_WHEEL).expect("");
                         let action = MotorAction::VelocityRevolute { 
                             velocity: controller.wheel_velocity, factor: controller.damping 
                         };
                         (entity, action)
                     },
                     WheelyControlEvent::LeftWheelBackward => {
-                        let entity = root.joint_name_2_entity.get(LEFT_WHEEL).expect("");
+                        let entity = root.child_map.get(LEFT_WHEEL).expect("");
                         let action = MotorAction::VelocityRevolute { 
                                     velocity: -controller.wheel_velocity, factor: controller.damping 
                         };
                         (entity, action)
                     },
                     WheelyControlEvent::LeftWheelStop => {
-                        let entity = root.joint_name_2_entity.get(LEFT_WHEEL).expect("");
+                        let entity = root.child_map.get(LEFT_WHEEL).expect("");
                         let action = MotorAction::VelocityRevolute { 
                             velocity: 0.0, factor: controller.damping 
                         };
                         (entity, action)
                     },
                     WheelyControlEvent::RightWheelForward => {
-                        let entity = root.joint_name_2_entity.get(RIGHT_WHEEL).expect("");
+                        let entity = root.child_map.get(RIGHT_WHEEL).expect("");
                         let action = MotorAction::VelocityRevolute { 
                             velocity: controller.wheel_velocity, factor: controller.damping 
                         };
                         (entity, action)
                     },
                     WheelyControlEvent::RightWheelBackward => {
-                        let entity = root.joint_name_2_entity.get(RIGHT_WHEEL).expect("");
+                        let entity = root.child_map.get(RIGHT_WHEEL).expect("");
                         let action = MotorAction::VelocityRevolute { 
                                     velocity: -controller.wheel_velocity, factor: controller.damping 
                         };
                         (entity, action)
                     },
                     WheelyControlEvent::RightWheelStop => {
-                        let entity = root.joint_name_2_entity.get(RIGHT_WHEEL).expect("");
+                        let entity = root.child_map.get(RIGHT_WHEEL).expect("");
                         let action = MotorAction::VelocityRevolute { 
                             velocity: 0.0, factor: controller.damping 
                         };
                         (entity, action)
                     },
                     WheelyControlEvent::ArmLink1Pos => {
-                        let entity = root.joint_name_2_entity.get(ARM_LINK_1).expect("");
+                        let entity = root.child_map.get(ARM_LINK_1).expect("");
                         let action = MotorAction::VelocityRevolute { 
                             velocity: controller.arm_velocity, factor: controller.damping 
                         };
                         (entity, action)
                     },
                     WheelyControlEvent::ArmLink1Neg => {
-                        let entity = root.joint_name_2_entity.get(ARM_LINK_1).expect("");
+                        let entity = root.child_map.get(ARM_LINK_1).expect("");
                         let action = MotorAction::VelocityRevolute { 
                             velocity: -controller.arm_velocity, factor: controller.damping 
                         };
                         (entity, action)
                     },
                     WheelyControlEvent::ArmLink1Stop => {
-                        let entity = root.joint_name_2_entity.get(ARM_LINK_1).expect("");
+                        let entity = root.child_map.get(ARM_LINK_1).expect("");
                         let action = MotorAction::VelocityRevolute { 
                             velocity: 0.0, factor: controller.damping 
                         };
                         (entity, action)
                     },
                     WheelyControlEvent::ArmLink2Pos => {
-                        let entity = root.joint_name_2_entity.get(ARM_LINK_2).expect("");
+                        let entity = root.child_map.get(ARM_LINK_2).expect("");
                         let action = MotorAction::VelocityPrismatic { 
                             velocity: controller.arm_velocity, factor: controller.damping 
                         };
                         (entity, action)
                     },
                     WheelyControlEvent::ArmLink2Neg => {
-                        let entity = root.joint_name_2_entity.get(ARM_LINK_2).expect("");
+                        let entity = root.child_map.get(ARM_LINK_2).expect("");
                         let action = MotorAction::VelocityPrismatic { 
                             velocity: -controller.arm_velocity, factor: controller.damping 
                         };
                         (entity, action)
                     },
                     WheelyControlEvent::ArmLink2Stop => {
-                        let entity = root.joint_name_2_entity.get(ARM_LINK_2).expect("");
+                        let entity = root.child_map.get(ARM_LINK_2).expect("");
                         let action = MotorAction::VelocityPrismatic { 
                             velocity: 0.0, factor: controller.damping 
                         };
