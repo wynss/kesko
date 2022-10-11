@@ -27,7 +27,7 @@ use kesko_core::{
         groups::GroupDynamic, 
         multibody_selection::MultibodySelectionEvent
     },
-    transform::get_world_transform,
+    transform::world_transform_from_joint_anchors,
 };
 
 use super::ControlDescription;
@@ -125,7 +125,7 @@ impl Wheely {
             RigidBody::Dynamic,
             Shape::Cylinder { radius: WHEEL_RADIUS, length: WHEEL_WIDTH, resolution: 21},
             wheel_material.clone(),
-            get_world_transform(&transform, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(body, RevoluteJoint {
@@ -145,7 +145,7 @@ impl Wheely {
             RigidBody::Dynamic,
             Shape::Cylinder { radius: WHEEL_RADIUS, length: WHEEL_WIDTH, resolution: 21},
             wheel_material.clone(),
-            get_world_transform(&transform, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(body, RevoluteJoint {
@@ -162,7 +162,7 @@ impl Wheely {
         let back_wheel_turn = commands.spawn_bundle(PhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere { radius: 0.01, subdivisions: 5 },
-            get_world_transform(&transform, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
         ))
         .insert(Joint::new(body, RevoluteJoint {
             parent_anchor,
@@ -183,7 +183,7 @@ impl Wheely {
             RigidBody::Dynamic,
             Shape::Cylinder { radius: BACK_WHEEL_RADIUS, length: BACK_WHEEL_WIDTH, resolution: 21},
             wheel_material,
-            get_world_transform(&transform, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(back_wheel_turn, RevoluteJoint {
@@ -213,7 +213,7 @@ impl Wheely {
             RigidBody::Dynamic,
             Shape::Box { x_length: 0.03, y_length: 0.5, z_length: 0.03},
             material.clone(),
-            get_world_transform(&transform, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(body, FixedJoint {
@@ -229,7 +229,7 @@ impl Wheely {
             RigidBody::Dynamic,
             Shape::Box { x_length: 0.03, y_length: 0.5, z_length: 0.03},
             material.clone(),
-            get_world_transform(&transform, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(arm_base, RevoluteJoint {
@@ -250,7 +250,7 @@ impl Wheely {
             RigidBody::Dynamic,
             Shape::Box { x_length: 0.03, y_length: 0.5, z_length: 0.03},
             material,
-            get_world_transform(&transform, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(arm_link_1, PrismaticJoint {

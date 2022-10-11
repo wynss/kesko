@@ -18,16 +18,16 @@ use kesko_object_interaction::InteractiveBundle;
 use kesko_core::{
     shape::Shape,
     bundle::MeshPhysicBodyBundle,
-    transform::get_world_transform,
+    transform::world_transform_from_joint_anchors,
     interaction::groups::GroupDynamic
 };
-use kesko_models::arena::spawn;
 use kesko_plugins::CorePlugins;
 
 
 fn main() {
     App::new()
     .add_plugins(CorePlugins)
+    .add_system(debug)
     .add_startup_system(setup_scene)
     .run();
 }
@@ -38,17 +38,16 @@ fn setup_scene(
     mut materials: ResMut<Assets<StandardMaterial>>
 ) {
 
-    spawn(
+    kesko_models::plane::spawn(
         &mut commands, 
         materials.add(Color::CRIMSON.into()),
-        &mut meshes,
-        10.0, 10.0, 0.0
+        &mut meshes
     );
 
     let material = materials.add(Color::BLUE.into());
     let origin = Transform::default();
 
-    let bench = build_test_bench(origin, &mut commands, &material, &mut meshes);
+    let (bench, world_transform) = build_test_bench(origin, &mut commands, &material, &mut meshes);
 
     let parent_anchor = Transform::from_translation(Vec3::new(-4.0, 1.2, 0.0));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
@@ -56,7 +55,7 @@ fn setup_scene(
         RigidBody::Dynamic,
         Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
         material.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         &mut meshes
     ))
     .insert(Joint::new(bench, SphericalJoint {
@@ -73,7 +72,7 @@ fn setup_scene(
         RigidBody::Dynamic,
         Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
         material.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         &mut meshes
     ))
     .insert(Joint::new(bench, RevoluteJoint {
@@ -91,7 +90,7 @@ fn setup_scene(
         RigidBody::Dynamic,
         Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
         material.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         &mut meshes
     ))
     .insert(Joint::new(bench, RevoluteJoint {
@@ -109,7 +108,7 @@ fn setup_scene(
         RigidBody::Dynamic,
         Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
         material.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         &mut meshes
     ))
     .insert(Joint::new(bench, RevoluteJoint {
@@ -129,7 +128,7 @@ fn setup_scene(
         RigidBody::Dynamic,
         Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
         material.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         &mut meshes
     ))
     .insert(Joint::new(bench, RevoluteJoint {
@@ -149,7 +148,7 @@ fn setup_scene(
         RigidBody::Dynamic,
         Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
         material.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         &mut meshes
     ))
     .insert(Joint::new(bench, RevoluteJoint {
@@ -166,11 +165,12 @@ fn setup_scene(
 
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 1.2, -2.0));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
+    let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
     let stick_1 = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
         material.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        world_transform,
         &mut meshes
     ))
     .insert(Joint::new(bench, RevoluteJoint {
@@ -187,11 +187,12 @@ fn setup_scene(
 
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.6, 0.0));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.6, 0.0));
+    let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
     let stick_2 = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
         material.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        world_transform,
         &mut meshes
     ))
     .insert(Joint::new(stick_1, RevoluteJoint {
@@ -209,11 +210,12 @@ fn setup_scene(
 
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.6, 0.0)).with_rotation(Quat::from_rotation_x(-FRAC_PI_2));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.6, 0.0));
-    commands.spawn_bundle(MeshPhysicBodyBundle::from(
+    let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
+    let stick_3 = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
         material.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        world_transform,
         &mut meshes
     ))
     .insert(Joint::new(stick_2, RevoluteJoint {
@@ -225,8 +227,29 @@ fn setup_scene(
         ..default()
     }))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("stick_3_y".to_owned()));
-
+    .insert(RigidBodyName("stick_3_y".to_owned()))
+    .id();
+    
+    let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.6, 0.0)).with_rotation(Quat::from_rotation_x(-FRAC_PI_2));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.6, 0.0));
+    let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
+        material.clone(),
+        world_transform,
+        &mut meshes
+    ))
+    .insert(Joint::new(stick_3, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Axis::Y,
+        damping: 0.1,
+        stiffness: 1.0,
+        ..default()
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("stick_4_y".to_owned()));
 
     // Light
     commands.spawn_bundle(DirectionalLightBundle {
@@ -245,19 +268,20 @@ fn build_test_bench(
     commands: &mut Commands,
     material: &Handle<StandardMaterial>,
     meshes: &mut ResMut<Assets<Mesh>>,
-) -> Entity {
+) -> (Entity, Transform) {
 
     //base 
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.75, 0.0));
     let child_anchor = Transform::default();
+    let world_transform = world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor);
     let base = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box { x_length: 4.0, y_length: 1.0, z_length: 4.0 },
         material.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        world_transform,
         meshes
     ))
-    .insert(Mass { val: 100000.0 })
+    .insert(Mass { val: 10000000.0 })
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("base".to_owned()))
     .id();
@@ -265,11 +289,12 @@ fn build_test_bench(
     // base pole
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 1.0, 0.0));
     let child_anchor = Transform::default();
+    let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
     let base_pole = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box { x_length: 0.2, y_length: 1.0, z_length: 0.2 },
         material.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        world_transform,
         meshes
     ))
     .insert(Joint::new(base, FixedJoint {
@@ -282,11 +307,12 @@ fn build_test_bench(
     
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.60, 0.0));
     let child_anchor = Transform::default();
+    let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
     let bench = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Box { x_length: 6.0, y_length: 0.2, z_length: 0.2 },
         material.clone(),
-        get_world_transform(&origin, &parent_anchor, &child_anchor),
+        world_transform,
         meshes
     ))
     .insert(Joint::new(base_pole, FixedJoint {
@@ -297,5 +323,14 @@ fn build_test_bench(
     .insert(RigidBodyName("bench".to_owned()))
     .id();
 
-    bench
+    (bench, world_transform)
+}
+
+fn debug(
+    commands: Commands,
+    query: Query<(&RigidBodyName, &Transform)>
+) {
+    for (name, transform) in query.iter() {
+        println!("{}: {}", name.0, transform.translation);
+    }
 }

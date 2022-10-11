@@ -17,7 +17,7 @@ use kesko_object_interaction::InteractiveBundle;
 use kesko_core::{
     shape::Shape,
     bundle::MeshPhysicBodyBundle,
-    transform::get_world_transform,
+    transform::world_transform_from_joint_anchors,
     interaction::groups::GroupDynamic
 };
 
@@ -53,7 +53,7 @@ pub fn spawn(
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(1.0, 0.0, 1.0).normalize())
         .with_rotation(Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0).normalize(), leg_angle));
     let child_anchor = Transform::default();
-    let world_transform = get_world_transform(&transform, &parent_anchor, &child_anchor);
+    let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
     let left_front_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Sphere { radius: leg_radius, subdivisions: 5},
@@ -79,7 +79,7 @@ pub fn spawn(
         RigidBody::Dynamic,
         Shape::Capsule { radius: leg_radius, length: leg_length },
         material.clone(),
-        get_world_transform(&world_transform, &parent_anchor, &child_anchor),
+        world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(Joint::new(left_front_x, RevoluteJoint {
@@ -96,7 +96,7 @@ pub fn spawn(
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(-1.0, 0.0, 1.0).normalize())
         .with_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0).normalize(), -leg_angle));
     let child_anchor = Transform::default();
-    let world_transform = get_world_transform(&transform, &parent_anchor, &child_anchor);
+    let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
     let right_front_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Sphere { radius: leg_radius, subdivisions: 5},
@@ -122,7 +122,7 @@ pub fn spawn(
         RigidBody::Dynamic,
         Shape::Capsule { radius: leg_radius, length: leg_length },
         material.clone(),
-        get_world_transform(&world_transform, &parent_anchor, &child_anchor),
+        world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(Joint::new(right_front_x, RevoluteJoint {
@@ -139,7 +139,7 @@ pub fn spawn(
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(1.0, 0.0, -1.0).normalize())
         .with_rotation(Quat::from_axis_angle(Vec3::new(1.0, 0.0, 1.0).normalize(), leg_angle));
     let child_anchor = Transform::default();
-    let world_transform = get_world_transform(&transform, &parent_anchor, &child_anchor);
+    let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
     let left_rear_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Sphere { radius: leg_radius, subdivisions: 5},
@@ -165,7 +165,7 @@ pub fn spawn(
         RigidBody::Dynamic,
         Shape::Capsule { radius: leg_radius, length: leg_length },
         material.clone(),
-        get_world_transform(&world_transform, &parent_anchor, &child_anchor),
+        world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(Joint::new(left_rear_leg_x, RevoluteJoint {
@@ -182,7 +182,7 @@ pub fn spawn(
     let parent_anchor = Transform::from_translation((body_radius + leg_radius) * Vec3::new(-1.0, 0.0, -1.0).normalize())
         .with_rotation(Quat::from_axis_angle(Vec3::new(-1.0, 0.0, 1.0).normalize(), -leg_angle));
     let child_anchor = Transform::default();
-    let world_transform = get_world_transform(&transform, &parent_anchor, &child_anchor);
+    let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
     let right_rear_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Sphere { radius: leg_radius, subdivisions: 5},
@@ -208,7 +208,7 @@ pub fn spawn(
         RigidBody::Dynamic,
         Shape::Capsule { radius: leg_radius, length: leg_length },
         material,
-        get_world_transform(&world_transform, &parent_anchor, &child_anchor),
+        world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(Joint::new(right_rear_leg_x, RevoluteJoint {
