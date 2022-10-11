@@ -27,6 +27,7 @@ use kesko_plugins::CorePlugins;
 fn main() {
     App::new()
     .add_plugins(CorePlugins)
+    .add_system(debug)
     .add_startup_system(setup_scene)
     .run();
 }
@@ -141,25 +142,25 @@ fn setup_scene(
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("x_90_x_parent_rot".to_owned()));
     
-    // let parent_anchor = Transform::from_translation(Vec3::new(-1.0, 1.2, 2.0));
-    // let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0)).with_rotation(Quat::from_rotation_x(FRAC_PI_2));
-    // commands.spawn_bundle(MeshPhysicBodyBundle::from(
-    //     RigidBody::Dynamic,
-    //     Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
-    //     material.clone(),
-    //     world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
-    //     &mut meshes
-    // ))
-    // .insert(Joint::new(bench, RevoluteJoint {
-    //     parent_anchor,
-    //     child_anchor,
-    //     axis: Axis::X,
-    //     damping: 0.1,
-    //     stiffness: 1.0,
-    //     ..default()
-    // }))
-    // .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    // .insert(RigidBodyName("x_90_x_child_rot".to_owned()));
+    let parent_anchor = Transform::from_translation(Vec3::new(-1.0, 1.2, 2.0));
+    let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0)).with_rotation(Quat::from_rotation_x(FRAC_PI_2));
+    commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        RigidBody::Dynamic,
+        Shape::Box { x_length: 0.1, y_length: 1.0, z_length: 0.1 },
+        material.clone(),
+        world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
+        &mut meshes
+    ))
+    .insert(Joint::new(bench, RevoluteJoint {
+        parent_anchor,
+        child_anchor,
+        axis: Axis::X,
+        damping: 0.1,
+        stiffness: 1.0,
+        ..default()
+    }))
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(RigidBodyName("x_90_x_child_rot".to_owned()));
 
 
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 1.2, -2.0));
@@ -323,4 +324,13 @@ fn build_test_bench(
     .id();
 
     (bench, world_transform)
+}
+
+fn debug(
+    commands: Commands,
+    query: Query<(&RigidBodyName, &Transform)>
+) {
+    for (name, transform) in query.iter() {
+        println!("{}: {}", name.0, transform.translation);
+    }
 }
