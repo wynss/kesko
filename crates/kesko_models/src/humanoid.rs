@@ -23,7 +23,7 @@ use kesko_core::{
         PhysicBodyBundle
     },
     interaction::groups::GroupDynamic,
-    transform::get_world_transform
+    transform::world_transform_from_joint_anchors
 };
 
 use super::Model;
@@ -92,7 +92,7 @@ impl Humanoid {
         let neck_x = commands.spawn_bundle(PhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere { radius: 0.01, subdivisions: 5 },
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
         ))
         .insert(Joint::new(head, RevoluteJoint {
             parent_anchor,
@@ -112,7 +112,7 @@ impl Humanoid {
         let neck_y = commands.spawn_bundle(PhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere { radius: 0.01, subdivisions: 5 },
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
         ))
         .insert(Joint::new(neck_x, RevoluteJoint {
             parent_anchor,
@@ -133,7 +133,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: SHOULDER_RADIUS, length: SHOULDER_WIDTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(neck_y, RevoluteJoint {
@@ -169,7 +169,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: SHOULDER_RADIUS, length: 0.8*SHOULDER_WIDTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(shoulder, FixedJoint {
@@ -187,7 +187,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: SHOULDER_RADIUS, length: 0.6*SHOULDER_WIDTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(body_1, FixedJoint {
@@ -205,7 +205,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: SHOULDER_RADIUS, length: 0.5*SHOULDER_WIDTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(body_2, FixedJoint {
@@ -239,7 +239,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Sphere { radius: ARM_RADIUS, subdivisions: 7 },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(shoulder, RevoluteJoint {
@@ -261,7 +261,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: ARM_RADIUS, length: ARM_UPPER_LENGTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(left_upper_arm_z, RevoluteJoint {
@@ -283,7 +283,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: ARM_RADIUS, length: ARM_LOWER_LENGTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(left_upper_arm_x, RevoluteJoint {
@@ -305,7 +305,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Sphere { radius: ARM_RADIUS, subdivisions: 7 },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(shoulder, RevoluteJoint {
@@ -327,7 +327,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: ARM_RADIUS, length: ARM_UPPER_LENGTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(right_upper_arm_z, RevoluteJoint {
@@ -349,7 +349,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: ARM_RADIUS, length: ARM_LOWER_LENGTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(right_upper_arm_x, RevoluteJoint {
@@ -383,7 +383,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Sphere { radius: LEG_RADIUS, subdivisions: 7 },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(hip, RevoluteJoint {
@@ -405,7 +405,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: LEG_RADIUS, length: UPPER_LEG_LENGTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(left_upper_leg_z, RevoluteJoint {
@@ -427,7 +427,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: LEG_RADIUS, length: LOWER_LEG_LENGTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(left_upper_leg_x, RevoluteJoint {
@@ -449,7 +449,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: LEG_RADIUS, length: FOOT_LENGTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(left_lower_leg_x, RevoluteJoint {
@@ -471,7 +471,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Sphere { radius: LEG_RADIUS, subdivisions: 7 },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(hip, RevoluteJoint {
@@ -493,7 +493,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: LEG_RADIUS, length: UPPER_LEG_LENGTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(right_upper_arm_z, RevoluteJoint {
@@ -515,7 +515,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: LEG_RADIUS, length: LOWER_LEG_LENGTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(right_upper_arm_x, RevoluteJoint {
@@ -537,7 +537,7 @@ impl Humanoid {
             RigidBody::Dynamic,
             Shape::Capsule { radius: LEG_RADIUS, length: FOOT_LENGTH },
             material.clone(),
-            get_world_transform(&origin, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&origin, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(right_lower_leg_x, RevoluteJoint {

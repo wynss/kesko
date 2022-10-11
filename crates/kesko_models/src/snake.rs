@@ -10,7 +10,7 @@ use kesko_object_interaction::InteractiveBundle;
 use kesko_core::{
     bundle::MeshPhysicBodyBundle,
     shape::Shape,
-    transform::get_world_transform,
+    transform::world_transform_from_joint_anchors,
     interaction::groups::GroupDynamic
 };
 
@@ -44,7 +44,7 @@ pub fn spawn(
 
         let parent_anchor = Transform::from_translation((half_length + margin) * Vec3::Y);
         let child_anchor = Transform::from_translation(-(half_length + margin) * Vec3::Y);
-        let world_transform = get_world_transform(&new_origin, &parent_anchor, &child_anchor);
+        let world_transform = world_transform_from_joint_anchors(&new_origin, &parent_anchor, &child_anchor);
 
         let child = commands.spawn_bundle( MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,

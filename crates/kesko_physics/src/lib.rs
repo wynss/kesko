@@ -59,7 +59,7 @@ impl PhysicsPlugin {
     pub fn gravity() -> Self {
         Self {
             gravity: Vec3::new(0.0, -9.81, 0.0),
-            initial_state: PhysicState::Running,
+            initial_state: PhysicState::Stopped,
         }
     }
 }
