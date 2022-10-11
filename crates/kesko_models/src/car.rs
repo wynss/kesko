@@ -164,10 +164,11 @@ impl Car {
         let parent_anchor = Transform::from_translation(Vec3::new(wbh, 0.0, half_frame_length))
             .with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
         let child_anchor = Transform::default();
+        let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
         let left_front_link = commands.spawn_bundle(PhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere { radius: 0.01, subdivisions: 5},
-            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
+            world_transform,
         ))
         .insert(Joint::new(frame, RevoluteJoint {
             parent_anchor,
@@ -183,11 +184,12 @@ impl Car {
         // left front wheel
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.1, 0.0));
         let child_anchor = Transform::default();
+        let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
         commands.spawn_bundle( MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},
             material_wheel.clone(),
-            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
+            world_transform,
             meshes
         ))
         .insert(Joint::new(left_front_link, RevoluteJoint {
@@ -203,10 +205,11 @@ impl Car {
         let parent_anchor = Transform::from_translation(Vec3::new(-wbh, 0.0, half_frame_length))
             .with_rotation(Quat::from_rotation_z(FRAC_PI_2));
         let child_anchor = Transform::default();
+        let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
         let right_front_link = commands.spawn_bundle(PhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere { radius: 0.01, subdivisions: 5},
-            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
+            world_transform,
         ))
         .insert(Joint::new(frame, RevoluteJoint {
             parent_anchor,
@@ -223,11 +226,12 @@ impl Car {
         // right front wheel
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.1, 0.0));
         let child_anchor = Transform::default();
+        let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
         commands.spawn_bundle( MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},
             material_wheel.clone(),
-            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
+            world_transform,
             meshes
         ))
         .insert(Joint::new(right_front_link, RevoluteJoint {

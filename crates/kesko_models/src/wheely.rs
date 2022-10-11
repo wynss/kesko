@@ -110,7 +110,10 @@ impl Wheely {
         let wheel_offset = WHEEL_RADIUS / 4.0;
 
         let body = commands.spawn_bundle(MeshPhysicBodyBundle::from(RigidBody::Dynamic,
-            Shape::Cylinder { radius: BODY_RADIUS, length: BODY_HEIGHT, resolution: 21 } , material.clone(), transform, meshes
+            Shape::Cylinder { radius: BODY_RADIUS, length: BODY_HEIGHT, resolution: 21 } , 
+            material.clone(), 
+            transform, 
+            meshes
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName(NAME.to_owned()))
@@ -157,12 +160,14 @@ impl Wheely {
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName(RIGHT_WHEEL.to_owned()));
         
+        // back wheel
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -hh, -rh));
         let child_anchor = Transform::default();
+        let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
         let back_wheel_turn = commands.spawn_bundle(PhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere { radius: 0.01, subdivisions: 5 },
-            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
+            world_transform,
         ))
         .insert(Joint::new(body, RevoluteJoint {
             parent_anchor,
@@ -183,7 +188,7 @@ impl Wheely {
             RigidBody::Dynamic,
             Shape::Cylinder { radius: BACK_WHEEL_RADIUS, length: BACK_WHEEL_WIDTH, resolution: 21},
             wheel_material,
-            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
+            world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
             meshes
         ))
         .insert(Joint::new(back_wheel_turn, RevoluteJoint {
@@ -209,11 +214,12 @@ impl Wheely {
 
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.2, -BODY_RADIUS - 0.015));
         let child_anchor = Transform::default();
+        let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
         let arm_base = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Box { x_length: 0.03, y_length: 0.5, z_length: 0.03},
             material.clone(),
-            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
+            world_transform,
             meshes
         ))
         .insert(Joint::new(body, FixedJoint {
@@ -225,11 +231,12 @@ impl Wheely {
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.25, -0.015));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.25, 0.015));
+        let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
         let arm_link_1 = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Box { x_length: 0.03, y_length: 0.5, z_length: 0.03},
             material.clone(),
-            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
+            world_transform,
             meshes
         ))
         .insert(Joint::new(arm_base, RevoluteJoint {
@@ -246,11 +253,12 @@ impl Wheely {
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.25, -0.015));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.25, 0.015));
+        let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
         commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Box { x_length: 0.03, y_length: 0.5, z_length: 0.03},
             material,
-            world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
+            world_transform,
             meshes
         ))
         .insert(Joint::new(arm_link_1, PrismaticJoint {

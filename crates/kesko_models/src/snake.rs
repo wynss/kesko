@@ -27,13 +27,13 @@ pub fn spawn(
     let half_length = length / 2.0 + radius;
     let margin = 0.02;
 
-    let mut new_origin = transform;
+    let mut world_transform = transform;
 
     let mut root = commands.spawn_bundle( MeshPhysicBodyBundle::from(
         RigidBody::Dynamic,
         Shape::Capsule {radius, length},
         material.clone(),
-        new_origin,
+        world_transform,
         meshes
     ))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -44,7 +44,7 @@ pub fn spawn(
 
         let parent_anchor = Transform::from_translation((half_length + margin) * Vec3::Y);
         let child_anchor = Transform::from_translation(-(half_length + margin) * Vec3::Y);
-        let world_transform = world_transform_from_joint_anchors(&new_origin, &parent_anchor, &child_anchor);
+        world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
 
         let child = commands.spawn_bundle( MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
@@ -62,7 +62,6 @@ pub fn spawn(
         .insert(RigidBodyName(format!("joint {i}")))
         .id();
         
-        new_origin = world_transform;
         root = child;
     }
 }
