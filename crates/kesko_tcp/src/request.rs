@@ -33,6 +33,9 @@ pub(crate) enum TcpCommand {
         position: Vec3,
         color: Color
     },
+    Despawn {
+        name: String
+    },
     ApplyMotorCommand {
         body_name: String,
         command: HashMap<String, f32>
@@ -44,11 +47,11 @@ pub(crate) enum TcpCommand {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct SimHttpRequest {
+pub(crate) struct HttpRequest {
     pub(crate) actions: Vec<TcpCommand>
 }
 
-impl SimHttpRequest {
+impl HttpRequest {
     pub(crate) fn parse(request_str: String) -> Result<String, String> {
         for line in request_str.lines() {
             if line.starts_with("{") {
@@ -58,10 +61,10 @@ impl SimHttpRequest {
         Err("Failed to parse http request".to_owned())
     }
 
-    pub(crate) fn from_http_str(req: String) -> Result<SimHttpRequest, String> {
+    pub(crate) fn from_http_str(req: String) -> Result<HttpRequest, String> {
         match Self::parse(req) {
             Ok(json) =>{
-                match serde_json::from_str::<SimHttpRequest>(json.as_str()) {
+                match serde_json::from_str::<HttpRequest>(json.as_str()) {
                     Ok(req) => Ok(req),
                     Err(e) => Err(format!("Failed to convert http request to SimHttpRequest: {}", e))
                 }
@@ -92,7 +95,7 @@ pub(crate) fn handle_requests(
                 got_msg = true;
 
                 let http_str = String::from_utf8_lossy(&tcp_buffer.data[..msg_len]).to_string();
-                match SimHttpRequest::from_http_str(http_str) {
+                match HttpRequest::from_http_str(http_str) {
                     Ok(mut req) => {
                         debug!("Got Request: {:?}", req.actions);
 
@@ -108,6 +111,7 @@ pub(crate) fn handle_requests(
                                 TcpCommand::RunPhysics => system_event_writer.send(SystemRequestEvent::StartPhysics),
                                 TcpCommand::IsAlive => system_event_writer.send(SystemRequestEvent::IsAlive),
                                 TcpCommand::ApplyMotorCommand { body_name, command } => system_event_writer.send( SystemRequestEvent::ApplyMotorCommand { body_name, command }),
+                                TcpCommand::Despawn { name } => system_event_writer.send(SystemRequestEvent::Despawn { name }),
                                 _ => {}
                             }
                         }

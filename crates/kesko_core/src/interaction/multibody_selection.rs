@@ -5,7 +5,7 @@ use kesko_object_interaction::{
     interaction::Select
 };
 use kesko_physics::multibody::{
-    MultiBodyChild, MultibodyRoot
+    MultibodyChild, MultibodyRoot
 };
 use crate::interaction::groups::GroupDynamic;
 
@@ -26,8 +26,8 @@ pub fn multibody_selection_system(
     mut select_event_writer: EventWriter<SelectEvent>,
     mut multibody_select_event_writer: EventWriter<MultibodySelectionEvent>,
     root_query: Query<(Entity, &MultibodyRoot, &Select<GroupDynamic>), With<MultibodyRoot>>,
-    child_query: Query<(&MultiBodyChild, &Select<GroupDynamic>), With<MultiBodyChild>>,
-    non_multi: Query<(Entity, &Select<GroupDynamic>), (Without<MultibodyRoot>, Without<MultiBodyChild>)>
+    child_query: Query<(&MultibodyChild, &Select<GroupDynamic>), With<MultibodyChild>>,
+    non_multi: Query<(Entity, &Select<GroupDynamic>), (Without<MultibodyRoot>, Without<MultibodyChild>)>
 ) {
     
     for event in interaction_event_reader.iter() {
@@ -48,9 +48,9 @@ pub fn multibody_selection_system(
                     true => multibody_select_event_writer.send(MultibodySelectionEvent::Selected(root_entity)),
                     false => multibody_select_event_writer.send(MultibodySelectionEvent::Deselected(root_entity))
                 }
-                (Some(&multi_root.joint_name_2_entity), Some(root_entity))
+                (Some(&multi_root.child_map), Some(root_entity))
             } else if let Ok((multi_child, _)) = child_query.get(*entity) {
-                (Some(&multi_child.joints), Some(multi_child.root))
+                (Some(&multi_child.child_map), Some(multi_child.root))
             } else {
                 // the event was from a singlebody, pretend that it is a multibody with just a root
                 (None, Some(*entity))

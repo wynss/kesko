@@ -3,10 +3,10 @@ use bevy::app::AppExit;
 use bevy::utils::hashbrown::HashMap;
 
 use kesko_physics::{
-    event::PhysicStateEvent,
+    event::PhysicEvent,
     multibody::{
         MultibodyRoot,
-        MultiBodyChild,
+        MultibodyChild,
         MultiBodyState,
         MultiBodyStates
     },
@@ -20,6 +20,9 @@ use kesko_physics::{
 
 pub enum SystemRequestEvent {
     SpawnModel,
+    Despawn {
+        name: String
+    },
     PausePhysics,
     StartPhysics,
     GetState,
@@ -37,14 +40,16 @@ pub enum SystemResponseEvent {
     PausedPhysics,
     StartedPhysics,
     WillExitApp,
-    Alive
+    Alive,
+    Ok(String),
+    Err(String)
 }
 
 pub fn handle_system_events(
     mut system_requests: EventReader<SystemRequestEvent>,
     mut system_response_writer: EventWriter<SystemResponseEvent>,
     mut app_exit_events: EventWriter<AppExit>,
-    mut physics_events: EventWriter<PhysicStateEvent>,
+    mut physics_events: EventWriter<PhysicEvent>,
 ) {
     for event in system_requests.iter() {
         match event {
@@ -53,14 +58,18 @@ pub fn handle_system_events(
                 system_response_writer.send(SystemResponseEvent::WillExitApp);
             },
             SystemRequestEvent::PausePhysics => {
-                physics_events.send(PhysicStateEvent::Pause);
+                physics_events.send(PhysicEvent::PausePhysics);
                 system_response_writer.send(SystemResponseEvent::PausedPhysics);
             },
             SystemRequestEvent::StartPhysics => {
-                physics_events.send(PhysicStateEvent::Run);
+                physics_events.send(PhysicEvent::RunPhysics);
                 system_response_writer.send(SystemResponseEvent::StartedPhysics);
             },
             SystemRequestEvent::IsAlive => system_response_writer.send(SystemResponseEvent::Alive),
+            SystemRequestEvent::Despawn{ name } => {
+                physics_events.send(PhysicEvent::DespawnMultibody{ name: name.clone() });
+                system_response_writer.send(SystemResponseEvent::Ok(format!("Despawned: {}", name)));
+            },
             _ => {}
         }
     }
@@ -76,7 +85,7 @@ pub fn handle_motor_command_requests(
             for root in multibody_root_query.iter() {
                 if root.name == *body_name {
                     for (joint_name, val) in command.iter() {
-                        if let Some(e) = root.joint_name_2_entity.get(joint_name) {
+                        if let Some(e) = root.child_map.get(joint_name) {
                             motor_event_writer.send(JointMotorEvent {
                                 entity: *e,
                                 action: MotorAction::PositionRevolute { position: *val, damping: 0.0, stiffness: 1.0 }
@@ -93,7 +102,7 @@ pub fn handle_serializable_state_request(
     mut system_requests: EventReader<SystemRequestEvent>,
     mut system_response_writer: EventWriter<SystemResponseEvent>,
     multibody_root_query: Query<(&MultibodyRoot, &Transform)>,
-    multibody_child_query: Query<(&MultiBodyChild, &Transform)>,
+    multibody_child_query: Query<(&MultibodyChild, &Transform)>,
     joint_query: Query<&Joint>
 ) {
 
@@ -102,7 +111,7 @@ pub fn handle_serializable_state_request(
             let states = multibody_root_query.iter().map(|(root, transform)| {
                 
                 // get positions of all the child bodies
-                let child_positions: HashMap<String, Vec3> = root.joint_name_2_entity.iter().map(|(name, entity)| {
+                let child_positions: HashMap<String, Vec3> = root.child_map.iter().map(|(name, entity)| {
                     let position = match multibody_child_query.get(*entity) {
                         Ok((_, transform)) => transform.translation,
                         Err(_) => Vec3::ZERO
@@ -111,7 +120,7 @@ pub fn handle_serializable_state_request(
                 }).collect();
 
                 // Get joint angles
-                let joint_states: HashMap<String, Option<JointState>> = root.joint_name_2_entity.iter().map(|(name, e)| {
+                let joint_states: HashMap<String, Option<JointState>> = root.child_map.iter().map(|(name, e)| {
                     let orientation = match joint_query.get(*e) {
                         Ok(joint) => {
                             Some(joint.get_state())

@@ -43,21 +43,24 @@ pub struct MultibodyRoot {
     /// Angular velocity of body
     pub angvel: Vec3,
     /// Map from rigidbody name to entity that has a reference to a joint
-    pub joint_name_2_entity: HashMap<String, Entity>
+    pub child_map: HashMap<String, Entity>
 }
 
 /// Component to indicate that the entity is a multibody child entity
 #[derive(Component)]
-pub struct MultiBodyChild {
+pub struct MultibodyChild {
+    /// Name of the child link
     pub name: String,
+    /// name of the root link
     pub root: Entity,
-    pub joints: HashMap<String, Entity>
+    /// Map from rigidbody name to entity that has a reference to a joint
+    pub child_map: HashMap<String, Entity>
 }
 
+/// Name registry to ensure all multibodies have a unique name
 pub struct MultibodyNameRegistry {
     names: HashMap<String, i32>
 }
-
 impl MultibodyNameRegistry {
     pub fn new() -> Self {
         Self {
@@ -68,7 +71,7 @@ impl MultibodyNameRegistry {
     pub fn create_unique_name(&mut self, name: &String) -> String {
 
         if self.names.contains_key(name) {
-            *self.names.get_mut(name).expect("") += 1;
+            *self.names.get_mut(name).expect("Should contain key") += 1;
         } else {
             self.names.insert(name.clone(), 0);
         }
@@ -87,7 +90,7 @@ pub(crate) fn add_multibody_components_system(
     body_2_entity: Res<BodyHandle2Entity>,
     rigid_body_query: Query<
         (Entity, &RigidBodyHandle, Option<&RigidBodyName>), 
-        (With<RigidBodyHandle>, Without<MultiBodyChild>, Without<MultibodyRoot>)
+        (With<RigidBodyHandle>, Without<MultibodyChild>, Without<MultibodyRoot>)
     >
 ) {
 
@@ -139,16 +142,16 @@ pub(crate) fn add_multibody_components_system(
                         name, 
                         linvel: Vec3::ZERO,
                         angvel: Vec3::ZERO,
-                        joint_name_2_entity: joints 
+                        child_map: joints 
                     });
                 } else {
                     // not a root
                     let root_rigid_body_handle = multibody.root().rigid_body_handle();
                     let root_entity = body_2_entity.get(&root_rigid_body_handle).expect("Every rigid body should be connected to an entity");
-                    commands.entity(entity).insert(MultiBodyChild { 
+                    commands.entity(entity).insert(MultibodyChild { 
                         name,
                         root: *root_entity, 
-                        joints
+                        child_map: joints
                     });
                 }
             }

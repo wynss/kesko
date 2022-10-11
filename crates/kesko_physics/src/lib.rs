@@ -22,8 +22,8 @@ use event::collision::send_collision_events_system;
 /// State to control the physics system
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum PhysicState {
-    Run,
-    Pause
+    Running,
+    Stopped
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
@@ -59,7 +59,7 @@ impl PhysicsPlugin {
     pub fn gravity() -> Self {
         Self {
             gravity: Vec3::new(0.0, -9.81, 0.0),
-            initial_state: PhysicState::Run,
+            initial_state: PhysicState::Running,
         }
     }
 }
@@ -68,7 +68,7 @@ impl Default for PhysicsPlugin {
     fn default() -> Self {
         Self {
             gravity: Vec3::new(0.0, -9.81, 0.0),
-            initial_state: PhysicState::Run
+            initial_state: PhysicState::Running
         }
     }
 }
@@ -99,9 +99,9 @@ impl Plugin for PhysicsPlugin {
             .insert_resource(Gravity::new(self.gravity))
 
             // state for controlling the physics
-            .add_event::<event::PhysicStateEvent>()
+            .add_event::<event::PhysicEvent>()
             .add_loopless_state(self.initial_state.clone())
-            .add_system(event::change_physic_state)
+            .add_system(event::handle_events)
 
             // Multibody name registry, making sure all multibodies have unique names
             .insert_resource(multibody::MultibodyNameRegistry::new())
@@ -133,7 +133,7 @@ impl Plugin for PhysicsPlugin {
             .add_system_to_stage(
                 CoreStage::Update, 
                 physics_pipeline_step
-                    .run_in_state(PhysicState::Run)
+                    .run_in_state(PhysicState::Running)
                     .label(PhysicsSystem::PipelineStep)
                     .after(PhysicsSystem::PrePipelineSet)
             )
@@ -141,7 +141,7 @@ impl Plugin for PhysicsPlugin {
             .add_system_set_to_stage(
                 CoreStage::Update, 
                 ConditionSet::new()
-                    .run_in_state(PhysicState::Run)
+                    .run_in_state(PhysicState::Running)
                     .label(PhysicsSystem::PostPipelineSet)
                     .after(PhysicsSystem::PipelineStep)
 

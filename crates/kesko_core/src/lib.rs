@@ -9,7 +9,7 @@ pub mod event;
 
 use bevy::prelude::*;
 
-use kesko_physics::event::PhysicStateEvent;
+use kesko_physics::event::PhysicEvent;
 
 use bevy::{
     core_pipeline::clear_color::ClearColor,
@@ -85,10 +85,10 @@ impl Plugin for CorePlugin {
 
 pub fn change_physic_state(
     mut keys: ResMut<Input<KeyCode>>,
-    mut event_writer: EventWriter<PhysicStateEvent>
+    mut event_writer: EventWriter<PhysicEvent>
 ) {
     if keys.just_pressed(KeyCode::Space) {
-        event_writer.send(PhysicStateEvent::ToggleRunPause);
+        event_writer.send(PhysicEvent::TogglePhysics);
         keys.reset(KeyCode::Space);
     }
 }

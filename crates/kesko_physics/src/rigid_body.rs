@@ -44,7 +44,6 @@ pub(crate) fn add_rigid_bodies_system(
         Option<&GravityScale>, Option<&CanSleep>), 
         Without<RigidBodyHandle>>
 ) {
-
     for (entity, rigid_body_comp, transform, mass, gravity_scale, can_sleep) in query.iter() {
 
         let mut rigid_body_builder = match rigid_body_comp {

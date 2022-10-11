@@ -30,6 +30,17 @@ class SpawnAction:
                 "color": self._color.to_json()
             }
         }
+
+class Despawn:
+    def __init__(self, name):
+        self.name = name
+    
+    def to_json(self):
+        return {
+            "Despawn": {
+                "name": self.name
+            }
+        }
  
 class CloseAction:
     def to_json(self):
@@ -55,10 +66,16 @@ class ApplyControlAction:
 
 class PausePhysics:
     def to_json(self):
+        return PausePhysics.to_json()
+
+    def to_json():
         return "PausePhysics"
 
 class RunPhysics:
     def to_json(self):
+        return RunPhysics.to_json()
+    
+    def to_json():
         return "RunPhysics"
 
 

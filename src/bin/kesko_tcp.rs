@@ -23,7 +23,7 @@ fn main() {
         .add_plugin(ModelPlugin)
         .add_plugin(MainCameraPlugin)
         .add_plugin(PhysicsPlugin {
-            initial_state: kesko_physics::PhysicState::Pause,
+            initial_state: kesko_physics::PhysicState::Stopped,
             ..default()
         })
         .add_plugin(GrabablePlugin::<GroupDynamic>::default())
