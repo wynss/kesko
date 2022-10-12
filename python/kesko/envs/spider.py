@@ -8,7 +8,6 @@ from ..kesko import Kesko
 from ..protocol import GetState, RunPhysics, SpawnAction, ApplyControlAction, MULTIBODY_STATES
 from ..color import Color
 from ..model import KeskoModel
-from ..utils import to_numpy, to_tensor
 
 
 BODY_NAME = "spider-0"
@@ -22,15 +21,14 @@ class SpiderEnv(gym.Env):
         self._kesko = Kesko()
         self._kesko.initialize()
 
-        # Spawn model
+        # Spawn models and start physics
         self._kesko.send([
             SpawnAction(model=KeskoModel.Plane, position=[0.0, 0.0, 0.0], color=Color.WHITE),
             SpawnAction(model=KeskoModel.Spider, position=[0.0, 2.0, 0.0], color=Color.GREEN),
             RunPhysics
         ])
-        
-        # Start physics and get initial state, commands needs to be seperated because it takes one cycle to turn on 
-        # the physics system, otherwise the bodies will not be available
+
+        # get initial state 
         initial_state = self._kesko.send(GetState)[0][MULTIBODY_STATES][0]
         tensor_state = self._to_tensor(initial_state)
         

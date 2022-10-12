@@ -100,7 +100,7 @@ class KeskoRequest:
     
     def to_json(self):
         return {
-            "actions": [action.to_json() for action in self._actions]
+            "commands": [action.to_json() for action in self._actions]
         }
 
 

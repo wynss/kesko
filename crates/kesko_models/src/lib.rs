@@ -14,10 +14,11 @@ use serde::{Serialize, Deserialize};
 pub struct ModelPlugin;
 impl Plugin for ModelPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(CoreStage::First, spawn_system);
+        app
+            .add_system_to_stage(CoreStage::First, spawn_system)
+            .add_event::<SpawnResponseEvent>();
     }
 }
-
 
 pub enum SpawnEvent {
     OpenWindow,
@@ -28,6 +29,7 @@ pub enum SpawnEvent {
     }
 }
 
+pub struct SpawnResponseEvent(String);
 
 /// Description on how to manually control a robot
 /// The text will be shown in the multibody ui
@@ -93,6 +95,6 @@ pub fn spawn_system(
                 Model::Arena => arena::spawn(&mut commands, material, &mut meshes, 10.0, 10.0, 1.0),
                 Model::Plane => plane::spawn(&mut commands, material, &mut meshes)
             }
-        }
+        };
     }
 }

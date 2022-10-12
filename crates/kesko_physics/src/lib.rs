@@ -16,7 +16,6 @@ use rapier3d::prelude as rapier;
 
 use conversions::{IntoRapier, IntoBevy};
 use gravity::Gravity;
-use event::collision::send_collision_events_system;
 
 
 /// State to control the physics system
@@ -102,6 +101,7 @@ impl Plugin for PhysicsPlugin {
             .insert_resource(multibody::MultibodyNameRegistry::new())
 
             .add_event::<joint::JointMotorEvent>()
+            .add_event::<event::spawn::BodySpawnedEvent>()
 
             .add_stage_after(CoreStage::First, PhysicsStage, Schedule::default())
             .stage(PhysicsStage, |stage: &mut Schedule| {
@@ -144,7 +144,8 @@ impl Plugin for PhysicsPlugin {
                             .with_system(mass::update_multibody_mass_system)
                             .with_system(joint::update_joint_motors_system)
                             .with_system(joint::update_joint_pos_system)
-                            .with_system(send_collision_events_system)
+                            .with_system(event::collision::send_collision_events_system)
+                            .with_system(event::spawn::send_spawned_events)
                             .into()
                     )
                 )

@@ -9,7 +9,9 @@ pub mod event;
 
 use bevy::prelude::*;
 
-use kesko_physics::event::PhysicEvent;
+use kesko_physics::event::{
+    PhysicEvent,
+};
 
 use bevy::{
     core_pipeline::clear_color::ClearColor,
@@ -70,12 +72,14 @@ impl Plugin for CorePlugin {
             // simulator system events
             .add_event::<event::SystemRequestEvent>()
             .add_event::<event::SystemResponseEvent>()
+            .add_event::<event::SystemGenericResponseEvent>()
             .add_system_set_to_stage(
                 CoreStage::Last,
                 SystemSet::new()
                     .with_system(event::handle_system_events)
                     .with_system(event::handle_serializable_state_request)
                     .with_system(event::handle_motor_command_requests)
+                    // .with_system(event::propagate_events::<kesko_physics::event::spawn::BodySpawnedEvent>)
             )
 
             // close on ESC

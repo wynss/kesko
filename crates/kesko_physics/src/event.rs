@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 
 pub mod collision;
+pub mod spawn;
 
 use super::{
     PhysicState,

@@ -48,7 +48,7 @@ pub(crate) enum TcpCommand {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct HttpRequest {
-    pub(crate) actions: Vec<TcpCommand>
+    pub(crate) commands: Vec<TcpCommand>
 }
 
 impl HttpRequest {
@@ -96,15 +96,14 @@ pub(crate) fn handle_requests(
 
                 let http_str = String::from_utf8_lossy(&tcp_buffer.data[..msg_len]).to_string();
                 match HttpRequest::from_http_str(http_str) {
-                    Ok(mut req) => {
-                        debug!("Got Request: {:?}", req.actions);
+                    Ok(mut request) => {
+                        debug!("Got Request: {:?}", request.commands);
 
-                        for action in req.actions.drain(..) {
-                            match action {
+                        for command in request.commands.drain(..) {
+                            match command {
                                 TcpCommand::Close => system_event_writer.send(SystemRequestEvent::ExitApp),
                                 TcpCommand::SpawnModel { model, position, color } => {
                                     spawn_event_writer.send(SpawnEvent::Spawn { model, transform: Transform::from_translation(position), color });
-                                    system_response_event_writer.send(SystemResponseEvent::SpawnedModel);
                                 },
                                 TcpCommand::GetState => system_event_writer.send(SystemRequestEvent::GetState),
                                 TcpCommand::PausePhysics => system_event_writer.send(SystemRequestEvent::PausePhysics),
@@ -124,6 +123,5 @@ pub(crate) fn handle_requests(
                 commands.insert_resource(NextState(TcpConnectionState::NotConnected));
             }
         }
-
     }
 }
