@@ -27,7 +27,6 @@ use kesko_plugins::CorePlugins;
 fn main() {
     App::new()
     .add_plugins(CorePlugins)
-    .add_system(debug)
     .add_startup_system(setup_scene)
     .run();
 }
@@ -324,13 +323,4 @@ fn build_test_bench(
     .id();
 
     (bench, world_transform)
-}
-
-fn debug(
-    commands: Commands,
-    query: Query<(&RigidBodyName, &Transform)>
-) {
-    for (name, transform) in query.iter() {
-        println!("{}: {}", name.0, transform.translation);
-    }
 }
