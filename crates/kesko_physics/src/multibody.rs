@@ -108,8 +108,8 @@ pub(crate) fn add_multibodies(
 
                 for link in multibody.links() {
 
-                    // don't add root to joints since it cannot have a joint
-                    if link.is_root() {
+                    // don't add root link to root
+                    if link.is_root() & multibody.link(body_joint_link.id).expect("link should exists").is_root() {
                         continue;
                     }
 
