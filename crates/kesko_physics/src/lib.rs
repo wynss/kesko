@@ -26,28 +26,21 @@ pub enum PhysicState {
     Stopped
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
-pub enum PhysicsSystem {
+#[derive(Debug, PartialEq, Eq, Clone, Hash, StageLabel)]
+struct PhysicsStage;
+
+#[derive(Debug, PartialEq, Eq, Clone, Hash, StageLabel)]
+pub enum PhysicStage {
 
     AddRigidBodies,
     AddJoints,
     AddColliders,
     AddMultibodies,
 
-    UpdateMultibodyVelAngVel,
-    UpdateImpulse,
-    UpdateForce,
-    UpdateGravityScale,
-    UpdateMultibodyMass,
-    UpdateJointMotors,
-    
-    PrePipelineSet,
     PipelineStep,
-    PostPipelineSet,
 
-    SendCollisionEvents,
-    
-    UpdateBevyWorld,
+    PostPipeline
+
 }
 
 pub struct PhysicsPlugin {
@@ -99,64 +92,63 @@ impl Plugin for PhysicsPlugin {
             .insert_resource(Gravity::new(self.gravity))
 
             // state for controlling the physics
-            .add_event::<event::PhysicEvent>()
             .add_loopless_state(self.initial_state.clone())
+
+            // Physics events
+            .add_event::<event::PhysicEvent>()
             .add_system(event::handle_events)
 
             // Multibody name registry, making sure all multibodies have unique names
             .insert_resource(multibody::MultibodyNameRegistry::new())
 
             .add_event::<joint::JointMotorEvent>()
-            .add_system_set_to_stage(
-                CoreStage::Update, 
-                SystemSet::new()
-                    .label(PhysicsSystem::PrePipelineSet)
-                    .with_system(
-                        rigid_body::add_rigid_bodies_system
-                        .label(PhysicsSystem::AddRigidBodies)
+
+            .add_stage_after(CoreStage::First, PhysicsStage, Schedule::default())
+            .stage(PhysicsStage, |stage: &mut Schedule| {
+                stage
+                .add_stage(
+                    PhysicStage::AddRigidBodies, 
+                    SystemStage::single_threaded()
+                        .with_system(rigid_body::add_rigid_bodies)
+                )
+                .add_stage(
+                    PhysicStage::AddColliders, 
+                    SystemStage::single_threaded()
+                        .with_system(collider::add_colliders)
+                )
+                .add_stage(
+                    PhysicStage::AddJoints, 
+                    SystemStage::single_threaded()
+                        .with_system(joint::add_multibody_joints)
+                )
+                .add_stage(
+                    "add-multibodies", 
+                    SystemStage::single_threaded()
+                    .with_system(multibody::add_multibodies)
+                )
+                .add_stage(
+                    "pipeline-step", 
+                    SystemStage::single_threaded().with_system(physics_pipeline_step.run_in_state(PhysicState::Running))
+                )
+                .add_stage(
+                    "post-pipeline", 
+                    SystemStage::parallel()
+                    .with_system_set(
+                        ConditionSet::new()
+                            .run_in_state(PhysicState::Running)
+                            .with_system(update_bevy_world)
+                            .with_system(multibody::update_multibody_vel_angvel)
+                            .with_system(impulse::update_impulse)
+                            .with_system(force::update_force_system)
+                            .with_system(gravity::update_gravity_scale_system)
+                            .with_system(mass::update_multibody_mass_system)
+                            .with_system(joint::update_joint_motors_system)
+                            .with_system(joint::update_joint_pos_system)
+                            .with_system(send_collision_events_system)
+                            .into()
                     )
-                    .with_system(
-                        joint::add_multibody_joints_system
-                            .label(PhysicsSystem::AddJoints)
-                            .after(PhysicsSystem::AddRigidBodies)
-                    )
-                    .with_system(
-                        collider::add_collider_to_bodies_system
-                            .label(PhysicsSystem::AddColliders)
-                            .after(PhysicsSystem::AddRigidBodies))
-                    .with_system(
-                        multibody::add_multibody_components_system 
-                            .label(PhysicsSystem::AddMultibodies)
-                            .after(PhysicsSystem::AddJoints))
-            )
-
-            .add_system_to_stage(
-                CoreStage::Update, 
-                physics_pipeline_step
-                    .run_in_state(PhysicState::Running)
-                    .label(PhysicsSystem::PipelineStep)
-                    .after(PhysicsSystem::PrePipelineSet)
-            )
-            
-            .add_system_set_to_stage(
-                CoreStage::Update, 
-                ConditionSet::new()
-                    .run_in_state(PhysicState::Running)
-                    .label(PhysicsSystem::PostPipelineSet)
-                    .after(PhysicsSystem::PipelineStep)
-
-                    .with_system(update_bevy_world)
-                    .with_system(multibody::update_multibody_vel_angvel)
-                    .with_system(impulse::update_impulse)
-                    .with_system(force::update_force_system)
-                    .with_system(gravity::update_gravity_scale_system)
-                    .with_system(mass::update_multibody_mass_system)
-                    .with_system(joint::update_joint_motors_system)
-                    .with_system(joint::update_joint_pos_system)
-                    .with_system(send_collision_events_system)
-                    .into()
-            );
-
+                )
+            });
     }
 }
 

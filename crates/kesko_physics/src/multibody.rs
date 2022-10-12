@@ -83,7 +83,7 @@ impl MultibodyNameRegistry {
 /// 
 /// Todo: Look how to improve this, now it feels a bit complicated and not clear.
 #[allow(clippy::type_complexity)]
-pub(crate) fn add_multibody_components_system(
+pub(crate) fn add_multibodies(
     mut commands: Commands,
     mut name_registry: ResMut<MultibodyNameRegistry>,
     multibody_joint_set: Res<rapier::MultibodyJointSet>,

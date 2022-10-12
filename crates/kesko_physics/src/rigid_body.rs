@@ -31,7 +31,7 @@ pub struct RigidBodyHandle(pub rapier::RigidBodyHandle);
 
 
 #[allow(clippy::type_complexity)]
-pub(crate) fn add_rigid_bodies_system(
+pub(crate) fn add_rigid_bodies(
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
     mut entity_2_body: ResMut<Entity2BodyHandle>,
     mut body_2_entity: ResMut<BodyHandle2Entity>,
@@ -83,7 +83,7 @@ mod tests {
 
     use bevy::prelude::*;
     use rapier3d::prelude as rapier;
-    use crate::rigid_body::{add_rigid_bodies_system, Entity2BodyHandle, RigidBody, RigidBodyHandle, BodyHandle2Entity};
+    use crate::rigid_body::{add_rigid_bodies, Entity2BodyHandle, RigidBody, RigidBodyHandle, BodyHandle2Entity};
     use crate::conversions::IntoBevy;
 
     #[test]
@@ -92,7 +92,7 @@ mod tests {
         let mut world = World::default();
 
         let mut test_stage = SystemStage::parallel();
-        test_stage.add_system(add_rigid_bodies_system);
+        test_stage.add_system(add_rigid_bodies);
 
         world.init_resource::<Entity2BodyHandle>();
         world.init_resource::<BodyHandle2Entity>();

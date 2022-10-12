@@ -65,7 +65,7 @@ pub(crate) struct ColliderHandle(rapier::ColliderHandle);
 
 
 #[allow(clippy::type_complexity)]
-pub(crate) fn add_collider_to_bodies_system(
+pub(crate) fn add_colliders(
     mut commands: Commands,
     mut entity_collider_map: ResMut<EntityColliderMap>,
     mut collider_set: ResMut<rapier::ColliderSet>,
@@ -137,8 +137,8 @@ mod tests {
 
     use bevy::prelude::*;
     use rapier3d::prelude as rapier;
-    use crate::collider::{EntityColliderMap, ColliderShape, ColliderPhysicalProperties, add_collider_to_bodies_system, ColliderHandle};
-    use crate::rigid_body::{RigidBody, Entity2BodyHandle, add_rigid_bodies_system, BodyHandle2Entity};
+    use crate::collider::{EntityColliderMap, ColliderShape, ColliderPhysicalProperties, add_colliders, ColliderHandle};
+    use crate::rigid_body::{RigidBody, Entity2BodyHandle, add_rigid_bodies, BodyHandle2Entity};
 
     fn setup_world() -> (World, SystemStage) {
 
@@ -151,8 +151,8 @@ mod tests {
         world.init_resource::<rapier::ColliderSet>();
 
         let test_stage = SystemStage::parallel()
-            .with_system(add_rigid_bodies_system)
-            .with_system(add_collider_to_bodies_system.after(add_rigid_bodies_system));
+            .with_system(add_rigid_bodies)
+            .with_system(add_colliders.after(add_rigid_bodies));
 
         (world, test_stage)
     }

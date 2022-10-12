@@ -3,6 +3,7 @@
 Cargo.lock
 
 # python
+**/__pycache__/**
 /venv
 
 # vscode
@@ -15,4 +16,6 @@ dist/
 # mac
 .DS_Store
 
-**/__pycache__/**
+
+# Ignore traces
+trace-*.json
