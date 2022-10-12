@@ -166,7 +166,7 @@ pub struct MultibodyJointHandle(pub(crate) rapier::MultibodyJointHandle);
 
 /// System to add multibody joints between bodies
 #[allow(clippy::type_complexity)]
-pub(crate) fn add_multibody_joints_system(
+pub(crate) fn add_multibody_joints(
     mut commands: Commands,
     mut multibody_joint_set: ResMut<rapier::MultibodyJointSet>,
     entity_body_map: Res<Entity2BodyHandle>,
@@ -324,7 +324,7 @@ mod tests {
 
         let mut world = World::default();
         let mut test_stage = SystemStage::parallel();
-        test_stage.add_system(add_multibody_joints_system);
+        test_stage.add_system(add_multibody_joints);
 
         world.init_resource::<rapier3d::prelude::MultibodyJointSet>();
 

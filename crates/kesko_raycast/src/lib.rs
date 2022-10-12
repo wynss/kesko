@@ -51,7 +51,7 @@ where T: Component + Default
     fn build(&self, app: &mut App) {
 
         app.add_system_set_to_stage(
-            CoreStage::First,
+            CoreStage::Update,
             SystemSet::new()
                 .with_system(create_rays_system::<T>
                     .label(RayCastSystems::CreateRays))

@@ -45,7 +45,7 @@ where T: Component + Default
             .init_resource::<GlobalDragState>()
             .add_plugin(RayCastPlugin::<T>::default())
             .add_system_set_to_stage(
-                CoreStage::First,
+                CoreStage::Update,
                 SystemSet::new()
                     .with_system(update_interactions::<T>
                         .label(InteractionSystems::UpdateInteractions)
