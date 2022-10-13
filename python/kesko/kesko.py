@@ -1,4 +1,5 @@
 import logging
+from os import isatty
 import subprocess
 from typing import Optional
 import json
@@ -8,7 +9,7 @@ import torch
 
 from .config import KESKO_BIN_PATH, URL
 from .protocol import (
-    LINKS, ApplyControlAction, Communicator, KeskoRequest, 
+    LINKS, ApplyControlAction, Communicator, Despawn, DespawnAll, KeskoRequest, 
     GetState, Shutdown,
     JOINT_STATES, MULTIBODY_STATES, NAME, MULTIBODY_SPAWNED
 )
@@ -19,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 class Multibody:
-    def __init__(self, name: str, joints: list[str]):
+    def __init__(self, id: int, name: str, joints: list[str]):
+        self.id = id
         self.name = name
         self.joints = joints
 
@@ -70,7 +72,11 @@ class Kesko:
             if isinstance(action, ApplyControlAction):
                 if isinstance(action.values, (np.ndarray, torch.Tensor)):
                     # convert tensor or array to dict
-                    action.values = {joint_name: val for joint_name, val in zip(self.bodies[action.name].joints, action.values.tolist())}
+                    action.values = {joint_name: val for joint_name, val in zip(self.bodies[action.id].joints, action.values.tolist())}
+            elif isinstance(action, DespawnAll) or action == DespawnAll:
+                self.bodies = {}
+            elif isinstance(action, Despawn):
+                self.bodies.pop(action.id)
 
         return actions
     
@@ -81,8 +87,8 @@ class Kesko:
                     body = rp[MULTIBODY_SPAWNED]
                     if body[NAME] not in self.bodies:
                         # Add body info
-                        name = body[NAME]
-                        self.bodies[name] = Multibody(name, body[LINKS])
+                        body_id = body['id']
+                        self.bodies[body_id] = Multibody(id=body_id, name=body[NAME], joints=body[LINKS])
     
     def get_body_name(self, idx: int) -> Optional[str]:
         return list(self.bodies.keys())[idx]

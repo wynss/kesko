@@ -16,9 +16,7 @@ pub(crate) fn handle_responses(
     let mut responses: Vec<serde_traitobject::Box<dyn serde_traitobject::Any>> = Vec::new();
 
     for event in spawn_event.iter() {
-        if let BodySpawnedEvent::MultibodySpawned { .. } = event {
-            responses.push(serde_traitobject::Box::new(event.clone()));
-        }
+        responses.push(serde_traitobject::Box::new(event.clone()));
     }
 
     for event in response_events.iter() {
@@ -28,6 +26,9 @@ pub(crate) fn handle_responses(
             },
             SystemResponseEvent::Alive => {
                 responses.push(serde_traitobject::Box::new("alive".to_owned()));
+            }
+            SystemResponseEvent::Ok(msg) => {
+                responses.push(serde_traitobject::Box::new(msg.clone()));
             }
             _ => {
                 responses.push(serde_traitobject::Box::new("OK".to_owned()));

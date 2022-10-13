@@ -5,19 +5,23 @@ import gym
 import numpy as np
 
 from ..kesko import Kesko
-from ..protocol import GetState, RunPhysics, SpawnAction, ApplyControlAction, MULTIBODY_STATES
+from ..protocol import Despawn, DespawnAll, GetState, PausePhysics, RunPhysics, SpawnAction, ApplyControlAction, MULTIBODY_STATES
 from ..color import Color
 from ..model import KeskoModel
 
 
 class SpiderEnv(gym.Env):
-    def __init__(self, device: Optional[Union[str, torch.device]] = None): 
+    def __init__(self, max_steps: Optional[int] = None, device: Optional[Union[str, torch.device]] = None): 
 
         self.device = device if device is not None else torch.device("cpu")
+        self.max_steps = max_steps
+        self.step_count = 0
         
         self._kesko = Kesko()
         self._kesko.initialize()
-
+        self._setup()
+    
+    def _setup(self):
         # Spawn models and start physics
         self._kesko.send([
             SpawnAction(model=KeskoModel.Plane, position=[0.0, 0.0, 0.0], color=Color.WHITE),
@@ -26,14 +30,13 @@ class SpiderEnv(gym.Env):
 
         # Kesko stores all the bodies that are in the environment, get the body named by base name.
         try:
-            self.spider_name = [name for name in self._kesko.bodies.keys() if 'spider' in name][0]
-            self.spider_joints = self._kesko.bodies[self.spider_name]
+            self.spider_body = [body for body in self._kesko.bodies.values() if 'spider' in body.name][0]
         except IndexError as e:
             self.close()
             raise ValueError(f"Could not get body from Kesko: {e}")
 
         # get initial state 
-        initial_state = self._get_state()
+        initial_state = self._get_state_from_response(self._kesko.send(GetState))
         tensor_state = self._to_tensor(initial_state)
 
         self._kesko.send(RunPhysics)
@@ -43,10 +46,12 @@ class SpiderEnv(gym.Env):
         high = np.pi / 8.0
         
         # Define actions space
-        dim_actions_space = len(self.spider_joints)
+        dim_actions_space = len(self.spider_body.joints)
         self.action_space = gym.spaces.Box(low=low* np.ones((dim_actions_space,)), high=high * np.zeros((dim_actions_space,)))
 
         self.observation_space = gym.spaces.Space(tensor_state.shape)
+
+        return tensor_state
 
     def _to_tensor(self, state: dict):
 
@@ -61,7 +66,8 @@ class SpiderEnv(gym.Env):
         
     def step(self, action: Union[np.ndarray, torch.Tensor]):
 
-        state = self._kesko.step(ApplyControlAction(self.spider_name, action))[0][MULTIBODY_STATES][0]
+        state = self._get_state_from_response(self._kesko.step(ApplyControlAction(self.spider_body.id, action)))
+        state = self._to_tensor(state)
 
         # TODO: Distance moved during one step
         reward = None
@@ -70,18 +76,23 @@ class SpiderEnv(gym.Env):
         terminated = False
         done = False
 
-        state = self._to_tensor(state)
+        if self.max_steps is not None:
+            if self.step_count > self.max_steps:
+                done = True
+
+        self.step_count += 1
+
         return state, reward, terminated, done, {}
     
     def reset(self):
-        # TODO: Kesko needs to support despawning before implementing this
-        pass
+        self._kesko.send([PausePhysics, DespawnAll])
+        self.step_count = 0
+        return self._setup(), {}
     
     def close(self):
         self._kesko.close()
 
-    def _get_state(self) -> dict:
-        response = self._kesko.send(GetState)
+    def _get_state_from_response(self, response) -> dict:
         multibody_states = [resp for resp in response if MULTIBODY_STATES in resp][0][MULTIBODY_STATES]
-        spider_state = [body for body in multibody_states if body['name'] == self.spider_name][0]
+        spider_state = [body for body in multibody_states if body['name'] == self.spider_body.name][0]
         return spider_state

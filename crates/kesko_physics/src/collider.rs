@@ -9,7 +9,7 @@ use crate::{
 };
 
 
-pub type EntityColliderMap = FnvHashMap<Entity, rapier::ColliderHandle>;
+pub type Entity2ColliderHandle = FnvHashMap<Entity, rapier::ColliderHandle>;
 
 #[derive(Component)]
 pub enum ColliderShape {
@@ -67,7 +67,7 @@ pub(crate) struct ColliderHandle(rapier::ColliderHandle);
 #[allow(clippy::type_complexity)]
 pub(crate) fn add_colliders(
     mut commands: Commands,
-    mut entity_collider_map: ResMut<EntityColliderMap>,
+    mut entity_collider_map: ResMut<Entity2ColliderHandle>,
     mut collider_set: ResMut<rapier::ColliderSet>,
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
     query: Query<(
@@ -137,7 +137,7 @@ mod tests {
 
     use bevy::prelude::*;
     use rapier3d::prelude as rapier;
-    use crate::collider::{EntityColliderMap, ColliderShape, ColliderPhysicalProperties, add_colliders, ColliderHandle};
+    use crate::collider::{Entity2ColliderHandle, ColliderShape, ColliderPhysicalProperties, add_colliders, ColliderHandle};
     use crate::rigid_body::{RigidBody, Entity2BodyHandle, add_rigid_bodies, BodyHandle2Entity};
 
     fn setup_world() -> (World, SystemStage) {
@@ -145,7 +145,7 @@ mod tests {
         let mut world = World::default();
         world.init_resource::<Entity2BodyHandle>();
         world.init_resource::<BodyHandle2Entity>();
-        world.init_resource::<EntityColliderMap>();
+        world.init_resource::<Entity2ColliderHandle>();
 
         world.init_resource::<rapier::RigidBodySet>();
         world.init_resource::<rapier::ColliderSet>();
@@ -175,7 +175,7 @@ mod tests {
         stage.run(&mut world);
         stage.run(&mut world);
 
-        let collider_map = world.get_resource::<EntityColliderMap>().unwrap();
+        let collider_map = world.get_resource::<Entity2ColliderHandle>().unwrap();
         let collider_handle = collider_map.get(&entity).unwrap();
         let collider_set = world.get_resource::<rapier::ColliderSet>().unwrap();
 

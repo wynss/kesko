@@ -10,8 +10,8 @@ use serde::{Serialize, Deserialize};
 
 use kesko_core::event::{
     SystemRequestEvent,
-    SystemResponseEvent
 };
+use kesko_physics::event::PhysicEvent;
 use kesko_models::{
     Model, SpawnEvent
 };
@@ -27,23 +27,23 @@ use super::{
 pub(crate) enum TcpCommand {
     Close,
     GetState,
-    Restart,
     SpawnModel {
         model: Model,
         position: Vec3,
         color: Color
     },
     Despawn {
-        name: String
+        id: u64
     },
+    DespawnAll,
+
     ApplyMotorCommand {
-        body_name: String,
+        id: u64,
         command: HashMap<String, f32>
     },
     PausePhysics,
     RunPhysics,
-    IsAlive,
-    None
+    IsAlive
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -80,6 +80,7 @@ pub(crate) fn handle_requests(
     mut tcp_buffer: ResMut<TcpBuffer>,
     mut system_event_writer: EventWriter<SystemRequestEvent>,
     mut spawn_event_writer: EventWriter<SpawnEvent>,
+    mut physic_event_writer: EventWriter<PhysicEvent>
 ) {
 
     let mut got_msg = false;
@@ -108,8 +109,9 @@ pub(crate) fn handle_requests(
                                 TcpCommand::PausePhysics => system_event_writer.send(SystemRequestEvent::PausePhysics),
                                 TcpCommand::RunPhysics => system_event_writer.send(SystemRequestEvent::StartPhysics),
                                 TcpCommand::IsAlive => system_event_writer.send(SystemRequestEvent::IsAlive),
-                                TcpCommand::ApplyMotorCommand { body_name, command } => system_event_writer.send( SystemRequestEvent::ApplyMotorCommand { body_name, command }),
-                                TcpCommand::Despawn { name } => system_event_writer.send(SystemRequestEvent::Despawn { name }),
+                                TcpCommand::ApplyMotorCommand { id, command } => system_event_writer.send( SystemRequestEvent::ApplyMotorCommand { id, command }),
+                                TcpCommand::Despawn { id } => physic_event_writer.send(PhysicEvent::DespawnBody(id)),
+                                TcpCommand::DespawnAll => physic_event_writer.send(PhysicEvent::DespawnAll),
                                 _ => {}
                             }
                         }

@@ -24,23 +24,19 @@ use kesko_physics::{
 
 pub enum SystemRequestEvent {
     SpawnModel,
-    Despawn {
-        name: String
-    },
     PausePhysics,
     StartPhysics,
     GetState,
     ExitApp,
     IsAlive,
     ApplyMotorCommand {
-        body_name: String,
+        id: u64,
         command: HashMap<String, f32>
     }
 }
 
 pub enum SystemResponseEvent {
     State(MultiBodyStates),
-    SpawnedModel(String),
     PausedPhysics,
     StartedPhysics,
     WillExitApp,
@@ -70,10 +66,6 @@ pub fn handle_system_events(
                 system_response_writer.send(SystemResponseEvent::StartedPhysics);
             },
             SystemRequestEvent::IsAlive => system_response_writer.send(SystemResponseEvent::Alive),
-            SystemRequestEvent::Despawn{ name } => {
-                physics_events.send(PhysicEvent::DespawnMultibody{ name: name.clone() });
-                system_response_writer.send(SystemResponseEvent::Ok(format!("Despawned: {}", name)));
-            },
             _ => {}
         }
     }
@@ -85,9 +77,11 @@ pub fn handle_motor_command_requests(
     multibody_root_query: Query<&MultibodyRoot>,
 ) {
     for event in system_requests.iter() {
-        if let SystemRequestEvent::ApplyMotorCommand { body_name, command } = event {
-            for root in multibody_root_query.iter() {
-                if root.name == *body_name {
+        if let SystemRequestEvent::ApplyMotorCommand { id, command } = event {
+
+            let root_entity = Entity::from_bits(*id);
+            match multibody_root_query.get(root_entity) {
+                Ok(root) => {
                     for (joint_name, val) in command.iter() {
                         if let Some(e) = root.child_map.get(joint_name) {
                             motor_event_writer.send(JointMotorEvent {
@@ -96,7 +90,8 @@ pub fn handle_motor_command_requests(
                             });
                         }
                     }
-                }
+                },
+                Err(e) => error!("Could not get multibody root {:?}", e)
             }
         }
     }

@@ -70,7 +70,8 @@ impl Plugin for PhysicsPlugin {
         app
             .init_resource::<rigid_body::Entity2BodyHandle>()
             .init_resource::<rigid_body::BodyHandle2Entity>()
-            .init_resource::<collider::EntityColliderMap>()
+            .init_resource::<joint::Entity2JointHandle>()
+            .init_resource::<collider::Entity2ColliderHandle>()
             .init_resource::<rapier::PhysicsPipeline>()         // Runs the complete simulation
             .init_resource::<rapier::RigidBodySet>()            // Holds all the rigid bodies
             .init_resource::<rapier::ColliderSet>()             // Holds all the colliders

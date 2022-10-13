@@ -43,15 +43,22 @@ class SpawnAction:
         }
 
 class Despawn:
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, id: int):
+        self.id = id
     
     def to_json(self):
         return {
             "Despawn": {
-                "name": self.name
+                "id": self.id
             }
         }
+
+class DespawnAll:
+    def to_json(self):
+        return DespawnAll.to_json()
+    
+    def to_json():
+        return "DespawnAll"
  
 class Shutdown:
     def to_json(self):
@@ -70,14 +77,14 @@ class GetState:
     
     
 class ApplyControlAction:
-    def __init__(self, name: str, values: Union[dict[str, float], torch.Tensor]):
-        self.name = name
+    def __init__(self, id: int, values: Union[dict[str, float], torch.Tensor]):
+        self.id = id
         self.values = values
     
     def to_json(self):
         return {
             "ApplyMotorCommand": {
-                "body_name": self.name,
+                "id": self.id,
                 "command": self.values
             }
         }
@@ -115,13 +122,10 @@ class Communicator:
         self.sess.mount("http://", HTTPAdapter(max_retries=max_retries))
         
     def request(self, request: KeskoRequest):
-        try:
-            msg = request.to_json()
-            logger.debug(f"Sending {msg}")
-            res = self.sess.get(self.url, json=msg)
-            return res
-        except Exception as e:
-            logger.error(e, exc_info=True)
+        msg = request.to_json()
+        logger.debug(f"Sending {msg}")
+        res = self.sess.get(self.url, json=msg)
+        return res
 
 if __name__ == '__main__':
     request = KeskoRequest([GetState(), Shutdown()])

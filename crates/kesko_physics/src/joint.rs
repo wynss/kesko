@@ -8,10 +8,13 @@ use rapier3d::prelude as rapier;
 use rapier3d::dynamics::GenericJoint;
 pub use rapier3d::prelude::{JointLimits, JointAxis};
 use serde::{Serialize, Deserialize};
+use fnv::FnvHashMap;
 
 use crate::rigid_body::{Entity2BodyHandle, RigidBodyHandle};
 use crate::conversions::{IntoBevy, IntoRapier};
 
+
+pub type Entity2JointHandle = FnvHashMap<Entity, rapier::MultibodyJointHandle>;
 
 /// trait for converting an axis into a unit vector
 pub(crate) trait AxisIntoVec {
@@ -168,6 +171,7 @@ pub struct MultibodyJointHandle(pub(crate) rapier::MultibodyJointHandle);
 #[allow(clippy::type_complexity)]
 pub(crate) fn add_multibody_joints(
     mut commands: Commands,
+    mut entity_2_joint_handle: ResMut<Entity2JointHandle>,
     mut multibody_joint_set: ResMut<rapier::MultibodyJointSet>,
     entity_body_map: Res<Entity2BodyHandle>,
     query: Query<(Entity, &Joint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>
@@ -181,6 +185,7 @@ pub(crate) fn add_multibody_joints(
             true
         ).unwrap();
 
+        entity_2_joint_handle.insert(entity, joint_handle);
         commands.entity(entity).insert(MultibodyJointHandle(joint_handle));
     }
 }
