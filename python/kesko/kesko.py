@@ -51,6 +51,7 @@ class Kesko:
 
         # Because we get some strange things from the Serialization on Kesko's side
         json_response = [resp[-1] for resp in response.json()]
+        logger.debug(json_response)
         self._parse_response(json_response)
         
         return json_response

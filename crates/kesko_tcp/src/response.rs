@@ -3,22 +3,22 @@ use std::io::Write;
 
 use bevy::prelude::*;
 
-use kesko_core::event::{
-    SystemResponseEvent,
-    SystemGenericResponseEvent
-};
+use kesko_core::event::SystemResponseEvent;
+use kesko_physics::event::spawn::BodySpawnedEvent;
 
 
 pub(crate) fn handle_responses(
     mut tcp_stream: ResMut<TcpStream>,
     mut response_events:  EventReader<SystemResponseEvent>,
-    mut generic_response_events: EventReader<SystemGenericResponseEvent>
+    mut spawn_event:  EventReader<BodySpawnedEvent>
 ) {
 
     let mut responses: Vec<serde_traitobject::Box<dyn serde_traitobject::Any>> = Vec::new();
 
-    for generic_system_event in generic_response_events.iter() {
-        responses.push(serde_traitobject::Box::new(generic_system_event.inner.clone()))
+    for event in spawn_event.iter() {
+        if let BodySpawnedEvent::MultibodySpawned { .. } = event {
+            responses.push(serde_traitobject::Box::new(event.clone()));
+        }
     }
 
     for event in response_events.iter() {

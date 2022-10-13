@@ -122,12 +122,12 @@ impl Plugin for PhysicsPlugin {
                         .with_system(joint::add_multibody_joints)
                 )
                 .add_stage(
-                    "add-multibodies", 
+                    PhysicStage::AddMultibodies, 
                     SystemStage::single_threaded()
                     .with_system(multibody::add_multibodies)
                 )
                 .add_stage(
-                    "pipeline-step", 
+                    PhysicStage::PipelineStep, 
                     SystemStage::single_threaded().with_system(physics_pipeline_step.run_in_state(PhysicState::Running))
                 )
                 .add_stage(
@@ -135,7 +135,7 @@ impl Plugin for PhysicsPlugin {
                     SystemStage::parallel()
                     .with_system_set(
                         ConditionSet::new()
-                            .run_in_state(PhysicState::Running)
+                            // .run_in_state(PhysicState::Running)
                             .with_system(update_bevy_world)
                             .with_system(multibody::update_multibody_vel_angvel)
                             .with_system(impulse::update_impulse)

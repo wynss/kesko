@@ -1,11 +1,9 @@
 use std::collections::BTreeMap;
 
-use serde::Serialize;
 use bevy::prelude::*;
 use bevy::app::AppExit;
 use bevy::utils::hashbrown::HashMap;
 
-use kesko_event::EventTrait;
 use kesko_physics::{
     event::{
         PhysicEvent,
@@ -49,12 +47,6 @@ pub enum SystemResponseEvent {
     Alive,
     Ok(String),
     Err(String)
-}
-
-#[derive(Serialize)]
-pub struct SystemGenericResponseEvent {
-    #[serde(with = "serde_traitobject")]
-    pub inner: Box<dyn EventTrait>
 }
 
 pub fn handle_system_events(
@@ -156,16 +148,4 @@ pub fn handle_serializable_state_request(
             system_response_writer.send(SystemResponseEvent::State(MultiBodyStates { multibody_states: states }));
         }
     }
-}
-
-
-pub(crate) fn propagate_events<T>(
-    mut events_to_propagate: EventReader<T>,
-    mut response_writer: EventWriter<SystemGenericResponseEvent>
-) where T: EventTrait + 'static {
-    // response_writer.send_batch(events_to_propagate.iter().map(|e| {
-    //     SystemGenericResponseEvent {
-    //         inner: Box::new(e.clone())
-    //     }
-    // }));
 }

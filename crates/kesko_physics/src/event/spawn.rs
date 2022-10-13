@@ -1,7 +1,6 @@
 use bevy::prelude::*;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
-use kesko_event::EventTrait;
 
 use crate::{
     multibody::MultibodyRoot, 
@@ -9,21 +8,13 @@ use crate::{
 };
 
 
-#[derive(Clone, Serialize)]
-enum BodyType {
-    Multibody,
-    RigidBody
-}
-
-#[derive(Clone, Serialize)]
-pub struct BodySpawnedEvent {
-    name: String,
-    body_type: BodyType
-}
-
-impl EventTrait for BodySpawnedEvent {
-    fn test(&self) {
-        
+#[derive(Clone, Serialize, Deserialize)]
+pub enum BodySpawnedEvent {
+    MultibodySpawned {
+        name: String
+    },
+    RigidBodySpawned {
+        name: String
     }
 }
 
@@ -33,11 +24,11 @@ pub(crate) fn send_spawned_events(
 ) {
 
     for (name, root) in bodies.iter() {
-        
+        warn!("Sending spawn event"); 
         if let Some(root) = root {
-            event_writer.send(BodySpawnedEvent { name: root.name.clone(), body_type: BodyType::Multibody });
+            event_writer.send(BodySpawnedEvent::MultibodySpawned{ name: root.name.clone() });
         } else {
-            event_writer.send(BodySpawnedEvent { name: name.0.clone(), body_type: BodyType::RigidBody })
+            event_writer.send(BodySpawnedEvent::RigidBodySpawned{ name: name.0.clone() })
         }
     }
 }

@@ -33,4 +33,3 @@ kesko_models = { version = "0.1.0", path = "crates/kesko_models"}
 kesko_plugins = { version = "0.1.0", path="crates/kesko_plugins"}
 kesko_diagnostic = { version = "0.1.0", path="crates/kesko_diagnostic"}
 kesko_tcp = { version = "0.1.0", path = "crates/kesko_tcp"}
-kesko_event = { version = "0.1.0", path = "crates/kesko_event"}

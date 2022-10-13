@@ -79,7 +79,6 @@ pub(crate) fn handle_requests(
     mut tcp_stream: ResMut<TcpStream>,
     mut tcp_buffer: ResMut<TcpBuffer>,
     mut system_event_writer: EventWriter<SystemRequestEvent>,
-    mut system_response_event_writer:  EventWriter<SystemResponseEvent>,
     mut spawn_event_writer: EventWriter<SpawnEvent>,
 ) {
 

@@ -15,8 +15,7 @@ pub struct ModelPlugin;
 impl Plugin for ModelPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_system_to_stage(CoreStage::First, spawn_system)
-            .add_event::<SpawnResponseEvent>();
+            .add_system_to_stage(CoreStage::First, spawn_system);
     }
 }
 
@@ -28,8 +27,6 @@ pub enum SpawnEvent {
         color: Color
     }
 }
-
-pub struct SpawnResponseEvent(String);
 
 /// Description on how to manually control a robot
 /// The text will be shown in the multibody ui
@@ -77,6 +74,8 @@ pub fn spawn_system(
     for event in spawn_event_reader.iter() {
         if let SpawnEvent::Spawn { model, transform, color} = event {
 
+            warn!("Spawning model {:?}", model);
+            
             let material = materials.add(color.clone().into());
 
             match model {

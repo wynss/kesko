@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.8.1"
-kesko_event = { path = "../kesko_event"}
 iyes_loopless = { git = "https://github.com/IyesGames/iyes_loopless.git", branch = "main"}
 rapier3d = "0.15.0"
 nalgebra = "0.31.0"
