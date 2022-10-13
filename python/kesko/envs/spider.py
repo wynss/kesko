@@ -5,7 +5,7 @@ import gym
 import numpy as np
 
 from ..kesko import Kesko
-from ..protocol import Despawn, DespawnAll, GetState, PausePhysics, RunPhysics, SpawnAction, ApplyControlAction, MULTIBODY_STATES
+from ..protocol import GLOBAL_POSITION, Despawn, DespawnAll, GetState, PausePhysics, RunPhysics, SpawnAction, ApplyControlAction, MULTIBODY_STATES
 from ..color import Color
 from ..model import KeskoModel
 
@@ -16,6 +16,7 @@ class SpiderEnv(gym.Env):
         self.device = device if device is not None else torch.device("cpu")
         self.max_steps = max_steps
         self.step_count = 0
+        self.prev_position: Optional[torch.Tensor] = None
         
         self._kesko = Kesko()
         self._kesko.initialize()
@@ -42,8 +43,8 @@ class SpiderEnv(gym.Env):
         self._kesko.send(RunPhysics)
 
         # TODO: Send the limits from Kesko
-        low = -np.pi / 8.0
-        high = np.pi / 8.0
+        low = -np.pi / 6.0
+        high = np.pi / 6.0
         
         # Define actions space
         dim_actions_space = len(self.spider_body.joints)
@@ -67,15 +68,21 @@ class SpiderEnv(gym.Env):
     def step(self, action: Union[np.ndarray, torch.Tensor]):
 
         state = self._get_state_from_response(self._kesko.step(ApplyControlAction(self.spider_body.id, action)))
+
+        # calc reward, distance moved from last step. only considering the horizontal movement
+        if self.prev_position is None:
+            reward = 0
+        else:
+            position = torch.Tensor(state[GLOBAL_POSITION])
+            reward = (position[0, 2] - self.prev_position[0, 2]).pow(2).sum().sqrt()
+            self.prev_position = position
+
         state = self._to_tensor(state)
 
-        # TODO: Distance moved during one step
-        reward = None
-
-        # TODO: Kesko need support to send collision events back
+        # TODO: Kesko need support to send collision events back to detect if the spider has fallen on its back 
         terminated = False
-        done = False
 
+        done = False
         if self.max_steps is not None:
             if self.step_count > self.max_steps:
                 done = True

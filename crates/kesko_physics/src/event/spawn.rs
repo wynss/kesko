@@ -13,7 +13,7 @@ pub(crate) fn send_spawned_events(
 ) {
 
     for (entity, name, root) in bodies.iter() {
-        warn!("Sending spawn event"); 
+        debug!("Sending spawn event"); 
         if let Some(root) = root {
 
             let mut links = root.child_map.keys().cloned().collect::<Vec<String>>();

@@ -106,8 +106,8 @@ pub(crate) fn handle_requests(
                                     spawn_event_writer.send(SpawnEvent::Spawn { model, transform: Transform::from_translation(position), color });
                                 },
                                 TcpCommand::GetState => system_event_writer.send(SystemRequestEvent::GetState),
-                                TcpCommand::PausePhysics => system_event_writer.send(SystemRequestEvent::PausePhysics),
-                                TcpCommand::RunPhysics => system_event_writer.send(SystemRequestEvent::StartPhysics),
+                                TcpCommand::PausePhysics => physic_event_writer.send(PhysicRequestEvent::PausePhysics),
+                                TcpCommand::RunPhysics => physic_event_writer.send(PhysicRequestEvent::RunPhysics),
                                 TcpCommand::IsAlive => system_event_writer.send(SystemRequestEvent::IsAlive),
                                 TcpCommand::ApplyMotorCommand { id, command } => system_event_writer.send( SystemRequestEvent::ApplyMotorCommand { id, command }),
                                 TcpCommand::Despawn { id } => physic_event_writer.send(PhysicRequestEvent::DespawnBody(id)),

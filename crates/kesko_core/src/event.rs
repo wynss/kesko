@@ -20,9 +20,6 @@ use kesko_physics::{
 
 
 pub enum SystemRequestEvent {
-    SpawnModel,
-    PausePhysics,
-    StartPhysics,
     GetState,
     ExitApp,
     IsAlive,
