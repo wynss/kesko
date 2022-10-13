@@ -5,7 +5,6 @@ use bevy::app::AppExit;
 use bevy::utils::hashbrown::HashMap;
 
 use kesko_physics::{
-    event::PhysicRequestEvent,
     multibody::{
         MultibodyRoot,
         MultibodyChild,
@@ -35,8 +34,6 @@ pub enum SystemRequestEvent {
 
 pub enum SystemResponseEvent {
     State(MultiBodyStates),
-    PausedPhysics,
-    StartedPhysics,
     WillExitApp,
     Alive,
     Ok(String),
@@ -46,22 +43,13 @@ pub enum SystemResponseEvent {
 pub fn handle_system_events(
     mut system_requests: EventReader<SystemRequestEvent>,
     mut system_response_writer: EventWriter<SystemResponseEvent>,
-    mut app_exit_events: EventWriter<AppExit>,
-    mut physics_events: EventWriter<PhysicRequestEvent>,
+    mut app_exit_events: EventWriter<AppExit>
 ) {
     for event in system_requests.iter() {
         match event {
             SystemRequestEvent::ExitApp => {
                 app_exit_events.send_default();
                 system_response_writer.send(SystemResponseEvent::WillExitApp);
-            },
-            SystemRequestEvent::PausePhysics => {
-                physics_events.send(PhysicRequestEvent::PausePhysics);
-                system_response_writer.send(SystemResponseEvent::PausedPhysics);
-            },
-            SystemRequestEvent::StartPhysics => {
-                physics_events.send(PhysicRequestEvent::RunPhysics);
-                system_response_writer.send(SystemResponseEvent::StartedPhysics);
             },
             SystemRequestEvent::IsAlive => system_response_writer.send(SystemResponseEvent::Alive),
             _ => {}

@@ -8,9 +8,7 @@ pub mod controller;
 pub mod event;
 
 use bevy::prelude::*;
-use kesko_physics::event::{
-    PhysicRequestEvent,
-};
+use kesko_physics::event::PhysicRequestEvent;
 
 use bevy::{
     core_pipeline::clear_color::ClearColor,
@@ -65,7 +63,7 @@ impl Plugin for CorePlugin {
             .add_system(update_vertical_marker_pos_system::<GroupStatic>)
 
             // physics related
-            .add_system(change_physic_state)
+            .add_system(change_physic_state_on_space)
 
             // multibody selection systems and events
             .add_system(multibody_selection_system)
@@ -87,7 +85,7 @@ impl Plugin for CorePlugin {
     }
 }
 
-pub fn change_physic_state(
+pub fn change_physic_state_on_space(
     mut keys: ResMut<Input<KeyCode>>,
     mut event_writer: EventWriter<PhysicRequestEvent>
 ) {

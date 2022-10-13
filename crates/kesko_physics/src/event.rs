@@ -8,14 +8,11 @@ use serde::{Serialize, Deserialize};
 use rapier3d::prelude as rapier;
 
 use crate::{
+    PhysicState,
     rigid_body::{
         Entity2BodyHandle, 
         RigidBodyHandle
-    }
-};
-
-use super::{
-    PhysicState,
+    },
     multibody::MultibodyRoot
 };
 
