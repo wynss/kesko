@@ -332,6 +332,7 @@ mod tests {
         test_stage.add_system(add_multibody_joints);
 
         world.init_resource::<rapier3d::prelude::MultibodyJointSet>();
+        world.init_resource::<Entity2JointHandle>();
 
         let parent_body_handle = rapier::RigidBodyHandle::from_raw_parts(1, 0);
         let parent_entity = world
