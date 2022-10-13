@@ -12,4 +12,3 @@ if __name__ == "__main__":
             observation, _ = env.reset()
 
     env.close()
-    

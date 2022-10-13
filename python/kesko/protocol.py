@@ -130,4 +130,4 @@ class Communicator:
 if __name__ == '__main__':
     request = KeskoRequest([GetState(), Shutdown()])
     print(request.to_json())
-        
+ 
