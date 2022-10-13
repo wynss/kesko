@@ -69,7 +69,11 @@ fn test_scene(
 
     kesko_models::humanoid::Humanoid::spawn(
         &mut commands,
-        materials.add(Color::ORANGE.into()), 
+        materials.add(StandardMaterial { 
+            base_color: Color::ORANGE,
+            perceptual_roughness: 1.0,
+            ..default()
+        }), 
         Transform::from_xyz(2.0, 2.0, 2.0),
         &mut meshes
     );
@@ -89,12 +93,28 @@ fn test_scene(
     .insert(GenerateCollisionEvents);
 
     // Light
+    const HALF_SIZE: f32 = 10.0;
     commands.spawn_bundle(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 50000.0,
-            ..Default::default()
+            illuminance: 100_000.0,
+            // Configure the projection to better fit the scene
+            shadow_projection: OrthographicProjection {
+                left: -HALF_SIZE,
+                right: HALF_SIZE,
+                bottom: -HALF_SIZE,
+                top: HALF_SIZE,
+                near: -10.0 * HALF_SIZE,
+                far: 10.0 * HALF_SIZE,
+                ..default()
+            },
+            shadows_enabled: true,
+            ..default()
         },
-        transform: Transform::from_xyz(20.0, 40.0, -40.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..Default::default()
+        transform: Transform {
+            translation: Vec3::new(0.0, 2.0, 0.0),
+            rotation: Quat::from_rotation_x(-std::f32::consts::FRAC_PI_4),
+            ..default()
+        },
+        ..default()
     });
 }
