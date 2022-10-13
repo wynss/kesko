@@ -16,7 +16,6 @@ use rapier3d::prelude as rapier;
 
 use conversions::{IntoRapier, IntoBevy};
 use gravity::Gravity;
-use event::collision::send_collision_events_system;
 
 
 /// State to control the physics system
@@ -71,7 +70,8 @@ impl Plugin for PhysicsPlugin {
         app
             .init_resource::<rigid_body::Entity2BodyHandle>()
             .init_resource::<rigid_body::BodyHandle2Entity>()
-            .init_resource::<collider::EntityColliderMap>()
+            .init_resource::<joint::Entity2JointHandle>()
+            .init_resource::<collider::Entity2ColliderHandle>()
             .init_resource::<rapier::PhysicsPipeline>()         // Runs the complete simulation
             .init_resource::<rapier::RigidBodySet>()            // Holds all the rigid bodies
             .init_resource::<rapier::ColliderSet>()             // Holds all the colliders
@@ -95,7 +95,8 @@ impl Plugin for PhysicsPlugin {
             .add_loopless_state(self.initial_state.clone())
 
             // Physics events
-            .add_event::<event::PhysicEvent>()
+            .add_event::<event::PhysicRequestEvent>()
+            .add_event::<event::PhysicResponseEvent>()
             .add_system(event::handle_events)
 
             // Multibody name registry, making sure all multibodies have unique names
@@ -122,12 +123,12 @@ impl Plugin for PhysicsPlugin {
                         .with_system(joint::add_multibody_joints)
                 )
                 .add_stage(
-                    "add-multibodies", 
+                    PhysicStage::AddMultibodies, 
                     SystemStage::single_threaded()
                     .with_system(multibody::add_multibodies)
                 )
                 .add_stage(
-                    "pipeline-step", 
+                    PhysicStage::PipelineStep, 
                     SystemStage::single_threaded().with_system(physics_pipeline_step.run_in_state(PhysicState::Running))
                 )
                 .add_stage(
@@ -135,7 +136,7 @@ impl Plugin for PhysicsPlugin {
                     SystemStage::parallel()
                     .with_system_set(
                         ConditionSet::new()
-                            .run_in_state(PhysicState::Running)
+                            // .run_in_state(PhysicState::Running)
                             .with_system(update_bevy_world)
                             .with_system(multibody::update_multibody_vel_angvel)
                             .with_system(impulse::update_impulse)
@@ -144,7 +145,8 @@ impl Plugin for PhysicsPlugin {
                             .with_system(mass::update_multibody_mass_system)
                             .with_system(joint::update_joint_motors_system)
                             .with_system(joint::update_joint_pos_system)
-                            .with_system(send_collision_events_system)
+                            .with_system(event::collision::send_collision_events_system)
+                            .with_system(event::spawn::send_spawned_events)
                             .into()
                     )
                 )

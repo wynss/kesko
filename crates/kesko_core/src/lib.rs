@@ -8,8 +8,7 @@ pub mod controller;
 pub mod event;
 
 use bevy::prelude::*;
-
-use kesko_physics::event::PhysicEvent;
+use kesko_physics::event::PhysicRequestEvent;
 
 use bevy::{
     core_pipeline::clear_color::ClearColor,
@@ -21,6 +20,7 @@ use bevy::{
         MonitorSelection
     }, 
     DefaultPlugins,
+    log::{LogSettings, Level}
 };
 use crate::{
     interaction::{
@@ -53,6 +53,8 @@ impl Plugin for CorePlugin {
                 ..Default::default()
             })
             .insert_resource(Msaa { samples: 4 })
+
+            .insert_resource(LogSettings { level: Level::INFO, ..default()})
             
             .add_plugins(DefaultPlugins)
 
@@ -61,7 +63,7 @@ impl Plugin for CorePlugin {
             .add_system(update_vertical_marker_pos_system::<GroupStatic>)
 
             // physics related
-            .add_system(change_physic_state)
+            .add_system(change_physic_state_on_space)
 
             // multibody selection systems and events
             .add_system(multibody_selection_system)
@@ -83,12 +85,12 @@ impl Plugin for CorePlugin {
     }
 }
 
-pub fn change_physic_state(
+pub fn change_physic_state_on_space(
     mut keys: ResMut<Input<KeyCode>>,
-    mut event_writer: EventWriter<PhysicEvent>
+    mut event_writer: EventWriter<PhysicRequestEvent>
 ) {
     if keys.just_pressed(KeyCode::Space) {
-        event_writer.send(PhysicEvent::TogglePhysics);
+        event_writer.send(PhysicRequestEvent::TogglePhysics);
         keys.reset(KeyCode::Space);
     }
 }

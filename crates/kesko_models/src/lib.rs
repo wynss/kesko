@@ -18,7 +18,6 @@ impl Plugin for ModelPlugin {
     }
 }
 
-
 pub enum SpawnEvent {
     OpenWindow,
     Spawn {
@@ -27,7 +26,6 @@ pub enum SpawnEvent {
         color: Color
     }
 }
-
 
 /// Description on how to manually control a robot
 /// The text will be shown in the multibody ui
@@ -74,6 +72,8 @@ pub fn spawn_system(
 ) {
     for event in spawn_event_reader.iter() {
         if let SpawnEvent::Spawn { model, transform, color} = event {
+
+            debug!("Spawning model {:?}", model);
 
             let material = materials.add(color.clone().into());
 

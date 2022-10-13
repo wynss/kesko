@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use kesko_physics::rigid_body::RigidBody;
+use kesko_physics::rigid_body::{RigidBody, RigidBodyName};
 use kesko_core::{
     bundle::MeshPhysicBodyBundle,
     shape::Shape,
@@ -8,6 +8,8 @@ use kesko_core::{
 };
 use kesko_raycast::RayVisible;
 
+
+const NAME: &str = "plane";
 
 pub fn spawn(
     commands: &mut Commands,
@@ -21,5 +23,7 @@ pub fn spawn(
         material.clone(),
         Transform::from_xyz(0.0, -1.0, 0.0),
         meshes
-    )).insert(RayVisible::<GroupStatic>::default());
+    ))
+    .insert(RayVisible::<GroupStatic>::default())
+    .insert(RigidBodyName(NAME.to_owned()));
 }

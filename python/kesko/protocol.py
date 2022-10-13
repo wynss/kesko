@@ -1,6 +1,8 @@
 import logging
 from typing import Union
 
+import torch
+
 import requests
 from requests.adapters import HTTPAdapter, Retry
 
@@ -10,11 +12,20 @@ from .model import KeskoModel
 
 logger = logging.getLogger(__name__)
 
-MULTIBODY_NAME = "name"
-JOINT_STATES = "joint_states"
+NAME = "name"
 MULTIBODY_STATES = "multibody_states"
+MULTIBODY_SPAWNED = "MultibodySpawned"
+
+JOINT_STATES = "joint_states"
+LINKS = 'links'
 GLOBAL_POSITION = "global_position"
 
+
+class CheckAliveAction:
+    def to_json(self):
+        return CheckAliveAction.to_json()
+    def to_json():
+        return "IsAlive"
 
 class SpawnAction:
     def __init__(self, model: KeskoModel, position: list[int], color: Union[Rgba, Color]):
@@ -32,42 +43,56 @@ class SpawnAction:
         }
 
 class Despawn:
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, id: int):
+        self.id = id
     
     def to_json(self):
         return {
             "Despawn": {
-                "name": self.name
+                "id": self.id
             }
         }
- 
-class CloseAction:
+
+class DespawnAll:
     def to_json(self):
+        return DespawnAll.to_json()
+    
+    def to_json():
+        return "DespawnAll"
+ 
+class Shutdown:
+    def to_json(self):
+        return Shutdown.to_json()
+    
+    def to_json():
         return "Close"
 
 
-class GetStateAction:
+class GetState:
     def to_json(self):
+        return GetState.to_json()
+
+    def to_json():
         return "GetState"
     
     
 class ApplyControlAction:
-    def __init__(self, values):
+    def __init__(self, id: int, values: Union[dict[str, float], torch.Tensor]):
+        self.id = id
         self.values = values
     
     def to_json(self):
         return {
-            "ApplyControl": {
-                "body_name": self.name,
-                "values": self.values
+            "ApplyMotorCommand": {
+                "id": self.id,
+                "command": self.values
             }
         }
 
 class PausePhysics:
     def to_json(self):
         return PausePhysics.to_json()
-
+    
     def to_json():
         return "PausePhysics"
 
@@ -85,7 +110,7 @@ class KeskoRequest:
     
     def to_json(self):
         return {
-            "actions": [action.to_json() for action in self._actions]
+            "commands": [action.to_json() for action in self._actions]
         }
 
 
@@ -97,15 +122,12 @@ class Communicator:
         self.sess.mount("http://", HTTPAdapter(max_retries=max_retries))
         
     def request(self, request: KeskoRequest):
-        try:
-            msg = request.to_json()
-            logger.debug(f"Sending {msg}")
-            res = self.sess.get(self.url, json=msg)
-            return res
-        except Exception as e:
-            logger.error(e, exc_info=True)
+        msg = request.to_json()
+        logger.debug(f"Sending {msg}")
+        res = self.sess.get(self.url, json=msg)
+        return res
 
 if __name__ == '__main__':
-    request = KeskoRequest([GetStateAction(), CloseAction()])
+    request = KeskoRequest([GetState(), Shutdown()])
     print(request.to_json())
-        
+ 

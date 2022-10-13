@@ -10,8 +10,8 @@ use serde::{Serialize, Deserialize};
 
 use kesko_core::event::{
     SystemRequestEvent,
-    SystemResponseEvent
 };
+use kesko_physics::event::PhysicRequestEvent;
 use kesko_models::{
     Model, SpawnEvent
 };
@@ -27,28 +27,28 @@ use super::{
 pub(crate) enum TcpCommand {
     Close,
     GetState,
-    Restart,
     SpawnModel {
         model: Model,
         position: Vec3,
         color: Color
     },
     Despawn {
-        name: String
+        id: u64
     },
+    DespawnAll,
+
     ApplyMotorCommand {
-        body_name: String,
+        id: u64,
         command: HashMap<String, f32>
     },
     PausePhysics,
     RunPhysics,
-    IsAlive,
-    None
+    IsAlive
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct HttpRequest {
-    pub(crate) actions: Vec<TcpCommand>
+    pub(crate) commands: Vec<TcpCommand>
 }
 
 impl HttpRequest {
@@ -79,8 +79,8 @@ pub(crate) fn handle_requests(
     mut tcp_stream: ResMut<TcpStream>,
     mut tcp_buffer: ResMut<TcpBuffer>,
     mut system_event_writer: EventWriter<SystemRequestEvent>,
-    mut system_response_event_writer:  EventWriter<SystemResponseEvent>,
     mut spawn_event_writer: EventWriter<SpawnEvent>,
+    mut physic_event_writer: EventWriter<PhysicRequestEvent>
 ) {
 
     let mut got_msg = false;
@@ -96,23 +96,22 @@ pub(crate) fn handle_requests(
 
                 let http_str = String::from_utf8_lossy(&tcp_buffer.data[..msg_len]).to_string();
                 match HttpRequest::from_http_str(http_str) {
-                    Ok(mut req) => {
-                        debug!("Got Request: {:?}", req.actions);
+                    Ok(mut request) => {
+                        debug!("Got Request: {:?}", request.commands);
 
-                        for action in req.actions.drain(..) {
-                            match action {
+                        for command in request.commands.drain(..) {
+                            match command {
                                 TcpCommand::Close => system_event_writer.send(SystemRequestEvent::ExitApp),
                                 TcpCommand::SpawnModel { model, position, color } => {
                                     spawn_event_writer.send(SpawnEvent::Spawn { model, transform: Transform::from_translation(position), color });
-                                    system_response_event_writer.send(SystemResponseEvent::SpawnedModel);
                                 },
                                 TcpCommand::GetState => system_event_writer.send(SystemRequestEvent::GetState),
-                                TcpCommand::PausePhysics => system_event_writer.send(SystemRequestEvent::PausePhysics),
-                                TcpCommand::RunPhysics => system_event_writer.send(SystemRequestEvent::StartPhysics),
+                                TcpCommand::PausePhysics => physic_event_writer.send(PhysicRequestEvent::PausePhysics),
+                                TcpCommand::RunPhysics => physic_event_writer.send(PhysicRequestEvent::RunPhysics),
                                 TcpCommand::IsAlive => system_event_writer.send(SystemRequestEvent::IsAlive),
-                                TcpCommand::ApplyMotorCommand { body_name, command } => system_event_writer.send( SystemRequestEvent::ApplyMotorCommand { body_name, command }),
-                                TcpCommand::Despawn { name } => system_event_writer.send(SystemRequestEvent::Despawn { name }),
-                                _ => {}
+                                TcpCommand::ApplyMotorCommand { id, command } => system_event_writer.send( SystemRequestEvent::ApplyMotorCommand { id, command }),
+                                TcpCommand::Despawn { id } => physic_event_writer.send(PhysicRequestEvent::DespawnBody(id)),
+                                TcpCommand::DespawnAll => physic_event_writer.send(PhysicRequestEvent::DespawnAll)
                             }
                         }
                     }
@@ -124,6 +123,5 @@ pub(crate) fn handle_requests(
                 commands.insert_resource(NextState(TcpConnectionState::NotConnected));
             }
         }
-
     }
 }

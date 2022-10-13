@@ -33,15 +33,16 @@ pub struct RigidBodyHandle(pub rapier::RigidBodyHandle);
 #[allow(clippy::type_complexity)]
 pub(crate) fn add_rigid_bodies(
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
-    mut entity_2_body: ResMut<Entity2BodyHandle>,
-    mut body_2_entity: ResMut<BodyHandle2Entity>,
+    mut entity_2_body_handle: ResMut<Entity2BodyHandle>,
+    mut body_handle_2_entity: ResMut<BodyHandle2Entity>,
     mut commands: Commands,
     query: Query<(
         Entity, 
         &RigidBody, 
         &Transform, 
         Option<&Mass>, 
-        Option<&GravityScale>, Option<&CanSleep>), 
+        Option<&GravityScale>, 
+        Option<&CanSleep>), 
         Without<RigidBodyHandle>>
 ) {
     for (entity, rigid_body_comp, transform, mass, gravity_scale, can_sleep) in query.iter() {
@@ -69,8 +70,8 @@ pub(crate) fn add_rigid_bodies(
 
         // insert and add to map
         let rigid_body_handle = rigid_body_set.insert(rigid_body);
-        entity_2_body.insert(entity, rigid_body_handle);
-        body_2_entity.insert(rigid_body_handle, entity);
+        entity_2_body_handle.insert(entity, rigid_body_handle);
+        body_handle_2_entity.insert(rigid_body_handle, entity);
 
         // Add the rigid body component to the entity
         commands.entity(entity).insert(RigidBodyHandle(rigid_body_handle));

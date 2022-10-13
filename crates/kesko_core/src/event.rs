@@ -1,9 +1,10 @@
+use std::collections::BTreeMap;
+
 use bevy::prelude::*;
 use bevy::app::AppExit;
 use bevy::utils::hashbrown::HashMap;
 
 use kesko_physics::{
-    event::PhysicEvent,
     multibody::{
         MultibodyRoot,
         MultibodyChild,
@@ -19,26 +20,17 @@ use kesko_physics::{
 
 
 pub enum SystemRequestEvent {
-    SpawnModel,
-    Despawn {
-        name: String
-    },
-    PausePhysics,
-    StartPhysics,
     GetState,
     ExitApp,
     IsAlive,
     ApplyMotorCommand {
-        body_name: String,
+        id: u64,
         command: HashMap<String, f32>
     }
 }
 
 pub enum SystemResponseEvent {
     State(MultiBodyStates),
-    SpawnedModel,
-    PausedPhysics,
-    StartedPhysics,
     WillExitApp,
     Alive,
     Ok(String),
@@ -48,8 +40,7 @@ pub enum SystemResponseEvent {
 pub fn handle_system_events(
     mut system_requests: EventReader<SystemRequestEvent>,
     mut system_response_writer: EventWriter<SystemResponseEvent>,
-    mut app_exit_events: EventWriter<AppExit>,
-    mut physics_events: EventWriter<PhysicEvent>,
+    mut app_exit_events: EventWriter<AppExit>
 ) {
     for event in system_requests.iter() {
         match event {
@@ -57,19 +48,7 @@ pub fn handle_system_events(
                 app_exit_events.send_default();
                 system_response_writer.send(SystemResponseEvent::WillExitApp);
             },
-            SystemRequestEvent::PausePhysics => {
-                physics_events.send(PhysicEvent::PausePhysics);
-                system_response_writer.send(SystemResponseEvent::PausedPhysics);
-            },
-            SystemRequestEvent::StartPhysics => {
-                physics_events.send(PhysicEvent::RunPhysics);
-                system_response_writer.send(SystemResponseEvent::StartedPhysics);
-            },
             SystemRequestEvent::IsAlive => system_response_writer.send(SystemResponseEvent::Alive),
-            SystemRequestEvent::Despawn{ name } => {
-                physics_events.send(PhysicEvent::DespawnMultibody{ name: name.clone() });
-                system_response_writer.send(SystemResponseEvent::Ok(format!("Despawned: {}", name)));
-            },
             _ => {}
         }
     }
@@ -81,9 +60,11 @@ pub fn handle_motor_command_requests(
     multibody_root_query: Query<&MultibodyRoot>,
 ) {
     for event in system_requests.iter() {
-        if let SystemRequestEvent::ApplyMotorCommand { body_name, command } = event {
-            for root in multibody_root_query.iter() {
-                if root.name == *body_name {
+        if let SystemRequestEvent::ApplyMotorCommand { id, command } = event {
+
+            let root_entity = Entity::from_bits(*id);
+            match multibody_root_query.get(root_entity) {
+                Ok(root) => {
                     for (joint_name, val) in command.iter() {
                         if let Some(e) = root.child_map.get(joint_name) {
                             motor_event_writer.send(JointMotorEvent {
@@ -92,7 +73,8 @@ pub fn handle_motor_command_requests(
                             });
                         }
                     }
-                }
+                },
+                Err(e) => error!("Could not get multibody root {:?}", e)
             }
         }
     }
@@ -111,7 +93,7 @@ pub fn handle_serializable_state_request(
             let states = multibody_root_query.iter().map(|(root, transform)| {
                 
                 // get positions of all the child bodies
-                let child_positions: HashMap<String, Vec3> = root.child_map.iter().map(|(name, entity)| {
+                let child_positions: BTreeMap<String, Vec3> = root.child_map.iter().map(|(name, entity)| {
                     let position = match multibody_child_query.get(*entity) {
                         Ok((_, transform)) => transform.translation,
                         Err(_) => Vec3::ZERO
@@ -120,7 +102,7 @@ pub fn handle_serializable_state_request(
                 }).collect();
 
                 // Get joint angles
-                let joint_states: HashMap<String, Option<JointState>> = root.child_map.iter().map(|(name, e)| {
+                let joint_states: BTreeMap<String, Option<JointState>> = root.child_map.iter().map(|(name, e)| {
                     let orientation = match joint_query.get(*e) {
                         Ok(joint) => {
                             Some(joint.get_state())
