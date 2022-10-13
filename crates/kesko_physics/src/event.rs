@@ -1,8 +1,9 @@
-use bevy::prelude::*;
-use iyes_loopless::prelude::*;
-
 pub mod collision;
 pub mod spawn;
+
+use bevy::prelude::*;
+use iyes_loopless::prelude::*;
+use serde::{Serialize, Deserialize};
 
 use rapier3d::prelude as rapier;
 
@@ -19,12 +20,29 @@ use super::{
 };
 
 
-pub enum PhysicEvent {
+pub enum PhysicRequestEvent {
     PausePhysics,
     RunPhysics,
     TogglePhysics,
     DespawnBody(u64),
     DespawnAll
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub enum PhysicResponseEvent {
+    StartedPhysics,
+    StoppedPhysics,
+    DespawnedBody(u64),
+    DespawnedAllBodies,
+    MultibodySpawned {
+        id: u64,
+        name: String,
+        links: Vec<String>
+    },
+    RigidBodySpawned {
+        id: u64,
+        name: String
+    }
 }
 
 pub(crate) fn handle_events(
@@ -36,20 +54,33 @@ pub(crate) fn handle_events(
     entity_2_body_handle: Res<Entity2BodyHandle>,
     mut commands: Commands,
     current_physic_state: Res<CurrentState<PhysicState>>,
-    mut event_reader: EventReader<PhysicEvent>,
+    mut request_events: EventReader<PhysicRequestEvent>,
+    mut response_events: EventWriter<PhysicResponseEvent>,
     query: Query<(Entity, Option<&MultibodyRoot>), With<RigidBodyHandle>>
 ) {
-    for event in event_reader.iter() {
+    for event in request_events.iter() {
         match event {
-            PhysicEvent::PausePhysics => commands.insert_resource(NextState(PhysicState::Stopped)),
-            PhysicEvent::RunPhysics => commands.insert_resource(NextState(PhysicState::Running)),
-            PhysicEvent::TogglePhysics => {
+            PhysicRequestEvent::PausePhysics => {
+                commands.insert_resource(NextState(PhysicState::Stopped));
+                response_events.send(PhysicResponseEvent::StoppedPhysics);
+            },
+            PhysicRequestEvent::RunPhysics => {
+                commands.insert_resource(NextState(PhysicState::Running));
+                response_events.send(PhysicResponseEvent::StartedPhysics);
+            },
+            PhysicRequestEvent::TogglePhysics => {
                 match current_physic_state.0 {
-                    PhysicState::Stopped => commands.insert_resource(NextState(PhysicState::Running)),
-                    PhysicState::Running => commands.insert_resource(NextState(PhysicState::Stopped)),
+                    PhysicState::Stopped => {
+                        commands.insert_resource(NextState(PhysicState::Running));
+                        response_events.send(PhysicResponseEvent::StartedPhysics);
+                    },
+                    PhysicState::Running => {
+                        commands.insert_resource(NextState(PhysicState::Stopped));
+                        response_events.send(PhysicResponseEvent::StoppedPhysics);
+                    },
                 }
             },
-            PhysicEvent::DespawnBody(id) => {
+            PhysicRequestEvent::DespawnBody(id) => {
                 info!("Despawning body with id {:?}", id);
                 let entity = Entity::from_bits(*id);
 
@@ -80,8 +111,9 @@ pub(crate) fn handle_events(
                     },
                     Err(e) => error!("Could not get body to remove {}", e)
                 }
+                response_events.send(PhysicResponseEvent::DespawnedBody(*id) )
             },
-            PhysicEvent::DespawnAll => {
+            PhysicRequestEvent::DespawnAll => {
                 query.for_each(|(e, _)| {
                     commands.entity(e).despawn_recursive();
                     if let Some(body_handle) = entity_2_body_handle.get(&e) {
@@ -95,6 +127,7 @@ pub(crate) fn handle_events(
                         );
                     }
                 });
+                response_events.send(PhysicResponseEvent::DespawnedAllBodies);
             }
         }
     }

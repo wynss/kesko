@@ -11,7 +11,7 @@ use serde::{Serialize, Deserialize};
 use kesko_core::event::{
     SystemRequestEvent,
 };
-use kesko_physics::event::PhysicEvent;
+use kesko_physics::event::PhysicRequestEvent;
 use kesko_models::{
     Model, SpawnEvent
 };
@@ -80,7 +80,7 @@ pub(crate) fn handle_requests(
     mut tcp_buffer: ResMut<TcpBuffer>,
     mut system_event_writer: EventWriter<SystemRequestEvent>,
     mut spawn_event_writer: EventWriter<SpawnEvent>,
-    mut physic_event_writer: EventWriter<PhysicEvent>
+    mut physic_event_writer: EventWriter<PhysicRequestEvent>
 ) {
 
     let mut got_msg = false;
@@ -110,9 +110,8 @@ pub(crate) fn handle_requests(
                                 TcpCommand::RunPhysics => system_event_writer.send(SystemRequestEvent::StartPhysics),
                                 TcpCommand::IsAlive => system_event_writer.send(SystemRequestEvent::IsAlive),
                                 TcpCommand::ApplyMotorCommand { id, command } => system_event_writer.send( SystemRequestEvent::ApplyMotorCommand { id, command }),
-                                TcpCommand::Despawn { id } => physic_event_writer.send(PhysicEvent::DespawnBody(id)),
-                                TcpCommand::DespawnAll => physic_event_writer.send(PhysicEvent::DespawnAll),
-                                _ => {}
+                                TcpCommand::Despawn { id } => physic_event_writer.send(PhysicRequestEvent::DespawnBody(id)),
+                                TcpCommand::DespawnAll => physic_event_writer.send(PhysicRequestEvent::DespawnAll)
                             }
                         }
                     }

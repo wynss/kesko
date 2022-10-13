@@ -95,14 +95,14 @@ impl Plugin for PhysicsPlugin {
             .add_loopless_state(self.initial_state.clone())
 
             // Physics events
-            .add_event::<event::PhysicEvent>()
+            .add_event::<event::PhysicRequestEvent>()
+            .add_event::<event::PhysicResponseEvent>()
             .add_system(event::handle_events)
 
             // Multibody name registry, making sure all multibodies have unique names
             .insert_resource(multibody::MultibodyNameRegistry::new())
 
             .add_event::<joint::JointMotorEvent>()
-            .add_event::<event::spawn::BodySpawnedEvent>()
 
             .add_stage_after(CoreStage::First, PhysicsStage, Schedule::default())
             .stage(PhysicsStage, |stage: &mut Schedule| {

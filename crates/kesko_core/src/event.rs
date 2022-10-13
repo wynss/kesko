@@ -5,9 +5,7 @@ use bevy::app::AppExit;
 use bevy::utils::hashbrown::HashMap;
 
 use kesko_physics::{
-    event::{
-        PhysicEvent,
-    },
+    event::PhysicRequestEvent,
     multibody::{
         MultibodyRoot,
         MultibodyChild,
@@ -49,7 +47,7 @@ pub fn handle_system_events(
     mut system_requests: EventReader<SystemRequestEvent>,
     mut system_response_writer: EventWriter<SystemResponseEvent>,
     mut app_exit_events: EventWriter<AppExit>,
-    mut physics_events: EventWriter<PhysicEvent>,
+    mut physics_events: EventWriter<PhysicRequestEvent>,
 ) {
     for event in system_requests.iter() {
         match event {
@@ -58,11 +56,11 @@ pub fn handle_system_events(
                 system_response_writer.send(SystemResponseEvent::WillExitApp);
             },
             SystemRequestEvent::PausePhysics => {
-                physics_events.send(PhysicEvent::PausePhysics);
+                physics_events.send(PhysicRequestEvent::PausePhysics);
                 system_response_writer.send(SystemResponseEvent::PausedPhysics);
             },
             SystemRequestEvent::StartPhysics => {
-                physics_events.send(PhysicEvent::RunPhysics);
+                physics_events.send(PhysicRequestEvent::RunPhysics);
                 system_response_writer.send(SystemResponseEvent::StartedPhysics);
             },
             SystemRequestEvent::IsAlive => system_response_writer.send(SystemResponseEvent::Alive),

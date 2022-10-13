@@ -9,7 +9,7 @@ pub mod event;
 
 use bevy::prelude::*;
 use kesko_physics::event::{
-    PhysicEvent,
+    PhysicRequestEvent,
 };
 
 use bevy::{
@@ -89,10 +89,10 @@ impl Plugin for CorePlugin {
 
 pub fn change_physic_state(
     mut keys: ResMut<Input<KeyCode>>,
-    mut event_writer: EventWriter<PhysicEvent>
+    mut event_writer: EventWriter<PhysicRequestEvent>
 ) {
     if keys.just_pressed(KeyCode::Space) {
-        event_writer.send(PhysicEvent::TogglePhysics);
+        event_writer.send(PhysicRequestEvent::TogglePhysics);
         keys.reset(KeyCode::Space);
     }
 }
