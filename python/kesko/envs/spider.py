@@ -10,9 +10,6 @@ from ..color import Color
 from ..model import KeskoModel
 
 
-BODY_NAME = "spider-0"
-
-
 class SpiderEnv(gym.Env):
     def __init__(self, device: Optional[Union[str, torch.device]] = None): 
 
@@ -24,22 +21,22 @@ class SpiderEnv(gym.Env):
         # Spawn models and start physics
         self._kesko.send([
             SpawnAction(model=KeskoModel.Plane, position=[0.0, 0.0, 0.0], color=Color.WHITE),
-            SpawnAction(model=KeskoModel.Spider, position=[0.0, 2.0, 0.0], color=Color.GREEN),
-            RunPhysics
+            SpawnAction(model=KeskoModel.Spider, position=[0.0, 2.0, 0.0], color=Color.GREEN)
         ])
 
-        # get initial state 
-        initial_state = self._kesko.send(GetState)[0][MULTIBODY_STATES][0]
-        tensor_state = self._to_tensor(initial_state)
-        
-        # Kesko stores all the bodies that are in the environment, get the body named by name.
-        if BODY_NAME in self._kesko.bodies:
-            body = self._kesko.bodies[BODY_NAME]
-            self.spider_name = body.name
-            self.spider_joints = body.joints
-        else:
+        # Kesko stores all the bodies that are in the environment, get the body named by base name.
+        try:
+            self.spider_name = [name for name in self._kesko.bodies.keys() if 'spider' in name][0]
+            self.spider_joints = self._kesko.bodies[self.spider_name]
+        except IndexError as e:
             self.close()
-            raise ValueError("Could not get body from Kesko")
+            raise ValueError(f"Could not get body from Kesko: {e}")
+
+        # get initial state 
+        initial_state = self._get_state()
+        tensor_state = self._to_tensor(initial_state)
+
+        self._kesko.send(RunPhysics)
 
         # TODO: Send the limits from Kesko
         low = -np.pi / 8.0
@@ -82,3 +79,9 @@ class SpiderEnv(gym.Env):
     
     def close(self):
         self._kesko.close()
+
+    def _get_state(self) -> dict:
+        response = self._kesko.send(GetState)
+        multibody_states = [resp for resp in response if MULTIBODY_STATES in resp][0][MULTIBODY_STATES]
+        spider_state = [body for body in multibody_states if body['name'] == self.spider_name][0]
+        return spider_state

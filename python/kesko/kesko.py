@@ -8,9 +8,9 @@ import torch
 
 from .config import KESKO_BIN_PATH, URL
 from .protocol import (
-    ApplyControlAction, Communicator, KeskoRequest, 
+    LINKS, ApplyControlAction, Communicator, KeskoRequest, 
     GetState, Shutdown,
-    JOINT_STATES, MULTIBODY_STATES, MULTIBODY_NAME
+    JOINT_STATES, MULTIBODY_STATES, NAME, MULTIBODY_SPAWNED
 )
 
 
@@ -75,16 +75,14 @@ class Kesko:
         return actions
     
     def _parse_response(self, response):
-
         for rp in response:
             if isinstance(rp, dict):
-                if MULTIBODY_STATES in rp:
-                    for body_state in rp[MULTIBODY_STATES]:
-                        if body_state[MULTIBODY_NAME] not in self.bodies:
-                            # Add body info
-                            name = body_state[MULTIBODY_NAME]
-                            joint_names = [k for k, _ in body_state[JOINT_STATES].items()] 
-                            self.bodies[name] = Multibody(name, joint_names)
+                if MULTIBODY_SPAWNED in rp:
+                    body = rp[MULTIBODY_SPAWNED]
+                    if body[NAME] not in self.bodies:
+                        # Add body info
+                        name = body[NAME]
+                        self.bodies[name] = Multibody(name, body[LINKS])
     
     def get_body_name(self, idx: int) -> Optional[str]:
         return list(self.bodies.keys())[idx]

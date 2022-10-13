@@ -74,8 +74,8 @@ pub fn spawn_system(
     for event in spawn_event_reader.iter() {
         if let SpawnEvent::Spawn { model, transform, color} = event {
 
-            warn!("Spawning model {:?}", model);
-            
+            debug!("Spawning model {:?}", model);
+
             let material = materials.add(color.clone().into());
 
             match model {

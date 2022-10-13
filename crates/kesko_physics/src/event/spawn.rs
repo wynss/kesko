@@ -11,7 +11,8 @@ use crate::{
 #[derive(Clone, Serialize, Deserialize)]
 pub enum BodySpawnedEvent {
     MultibodySpawned {
-        name: String
+        name: String,
+        links: Vec<String>
     },
     RigidBodySpawned {
         name: String
@@ -26,7 +27,10 @@ pub(crate) fn send_spawned_events(
     for (name, root) in bodies.iter() {
         warn!("Sending spawn event"); 
         if let Some(root) = root {
-            event_writer.send(BodySpawnedEvent::MultibodySpawned{ name: root.name.clone() });
+            event_writer.send(BodySpawnedEvent::MultibodySpawned{ 
+                name: root.name.clone(),
+                links: root.child_map.keys().cloned().collect()
+            });
         } else {
             event_writer.send(BodySpawnedEvent::RigidBodySpawned{ name: name.0.clone() })
         }

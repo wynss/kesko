@@ -12,9 +12,12 @@ from .model import KeskoModel
 
 logger = logging.getLogger(__name__)
 
-MULTIBODY_NAME = "name"
-JOINT_STATES = "joint_states"
+NAME = "name"
 MULTIBODY_STATES = "multibody_states"
+MULTIBODY_SPAWNED = "MultibodySpawned"
+
+JOINT_STATES = "joint_states"
+LINKS = 'links'
 GLOBAL_POSITION = "global_position"
 
 
