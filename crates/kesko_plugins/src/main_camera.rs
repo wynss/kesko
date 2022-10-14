@@ -32,7 +32,7 @@ pub fn spawn_camera(mut commands: Commands) {
         transform: camera_transform,
         ..Default::default()
     }).insert(PanOrbitCamera {
-        distance,
+        dist_to_center: distance,
         ..Default::default()
     }).insert_bundle(InteractorBundle::<GroupDynamic>::default());
 }
