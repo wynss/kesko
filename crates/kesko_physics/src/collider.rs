@@ -150,7 +150,7 @@ mod tests {
         world.init_resource::<rapier::RigidBodySet>();
         world.init_resource::<rapier::ColliderSet>();
 
-        let test_stage = SystemStage::parallel()
+        let test_stage = SystemStage::single_threaded()
             .with_system(add_rigid_bodies)
             .with_system(add_colliders.after(add_rigid_bodies));
 

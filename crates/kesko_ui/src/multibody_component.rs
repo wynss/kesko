@@ -277,11 +277,7 @@ impl MultibodyUIComponent {
             // send motor action if the value has changed
             joint_motor_event_writer.send(JointMotorEvent {
                 entity: *joint_entity,
-                action: MotorAction::PositionRevolute { 
-                    position: joint_data.val_axis_1.to_radians(), 
-                    damping: 0.1, 
-                    stiffness: 1.0 
-                }
+                action: MotorAction::PositionRevolute { position: joint_data.val_axis_1.to_radians() }
             });
         }
     }
@@ -291,7 +287,7 @@ impl MultibodyUIComponent {
             // send motor action if the value has changed
             joint_motor_event_writer.send(JointMotorEvent {
                 entity: *joint_entity,
-                action: MotorAction::PositionPrismatic { position: joint_data.val_axis_1, damping: 0.1, stiffness: 1.0 }
+                action: MotorAction::PositionPrismatic { position: joint_data.val_axis_1 }
             });
         }
     }
@@ -305,9 +301,7 @@ impl MultibodyUIComponent {
                     entity: *joint_entity,
                     action: MotorAction::PositionSpherical { 
                         position: joint_data.val_axis_1.to_radians(),
-                        axis: JointAxis::AngX,
-                        damping: 0.1, 
-                        stiffness: 2.0 
+                        axis: JointAxis::AngX
                     }
                 });
             }
@@ -317,9 +311,7 @@ impl MultibodyUIComponent {
                     entity: *joint_entity,
                     action: MotorAction::PositionSpherical { 
                         position: joint_data.val_axis_2.to_radians(),
-                        axis: JointAxis::AngY,
-                        damping: 0.1, 
-                        stiffness: 2.0 
+                        axis: JointAxis::AngY
                     }
                 });
             }
@@ -329,9 +321,7 @@ impl MultibodyUIComponent {
                     entity: *joint_entity,
                     action: MotorAction::PositionSpherical { 
                         position: joint_data.val_axis_3.to_radians(),
-                        axis: JointAxis::AngZ,
-                        damping: 0.1, 
-                        stiffness: 2.0 
+                        axis: JointAxis::AngZ
                     }
                 });
             }

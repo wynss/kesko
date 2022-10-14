@@ -33,6 +33,7 @@ use super::Model;
 const MASS: f32 = 0.1;
 
 const STIFFNESS: f32 = 1.0;
+const DAMPING: f32 = 0.3;
 
 const HEAD_RADIUS: f32 = 0.13;
 const NECK_LENGTH: f32 = 0.13;
@@ -100,6 +101,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::X,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-FRAC_PI_4, FRAC_PI_4)),
             ..default()
         }))
@@ -121,6 +123,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::Y,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
         }))
@@ -143,6 +146,7 @@ impl Humanoid {
             parent_anchor,
             child_anchor,
             axis: Axis::Z,
+            damping: DAMPING,
             stiffness: STIFFNESS,
             limits: Some(Vec2::new(-FRAC_PI_6, FRAC_PI_6)),
             ..default()
@@ -254,6 +258,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::Z,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-FRAC_PI_6, PI)),
             ..default()
         }))
@@ -277,6 +282,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::X,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
         }))
@@ -300,6 +306,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::X,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-FRAC_PI_2, 0.0)),
             ..default()
         }))
@@ -323,6 +330,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::Z,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-PI, FRAC_PI_6)),
             ..default()
         }))
@@ -346,6 +354,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::X,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
         }))
@@ -369,6 +378,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::X,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-FRAC_PI_2, 0.0)),
             ..default()
         }))
@@ -405,6 +415,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::Z,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
         }))
@@ -428,6 +439,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::X,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
         }))
@@ -451,6 +463,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::X,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(0.0, FRAC_PI_2)),
             ..default()
         }))
@@ -474,6 +487,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::X,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(0.0, FRAC_PI_2)),
             ..default()
         }))
@@ -497,6 +511,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::Z,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
         }))
@@ -520,6 +535,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::X,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
             ..default()
         }))
@@ -543,6 +559,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::X,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(-FRAC_PI_2, 0.0)),
             ..default()
         }))
@@ -566,6 +583,7 @@ impl Humanoid {
             child_anchor,
             axis: Axis::X,
             stiffness: STIFFNESS,
+            damping: DAMPING,
             limits: Some(Vec2::new(0.0, FRAC_PI_2)),
             ..default()
         }))

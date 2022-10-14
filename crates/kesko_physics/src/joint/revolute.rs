@@ -50,8 +50,10 @@ impl From<RevoluteJoint> for GenericJoint {
             .local_anchor2(joint.child_anchor.translation.into_rapier());
 
         if joint.stiffness > 0.0 || joint.damping > 0.0 {
-            builder = builder.motor(0.0, 0.0, joint.stiffness, joint.damping).motor_max_force(joint.max_motor_force);
+            builder = builder.motor(0.0, 0.0, joint.stiffness, joint.damping);
         }
+
+        builder = builder.motor_max_force(joint.max_motor_force);
 
         if let Some(limits) = joint.limits {
             builder = builder.limits(limits.into());

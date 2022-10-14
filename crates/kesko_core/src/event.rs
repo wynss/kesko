@@ -69,7 +69,7 @@ pub fn handle_motor_command_requests(
                         if let Some(e) = root.child_map.get(joint_name) {
                             motor_event_writer.send(JointMotorEvent {
                                 entity: *e,
-                                action: MotorAction::PositionRevolute { position: *val, damping: 0.0, stiffness: 1.0 }
+                                action: MotorAction::PositionRevolute { position: *val }
                             });
                         }
                     }
