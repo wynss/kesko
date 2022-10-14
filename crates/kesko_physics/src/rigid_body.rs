@@ -92,7 +92,7 @@ mod tests {
 
         let mut world = World::default();
 
-        let mut test_stage = SystemStage::parallel();
+        let mut test_stage = SystemStage::single_threaded();
         test_stage.add_system(add_rigid_bodies);
 
         world.init_resource::<Entity2BodyHandle>();

@@ -275,7 +275,7 @@ pub(crate) fn update_joint_motors_system(
                                 match joint_link.joint.data.as_revolute_mut() {
                                     Some(rev_joint) => { 
                                         let motor = rev_joint.motor().expect("Joint should have a motor");
-                                        rev_joint.set_motor_velocity(velocity, 1.0); 
+                                        rev_joint.set_motor_velocity(velocity, motor.damping); 
                                     },
                                     None => { info!("Joint was not a revolute joint for revolute joint event"); }
                                 }
@@ -418,15 +418,15 @@ mod tests {
         let (mut world, body_handle1, body_handle2, mut joint_set) = setup_joint_motor();
 
         // create and insert joint
-        let joint = rapier::RevoluteJointBuilder::new(rapier::Vector::x_axis()).build();
+        let expected_vel = 2.3;
+        let expected_factor = 3.4;
+        let joint = rapier::RevoluteJointBuilder::new(rapier::Vector::x_axis()).motor(0.0, expected_vel, 0.0, expected_factor).build();
         let joint_handle = joint_set.insert(body_handle1, body_handle2, joint, true).unwrap();
 
         world.insert_resource(joint_set);
         let entity = world.spawn().insert(MultibodyJointHandle(joint_handle)).id();
 
         // Setup and send test event for setting the velocity
-        let expected_vel = 2.3;
-        let expected_factor = 3.4;
         let mut events = Events::<JointMotorEvent>::default();
         events.send(JointMotorEvent { entity: entity, action: MotorAction::VelocityRevolute { velocity: expected_vel }});
         world.insert_resource(events);
@@ -451,18 +451,19 @@ mod tests {
 
         let (mut world, body_handle1, body_handle2, mut joint_set) = setup_joint_motor();
 
-        // create and insert joint
-        let joint = rapier::RevoluteJointBuilder::new(rapier::Vector::x_axis()).build();
-        let joint_handle = joint_set.insert(body_handle1, body_handle2, joint, true).unwrap();
-
-        world.insert_resource(joint_set);
-        let entity = world.spawn().insert(MultibodyJointHandle(joint_handle)).id();
-
         // Setup and send test event for setting the velocity
         let expected_pos = 2.3;
         let expected_damping = 3.4;
         let expected_stiffness = 4.5;
         let mut events = Events::<JointMotorEvent>::default();
+
+        // create and insert joint
+        let joint = rapier::RevoluteJointBuilder::new(rapier::Vector::x_axis()).motor(expected_pos, 0.0, expected_stiffness, expected_damping).build();
+        let joint_handle = joint_set.insert(body_handle1, body_handle2, joint, true).unwrap();
+
+        world.insert_resource(joint_set);
+        let entity = world.spawn().insert(MultibodyJointHandle(joint_handle)).id();
+
         events.send(JointMotorEvent { 
             entity, 
             action: MotorAction::PositionRevolute { 
@@ -493,16 +494,16 @@ mod tests {
         let (mut world, body_handle1, body_handle2, mut joint_set) = setup_joint_motor();
 
         // create and insert joint
-        let joint = rapier::SphericalJointBuilder::new().build();
+        let expected_vel = 2.3;
+        let expected_factor = 3.4;
+        let test_axis = rapier::JointAxis::AngX;
+        let joint = rapier::SphericalJointBuilder::new().motor(test_axis, 0.0, expected_vel, 0.0, expected_factor).build();
         let joint_handle = joint_set.insert(body_handle1, body_handle2, joint, true).unwrap();
 
         world.insert_resource(joint_set);
         let entity = world.spawn().insert(MultibodyJointHandle(joint_handle)).id();
 
         // Setup and send test event for setting the velocity
-        let expected_vel = 2.3;
-        let expected_factor = 3.4;
-        let test_axis = rapier::JointAxis::AngX;
         let mut events = Events::<JointMotorEvent>::default();
         events.send(JointMotorEvent { 
             entity: entity, 
@@ -532,19 +533,20 @@ mod tests {
     fn test_set_joint_position_spherical() {
 
         let (mut world, body_handle1, body_handle2, mut joint_set) = setup_joint_motor();
+        
+        let expected_pos = 2.3;
+        let expected_damping = 3.4;
+        let expected_stiffness = 4.5;
+        let test_axis = rapier::JointAxis::AngY;
 
         // create and insert joint
-        let joint = rapier::SphericalJointBuilder::new().build();
+        let joint = rapier::SphericalJointBuilder::new().motor(test_axis, expected_pos, 0.0, expected_stiffness, expected_damping).build();
         let joint_handle = joint_set.insert(body_handle1, body_handle2, joint, true).unwrap();
 
         world.insert_resource(joint_set);
         let entity = world.spawn().insert(MultibodyJointHandle(joint_handle)).id();
 
         // Setup and send test event for setting the velocity
-        let expected_pos = 2.3;
-        let expected_damping = 3.4;
-        let expected_stiffness = 4.5;
-        let test_axis = rapier::JointAxis::AngY;
         let mut events = Events::<JointMotorEvent>::default();
         events.send(JointMotorEvent { 
             entity, 
