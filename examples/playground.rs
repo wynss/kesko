@@ -93,7 +93,7 @@ fn setup(
         ..Default::default()
     })
         .insert(PanOrbitCamera {
-        distance,
+        dist_to_center: distance,
         ..Default::default()
     })
         .insert_bundle(InteractorBundle::<GroupDynamic>::default());
