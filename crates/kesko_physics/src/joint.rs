@@ -223,33 +223,24 @@ pub struct JointMotorEvent {
 #[derive(Debug)]
 pub enum MotorAction {
     PositionRevolute {
-        position: f32,
-        damping: f32,
-        stiffness: f32,
+        position: f32
     },
     VelocityRevolute {
-        velocity: f32,
-        factor: f32
+        velocity: f32
     },
     PositionSpherical {
         position: f32,
-        axis: rapier::JointAxis,
-        damping: f32,
-        stiffness: f32,
+        axis: rapier::JointAxis
     },
     VelocitySpherical {
         velocity: f32,
         axis: rapier::JointAxis,
-        factor: f32
     },
     PositionPrismatic {
         position: f32,
-        damping: f32,
-        stiffness: f32,
     },
     VelocityPrismatic {
         velocity: f32,
-        factor: f32
     }
 }
 
@@ -271,39 +262,57 @@ pub(crate) fn update_joint_motors_system(
                     Some(joint_link) => {
 
                         match event.action {
-                            MotorAction::PositionRevolute { position, damping, stiffness} => {
+                            MotorAction::PositionRevolute { position } => {
                                 match joint_link.joint.data.as_revolute_mut() {
-                                    Some(rev_joint) => { rev_joint.set_motor_position(position, stiffness, damping); },
+                                    Some(rev_joint) => {
+                                        let motor = rev_joint.motor().expect("Joint should have a motor");
+                                        rev_joint.set_motor_position(position, motor.stiffness, motor.damping); 
+                                    },
                                     None => { info!("Joint was not a revolute joint for revolute joint event"); }
                                 }
                             },
-                            MotorAction::VelocityRevolute { velocity, factor} => {
+                            MotorAction::VelocityRevolute { velocity } => {
                                 match joint_link.joint.data.as_revolute_mut() {
-                                    Some(rev_joint) => { rev_joint.set_motor_velocity(velocity, factor); },
+                                    Some(rev_joint) => { 
+                                        let motor = rev_joint.motor().expect("Joint should have a motor");
+                                        rev_joint.set_motor_velocity(velocity, 1.0); 
+                                    },
                                     None => { info!("Joint was not a revolute joint for revolute joint event"); }
                                 }
                             },
-                            MotorAction::PositionSpherical {axis, position, damping, stiffness} => {
+                            MotorAction::PositionSpherical {axis, position } => {
                                 match joint_link.joint.data.as_spherical_mut() {
-                                    Some(rev_joint) => { rev_joint.set_motor_position(axis, position, stiffness, damping); },
+                                    Some(spherical_joint) => {
+                                        let motor = spherical_joint.motor(axis).expect("Joint should have a motor");
+                                        spherical_joint.set_motor_position(axis, position, motor.stiffness, motor.damping); 
+                                    },
                                     None => { info!("Joint was not a spherical joint for spherical joint event"); }
                                 }
                             },
-                            MotorAction::VelocitySpherical {axis, velocity, factor} => {
+                            MotorAction::VelocitySpherical {axis, velocity } => {
                                 match joint_link.joint.data.as_spherical_mut() {
-                                    Some(spherical_joint) => { spherical_joint.set_motor_velocity(axis, velocity, factor); },
+                                    Some(spherical_joint) => { 
+                                        let motor = spherical_joint.motor(axis).expect("Joint should have a motor");
+                                        spherical_joint.set_motor_velocity(axis, velocity, motor.damping); 
+                                    },
                                     None => { info!("Joint was not a spherical joint for spherical joint event"); }
                                 }
                             },
-                            MotorAction::PositionPrismatic { position, damping, stiffness } => {
+                            MotorAction::PositionPrismatic { position } => {
                                 match joint_link.joint.data.as_prismatic_mut() {
-                                    Some(prismatic_joint) => { prismatic_joint.set_motor_position(position, stiffness, damping); }
+                                    Some(prismatic_joint) => { 
+                                        let motor = prismatic_joint.motor().expect("Joint should have a motor");
+                                        prismatic_joint.set_motor_position(position, motor.stiffness, motor.damping);
+                                    }
                                     None => { info!("Joint was not a prismatic joint for prismatic joint event"); }
                                 }
                             },
-                            MotorAction::VelocityPrismatic { velocity, factor } => {
+                            MotorAction::VelocityPrismatic { velocity } => {
                                 match joint_link.joint.data.as_prismatic_mut() {
-                                    Some(prismatic_joint) => { prismatic_joint.set_motor_velocity(velocity, factor); }
+                                    Some(prismatic_joint) => { 
+                                        let motor = prismatic_joint.motor().expect("Joint should have a motor");
+                                        prismatic_joint.set_motor_velocity(velocity, motor.damping); 
+                                    }
                                     None => { info!("Joint was not a prismatic joint for prismatic joint event"); }
                                 }
                             }
@@ -419,7 +428,7 @@ mod tests {
         let expected_vel = 2.3;
         let expected_factor = 3.4;
         let mut events = Events::<JointMotorEvent>::default();
-        events.send(JointMotorEvent { entity: entity, action: MotorAction::VelocityRevolute { velocity: expected_vel, factor: expected_factor }});
+        events.send(JointMotorEvent { entity: entity, action: MotorAction::VelocityRevolute { velocity: expected_vel }});
         world.insert_resource(events);
 
         // Run stage
@@ -457,9 +466,7 @@ mod tests {
         events.send(JointMotorEvent { 
             entity, 
             action: MotorAction::PositionRevolute { 
-                position: expected_pos, 
-                damping: expected_damping,
-                stiffness: expected_stiffness
+                position: expected_pos
             }
         });
         world.insert_resource(events);
@@ -501,8 +508,7 @@ mod tests {
             entity: entity, 
             action: MotorAction::VelocitySpherical {
                 velocity: expected_vel, 
-                axis: test_axis, 
-                factor: expected_factor 
+                axis: test_axis
             }
         });
         world.insert_resource(events);
@@ -544,9 +550,7 @@ mod tests {
             entity, 
             action: MotorAction::PositionSpherical {
                 position: expected_pos, 
-                axis: test_axis,
-                damping: expected_damping,
-                stiffness: expected_stiffness
+                axis: test_axis
             }
         });
         world.insert_resource(events);

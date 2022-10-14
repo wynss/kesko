@@ -40,7 +40,7 @@ fn test_scene(
 
     kesko_models::plane::spawn(
         &mut commands,
-        materials.add(Color::DARK_GRAY.into()), 
+        materials.add(Color::WHITE.into()), 
         &mut meshes, 
     );
 

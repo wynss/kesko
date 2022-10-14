@@ -77,6 +77,9 @@ impl Car {
         let half_wall_height = wall_height / 2.0;
         let half_wall_thick = wall_thickness / 2.0;
 
+        let stiffness = 1.0;
+        let damping = 10.0;
+
         // Frame
         let frame = commands.spawn_bundle( MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
@@ -175,7 +178,8 @@ impl Car {
             child_anchor,
             axis: Axis::X,
             limits: Some(Vec2::new(-FRAC_PI_6, FRAC_PI_6)),
-            stiffness: 1.0,
+            stiffness,
+            damping: 0.1,
             ..default()
         }))
         .insert(RigidBodyName(LEFT_FRONT_WHEEL_TURN.to_owned()))
@@ -216,7 +220,8 @@ impl Car {
             child_anchor,
             axis: Axis::X,
             limits: Some(Vec2::new(-FRAC_PI_6, FRAC_PI_6)),
-            stiffness: 1.0,
+            stiffness,
+            damping: 0.1,
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -257,6 +262,7 @@ impl Car {
             parent_anchor,
             child_anchor,
             axis: Axis::Y,
+            damping,
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -277,6 +283,7 @@ impl Car {
             parent_anchor,
             child_anchor,
             axis: Axis::Y,
+            damping,
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -347,43 +354,38 @@ impl Car {
                 match event {
                     CarControlEvent::Velocity(velocity) => {
 
-                        let (velocity, factor) = match velocity {
-                            CarVelocity::Forward => (controller.max_velocity, controller.damping),
-                            CarVelocity::Backward => (-controller.max_velocity, controller.damping),
-                            CarVelocity::NoVelocity => (0.0, controller.damping)
+                        let velocity = match velocity {
+                            CarVelocity::Forward => controller.max_velocity,
+                            CarVelocity::Backward => -controller.max_velocity,
+                            CarVelocity::NoVelocity => 0.0
                         };
 
                         if let Some(entity) = car_body.child_map.get(RIGHT_REAR_WHEEL) {
                             joint_event_writer.send(JointMotorEvent {
                                 entity: *entity,
-                                action: MotorAction::VelocityRevolute { velocity: -velocity, factor }
+                                action: MotorAction::VelocityRevolute { velocity: -velocity }
                             });
                         }
                         if let Some(entity) = car_body.child_map.get(LEFT_REAR_WHEEL) {
                             joint_event_writer.send(JointMotorEvent {
                                 entity: *entity,
-                                action: MotorAction::VelocityRevolute { velocity, factor }
+                                action: MotorAction::VelocityRevolute { velocity }
                             });
                         }
                     },
                     CarControlEvent::Direction(direction) => {
 
-                        let (position, damping, stiffness) = match direction {
-                            CarDirection::Left => {
-                                (controller.max_turn_angle, controller.damping, controller.stiffness)
-                            },
-                            CarDirection::Right => {
-                                (-controller.max_turn_angle, controller.damping, controller.stiffness)
-                            },
-                            CarDirection::NoAngle => {
-                                (0.0, controller.damping, controller.stiffness)
-                            }
+                        let position = match direction {
+                            CarDirection::Left => { controller.max_turn_angle },
+                            CarDirection::Right => { -controller.max_turn_angle },
+                            CarDirection::NoAngle => { 0.0 }
                         };
 
                         if let Some(entity) = car_body.child_map.get(LEFT_FRONT_WHEEL_TURN) {
                             joint_event_writer.send(JointMotorEvent { 
                                 entity: *entity,
-                                action: MotorAction::PositionRevolute { position: -position, damping, stiffness } })
+                                action: MotorAction::PositionRevolute { position: -position } 
+                            })
                         } else {
                             error!("Could not get {}", LEFT_FRONT_WHEEL_TURN);
                         }
@@ -391,7 +393,8 @@ impl Car {
                         if let Some(entity) = car_body.child_map.get(RIGHT_FRONT_WHEEL_TURN) {
                             joint_event_writer.send(JointMotorEvent { 
                                 entity: *entity,
-                                action: MotorAction::PositionRevolute { position, damping, stiffness } })
+                                action: MotorAction::PositionRevolute { position }
+                            })
                         } else {
                             error!("Could not get {}", RIGHT_FRONT_WHEEL_TURN);
                         }
@@ -409,17 +412,13 @@ impl Car {
 struct CarController {
     max_velocity: f32,      // m/s
     max_turn_angle: f32,    // rad
-    damping: f32,
-    stiffness: f32
 }
 
 impl Default for CarController {
     fn default() -> Self {
        Self {
-            max_velocity: 12.0,
+            max_velocity: 20.0,
             max_turn_angle: FRAC_PI_6,
-            damping: 0.1,
-            stiffness: 1.0
        } 
     }
 }
