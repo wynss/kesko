@@ -15,7 +15,7 @@ use kesko_physics::{
         prismatic::PrismaticJoint, 
         fixed::FixedJoint
     },
-    multibody::MultibodyRoot
+    multibody::MultibodyRoot, mass::Mass
 };
 use kesko_object_interaction::InteractiveBundle;
 use kesko_core::{
@@ -68,7 +68,7 @@ struct WheelyController {
 impl Default for WheelyController {
     fn default() -> Self {
         Self {
-            wheel_velocity: 10.0,
+            wheel_velocity: 8.0,
             arm_velocity: 1.0
         }
     }
@@ -107,6 +107,9 @@ impl Wheely {
         let rh = BODY_RADIUS / 2.0 + 0.2;
         let wheel_offset = WHEEL_RADIUS / 4.0;
 
+        let damping = 100.0;
+        let stiffness = 0.0;
+
         let body = commands.spawn_bundle(MeshPhysicBodyBundle::from(RigidBody::Dynamic,
             Shape::Cylinder { radius: BODY_RADIUS, length: BODY_HEIGHT, resolution: 21 } , 
             material.clone(), 
@@ -114,6 +117,7 @@ impl Wheely {
             meshes
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+        .insert(Mass { val: 1.0 })
         .insert(RigidBodyName(NAME.to_owned()))
         .insert(ControlDescription("Use following keys\nRight wheel: E-D\tLeft wheel: Q-A\tArm joint 1: R-F\tArm joint 2: T-G".to_owned()))
         .id();
@@ -133,9 +137,12 @@ impl Wheely {
             parent_anchor,
             child_anchor,
             axis: Axis::Y,
+            damping,
+            stiffness,
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+        .insert(Mass { val: 1.0 })
         .insert(RigidBodyName(LEFT_WHEEL.to_owned()));
 
         // right wheel
@@ -153,9 +160,12 @@ impl Wheely {
             parent_anchor,
             child_anchor,
             axis: Axis::Y,
+            damping,
+            stiffness,
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+        .insert(Mass { val: 1.0 })
         .insert(RigidBodyName(RIGHT_WHEEL.to_owned()));
         
         // back wheel
@@ -171,11 +181,10 @@ impl Wheely {
             parent_anchor,
             child_anchor,
             axis: Axis::Y,
-            stiffness: 1.0,
-            damping: 0.1,
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+        .insert(Mass { val: 0.5 })
         .insert(RigidBodyName("back_wheel_turn".to_owned()))
         .id();
         
@@ -196,6 +205,7 @@ impl Wheely {
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+        .insert(Mass{ val: 0.2 })
         .insert(RigidBodyName("back_wheel".to_owned()));
 
         Self::build_arm(body, commands, material, transform, meshes);
@@ -242,10 +252,12 @@ impl Wheely {
             child_anchor,
             axis: Axis::X,
             stiffness: 0.1,
+            damping: 10.0,
             limits: Some(Vec2::new(0.0, PI)),
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+        .insert(Mass { val: 0.5 })
         .insert(RigidBodyName(ARM_LINK_1.to_owned()))
         .id();
         
@@ -265,9 +277,11 @@ impl Wheely {
             axis: Axis::NegY,
             limits: Some(Vec2::new(0.0, 0.45)),
             stiffness: 0.1,
+            damping: 10.0,
             ..default()
         }))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+        .insert(Mass { val: 0.5 })
         .insert(RigidBodyName(ARM_LINK_2.to_owned()));
 
     }
