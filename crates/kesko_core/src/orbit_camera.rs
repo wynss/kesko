@@ -46,6 +46,7 @@ pub struct PanOrbitCamera {
     pub pan_vel: Vec2,
     pub pan_acc: f32,
     pub pan_friction: f32,
+    pub pan_max_vel: f32,
 
     // zoom
     pub zoom_sensitivity: f32,
@@ -68,7 +69,7 @@ impl Default for PanOrbitCamera {
             orbit_sensitivity: 0.2,
             orbit_button: MouseButton::Right,
             orbit_vel: Vec2::ZERO,
-            orbit_max_vel: 20.0,
+            orbit_max_vel: 10.0,
             orbit_acc: 1.0,
             orbit_friction: 0.25,
 
@@ -77,6 +78,7 @@ impl Default for PanOrbitCamera {
             pan_vel: Vec2::ZERO,
             pan_acc: 0.1,
             pan_friction: 0.2,
+            pan_max_vel: 0.1,
 
             zoom_sensitivity: 10.0,
             zoom_vel: 0.0,
@@ -191,6 +193,7 @@ fn handle_camera_events(
                     mouse_move *= Vec2::new(projection.fov * projection.aspect_ratio, projection.fov) / window_size;
                     let acc = camera.pan_acc;
                     camera.pan_vel += mouse_move * acc;
+                    camera.pan_vel = camera.pan_vel.clamp_length_max(camera.pan_max_vel);
                 }
                 PanOrbitCameraEvents::Zoom(scroll_move) => {
                     zoom_updated = true;
@@ -202,8 +205,7 @@ fn handle_camera_events(
                     camera.translation_vel += translation.normalize() * acceleration;
                     let new_velocity =camera.translation_vel.clamp_length_max(camera.max_velocity);
                     camera.translation_vel = new_velocity;
-                },
-                _ => {}
+                }
             }
         }
 

@@ -8,8 +8,7 @@ use kesko_physics::{
         RigidBodyName
     },
     joint::{
-        Joint,
-        Axis,
+        KeskoAxis,
         revolute::RevoluteJoint,
         fixed::FixedJoint, spherical::SphericalJoint
     }, mass::Mass
@@ -57,11 +56,11 @@ fn setup_scene(
         world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         &mut meshes
     ))
-    .insert(Joint::new(bench, SphericalJoint {
-        parent_anchor,
-        child_anchor,
-        ..default()
-    }))
+    .insert(
+        SphericalJoint::attach_to(bench)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+    )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("spherical".to_owned()));
     
@@ -74,12 +73,13 @@ fn setup_scene(
         world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         &mut meshes
     ))
-    .insert(Joint::new(bench, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::Y,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(bench)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Y)
+            .with_motor_params(1.0, 0.1)
+    )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("world_aligned_y".to_owned()));
     
@@ -92,12 +92,13 @@ fn setup_scene(
         world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         &mut meshes
     ))
-    .insert(Joint::new(bench, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::X,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(bench)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::X)
+            .with_motor_params(1.0, 0.1)
+    )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("world_aligned_x".to_owned()));
 
@@ -110,14 +111,13 @@ fn setup_scene(
         world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         &mut meshes
     ))
-    .insert(Joint::new(bench, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::Z,
-        damping: 0.1,
-        stiffness: 1.0,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(bench)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Z)
+            .with_motor_params(1.0, 0.1)
+    )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("world_aligned_z".to_owned()));
     
@@ -130,14 +130,13 @@ fn setup_scene(
         world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         &mut meshes
     ))
-    .insert(Joint::new(bench, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::X,
-        damping: 0.1,
-        stiffness: 1.0,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(bench)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::X)
+            .with_motor_params(1.0, 0.1)
+    )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("x_90_x_parent_rot".to_owned()));
     
@@ -150,14 +149,13 @@ fn setup_scene(
         world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         &mut meshes
     ))
-    .insert(Joint::new(bench, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::X,
-        damping: 0.1,
-        stiffness: 1.0,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(bench)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::X)
+            .with_motor_params(1.0, 0.1)
+    )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("x_90_x_child_rot".to_owned()));
 
@@ -172,14 +170,13 @@ fn setup_scene(
         world_transform,
         &mut meshes
     ))
-    .insert(Joint::new(bench, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::Z,
-        damping: 0.1,
-        stiffness: 1.0,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(bench)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Z)
+            .with_motor_params(1.0, 0.1)
+    )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("stick_1_z".to_owned()))
     .id();
@@ -194,15 +191,14 @@ fn setup_scene(
         world_transform,
         &mut meshes
     ))
-    .insert(Joint::new(stick_1, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::X,
-        damping: 0.1,
-        stiffness: 1.0,
-        limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(stick_1)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::X)
+            .with_motor_params(1.0, 0.1)
+            .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
+    )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("stick_2_x".to_owned()))
     .id();
@@ -217,14 +213,13 @@ fn setup_scene(
         world_transform,
         &mut meshes
     ))
-    .insert(Joint::new(stick_2, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::Y,
-        damping: 0.1,
-        stiffness: 1.0,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(stick_2)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Y)
+            .with_motor_params(1.0, 0.1)
+    )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("stick_3_y".to_owned()))
     .id();
@@ -239,14 +234,13 @@ fn setup_scene(
         world_transform,
         &mut meshes
     ))
-    .insert(Joint::new(stick_3, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::Y,
-        damping: 0.1,
-        stiffness: 1.0,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(stick_3)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Y)
+            .with_motor_params(1.0, 0.1)
+    )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("stick_4_y".to_owned()));
 
@@ -296,10 +290,10 @@ fn build_test_bench(
         world_transform,
         meshes
     ))
-    .insert(Joint::new(base, FixedJoint {
-        parent_anchor,
-        child_anchor
-    }))
+    .insert(FixedJoint::attach_to(base)
+        .with_parent_anchor(parent_anchor)
+        .with_child_anchor(child_anchor)
+    )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("base".to_owned()))
     .id();
@@ -314,10 +308,10 @@ fn build_test_bench(
         world_transform,
         meshes
     ))
-    .insert(Joint::new(base_pole, FixedJoint {
-        parent_anchor,
-        child_anchor
-    }))
+    .insert(FixedJoint::attach_to(base_pole)
+        .with_parent_anchor(parent_anchor)
+        .with_child_anchor(child_anchor)
+    )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(RigidBodyName("bench".to_owned()))
     .id();

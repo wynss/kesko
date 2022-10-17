@@ -45,7 +45,6 @@ fn test_scene(
     mut commands: Commands, 
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>
 ) {
 
     kesko_models::plane::spawn(
@@ -80,30 +79,30 @@ fn test_scene(
         &mut meshes,
     );
 
-    kesko_models::humanoid::Humanoid::spawn(
-        &mut commands,
-        materials.add(StandardMaterial { 
-            base_color: Color::ORANGE,
-            perceptual_roughness: 1.0,
-            ..default()
-        }), 
-        Transform::from_xyz(2.0, 2.0, 2.0),
-        &mut meshes
-    );
+    // kesko_models::humanoid::Humanoid::spawn(
+    //     &mut commands,
+    //     materials.add(StandardMaterial { 
+    //         base_color: Color::ORANGE,
+    //         perceptual_roughness: 1.0,
+    //         ..default()
+    //     }), 
+    //     Transform::from_xyz(2.0, 2.0, 2.0),
+    //     &mut meshes
+    // );
 
-    // spawn sphere that will generate collision events
-    commands.spawn_bundle(PbrBundle {
-        material: materials.add(Color::PURPLE.into()),
-        mesh: meshes.add(Mesh::from(shape::Icosphere {radius: 0.2, subdivisions: 5})),
-        transform: Transform::from_translation(Vec3::new(0.0, 1.0, 2.0)),
-        ..default()
-    })
-    .insert(RigidBody::Dynamic)
-    .insert(ColliderShape::Sphere { radius: 0.2 })
-    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(Force::default())
-    .insert(GravityScale::default())
-    .insert(GenerateCollisionEvents);
+    // // spawn sphere that will generate collision events
+    // commands.spawn_bundle(PbrBundle {
+    //     material: materials.add(Color::PURPLE.into()),
+    //     mesh: meshes.add(Mesh::from(shape::Icosphere {radius: 0.2, subdivisions: 5})),
+    //     transform: Transform::from_translation(Vec3::new(0.0, 1.0, 2.0)),
+    //     ..default()
+    // })
+    // .insert(RigidBody::Dynamic)
+    // .insert(ColliderShape::Sphere { radius: 0.2 })
+    // .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    // .insert(Force::default())
+    // .insert(GravityScale::default())
+    // .insert(GenerateCollisionEvents);
 
     // Light
     const HALF_SIZE: f32 = 10.0;

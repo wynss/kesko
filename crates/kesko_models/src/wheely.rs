@@ -8,9 +8,8 @@ use kesko_physics::{
     }, 
     joint::{
         JointMotorEvent,
-        MotorAction,
-        Joint, 
-        Axis,
+        MotorCommand,
+        KeskoAxis,
         revolute::RevoluteJoint, 
         prismatic::PrismaticJoint, 
         fixed::FixedJoint
@@ -62,14 +61,22 @@ impl Plugin for WheelyPlugin {
 #[derive(Component)]
 struct WheelyController {
     wheel_velocity: f32,
-    arm_velocity: f32
+    arm_velocity: f32,
+    arm_stiffness: f32,
+    arm_damping: f32,
+    wheel_stiffness: f32,
+    wheel_damping: f32,
 }
 
 impl Default for WheelyController {
     fn default() -> Self {
         Self {
-            wheel_velocity: 8.0,
-            arm_velocity: 1.0
+            wheel_velocity: 6.0,
+            arm_velocity: 1.0,
+            arm_stiffness: 1.0,
+            arm_damping: 1.0,
+            wheel_stiffness: 0.0,
+            wheel_damping: 1.0,
         }
     }
 }
@@ -117,7 +124,7 @@ impl Wheely {
             meshes
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 1.0 })
+        // .insert(Mass { val: 1.0 })
         .insert(RigidBodyName(NAME.to_owned()))
         .insert(ControlDescription("Use following keys\nRight wheel: E-D\tLeft wheel: Q-A\tArm joint 1: R-F\tArm joint 2: T-G".to_owned()))
         .id();
@@ -133,16 +140,15 @@ impl Wheely {
             world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
         ))
-        .insert(Joint::new(body, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Y,
-            damping,
-            stiffness,
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(body)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Y)
+            .with_motor_params(stiffness, damping)
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 1.0 })
+        // .insert(Mass { val: 1.0 })
         .insert(RigidBodyName(LEFT_WHEEL.to_owned()));
 
         // right wheel
@@ -156,16 +162,15 @@ impl Wheely {
             world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
         ))
-        .insert(Joint::new(body, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Y,
-            damping,
-            stiffness,
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(body)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Y)
+            .with_motor_params(stiffness, damping)
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 1.0 })
+        // .insert(Mass { val: 1.0 })
         .insert(RigidBodyName(RIGHT_WHEEL.to_owned()));
         
         // back wheel
@@ -177,14 +182,14 @@ impl Wheely {
             Shape::Sphere { radius: 0.01, subdivisions: 5 },
             world_transform,
         ))
-        .insert(Joint::new(body, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Y,
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(body)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Y)
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 0.5 })
+        // .insert(Mass { val: 0.5 })
         .insert(RigidBodyName("back_wheel_turn".to_owned()))
         .id();
         
@@ -198,14 +203,14 @@ impl Wheely {
             world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
             meshes
         ))
-        .insert(Joint::new(back_wheel_turn, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Y,
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(back_wheel_turn)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Y)
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass{ val: 0.2 })
+        // .insert(Mass{ val: 0.2 })
         .insert(RigidBodyName("back_wheel".to_owned()));
 
         Self::build_arm(body, commands, material, transform, meshes);
@@ -230,10 +235,11 @@ impl Wheely {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(body, FixedJoint {
-            parent_anchor,
-            child_anchor
-        }))
+        .insert(
+            FixedJoint::attach_to(body)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("arm_base".to_owned())).id();
         
@@ -247,17 +253,16 @@ impl Wheely {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(arm_base, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            stiffness: 0.1,
-            damping: 10.0,
-            limits: Some(Vec2::new(0.0, PI)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(arm_base)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::X)
+            .with_motor_params(0.1, 10.0)
+            .with_limits(Vec2::new(0.0, PI))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 0.5 })
+        // .insert(Mass { val: 0.5 })
         .insert(RigidBodyName(ARM_LINK_1.to_owned()))
         .id();
         
@@ -271,17 +276,16 @@ impl Wheely {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(arm_link_1, PrismaticJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::NegY,
-            limits: Some(Vec2::new(0.0, 0.45)),
-            stiffness: 0.1,
-            damping: 10.0,
-            ..default()
-        }))
+        .insert(
+            PrismaticJoint::attach_to(arm_link_1)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::NegY)
+            .with_motor_params(0.1, 10.0)
+            .with_limits(Vec2::new(0.0, 0.45))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 0.5 })
+        // .insert(Mass { val: 0.5 })
         .insert(RigidBodyName(ARM_LINK_2.to_owned()));
 
     }
@@ -360,69 +364,68 @@ impl Wheely {
     ) {
         if let Ok((root, controller)) = query.get_single() {
             for event in wheely_event_reader.iter() {
-                let (entity, action) = match event {
+                match event {
                     WheelyControlEvent::LeftWheelForward => {
                         let entity = root.child_map.get(LEFT_WHEEL).expect("");
-                        let action = MotorAction::VelocityRevolute { velocity: controller.wheel_velocity };
-                        (entity, action)
+                        let action = MotorCommand::VelocityRevolute { velocity: controller.wheel_velocity, damping: None };
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::LeftWheelBackward => {
                         let entity = root.child_map.get(LEFT_WHEEL).expect("");
-                        let action = MotorAction::VelocityRevolute { velocity: -controller.wheel_velocity };
-                        (entity, action)
+                        let action = MotorCommand::VelocityRevolute { velocity: -controller.wheel_velocity, damping: None };
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::LeftWheelStop => {
                         let entity = root.child_map.get(LEFT_WHEEL).expect("");
-                        let action = MotorAction::VelocityRevolute { velocity: 0.0 };
-                        (entity, action)
+                        let action = MotorCommand::VelocityRevolute { velocity: 0.0, damping: None };
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::RightWheelForward => {
                         let entity = root.child_map.get(RIGHT_WHEEL).expect("");
-                        let action = MotorAction::VelocityRevolute { velocity: controller.wheel_velocity };
-                        (entity, action)
+                        let action = MotorCommand::VelocityRevolute { velocity: controller.wheel_velocity, damping: None };
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::RightWheelBackward => {
                         let entity = root.child_map.get(RIGHT_WHEEL).expect("");
-                        let action = MotorAction::VelocityRevolute { velocity: -controller.wheel_velocity };
-                        (entity, action)
+                        let action = MotorCommand::VelocityRevolute { velocity: -controller.wheel_velocity, damping: None };
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::RightWheelStop => {
                         let entity = root.child_map.get(RIGHT_WHEEL).expect("");
-                        let action = MotorAction::VelocityRevolute { velocity: 0.0 };
-                        (entity, action)
+                        let action = MotorCommand::VelocityRevolute { velocity: 0.0, damping: None };
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::ArmLink1Pos => {
                         let entity = root.child_map.get(ARM_LINK_1).expect("");
-                        let action = MotorAction::VelocityRevolute { velocity: controller.arm_velocity };
-                        (entity, action)
+                        let action = MotorCommand::VelocityRevolute { velocity: controller.arm_velocity, damping: None };
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::ArmLink1Neg => {
                         let entity = root.child_map.get(ARM_LINK_1).expect("");
-                        let action = MotorAction::VelocityRevolute { velocity: -controller.arm_velocity };
-                        (entity, action)
+                        let action = MotorCommand::VelocityRevolute { velocity: -controller.arm_velocity, damping: None };
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::ArmLink1Stop => {
                         let entity = root.child_map.get(ARM_LINK_1).expect("");
-                        let action = MotorAction::VelocityRevolute { velocity: 0.0 };
-                        (entity, action)
+                        let action = MotorCommand::VelocityRevolute { velocity: 0.0, damping: None };
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::ArmLink2Pos => {
                         let entity = root.child_map.get(ARM_LINK_2).expect("");
-                        let action = MotorAction::VelocityPrismatic { velocity: controller.arm_velocity };
-                        (entity, action)
+                        let action = MotorCommand::VelocityPrismatic { velocity: controller.arm_velocity, damping: None };
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::ArmLink2Neg => {
                         let entity = root.child_map.get(ARM_LINK_2).expect("");
-                        let action = MotorAction::VelocityPrismatic { velocity: -controller.arm_velocity };
-                        (entity, action)
+                        let action = MotorCommand::VelocityPrismatic { velocity: -controller.arm_velocity, damping: None };
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::ArmLink2Stop => {
                         let entity = root.child_map.get(ARM_LINK_2).expect("");
-                        let action = MotorAction::VelocityPrismatic { velocity: 0.0 };
-                        (entity, action)
+                        let action = MotorCommand::VelocityPrismatic { velocity: 0.0, damping: None };
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
-                };
-                joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                }
             }
         }
     }

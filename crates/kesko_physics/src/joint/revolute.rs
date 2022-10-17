@@ -3,42 +3,89 @@ use rapier3d::prelude::*;
 
 use crate::conversions::IntoRapier;
 
-use super::{JointTrait, AxisIntoVec, Axis};
+use super::{AxisIntoVec, KeskoAxis, JointState};
 
 
+#[derive(Component, Clone, Copy)]
 pub struct RevoluteJoint {
+    pub parent: Entity,
     pub parent_anchor: Transform,
     pub child_anchor: Transform,
-    pub axis: Axis,
+    pub axis: KeskoAxis,
     pub limits: Option<Vec2>,
     pub damping: f32,
     pub stiffness: f32,
-    pub max_motor_force: Real
+    pub max_motor_force: Real,
+
+    rotation: f32
 }
 
-impl Default for RevoluteJoint {
-    fn default() -> Self {
+impl RevoluteJoint {
+    pub fn attach_to(parent: Entity) -> Self {
         Self { 
+            parent,
             parent_anchor: Transform::default(), 
             child_anchor: Transform::default(), 
-            axis: Axis::X, 
+            axis: KeskoAxis::X, 
             limits: None,
             damping: 0.0,
             stiffness: 0.0,
-            max_motor_force: Real::MAX
+            max_motor_force: Real::MAX,
+            rotation: 0.0
         }
     }
-}
 
-impl JointTrait for RevoluteJoint {
-    fn parent_anchor(&self) -> Transform {
-        self.parent_anchor
+    pub fn with_parent_anchor(mut self, parent_anchor: Transform) -> Self {
+        self.parent_anchor = parent_anchor;
+        self
     }
-    fn child_anchor(&self) -> Transform {
-        self.child_anchor
+
+    pub fn with_child_anchor(mut self, child_anchor: Transform) -> Self {
+        self.child_anchor = child_anchor;
+        self
     }
-    fn get_axis(&self) -> Option<Axis> {
-        Some(self.axis)
+
+    pub fn with_axis(mut self, axis: KeskoAxis) -> Self {
+        self.axis = axis;
+        self
+    }
+
+    pub fn with_limits(mut self, limits: Vec2) -> Self {
+        self.limits = Some(limits);
+        self
+    }
+
+    pub fn with_motor_params(mut self, stiffness: f32, damping: f32) -> Self {
+        self.stiffness = stiffness;
+        self.damping = damping;
+        self
+    }
+
+    pub fn with_max_motor_force(mut self, max_motor_force: f32) -> Self {
+        self.max_motor_force = max_motor_force;
+        self
+    }
+
+    pub fn update_rotation(&mut self, rot: Quat) {
+        // convert to local orientation by multiplying by the inverse of anchor's rotation
+        let rotation = (self.parent_anchor.rotation.inverse() * self.child_anchor.rotation.inverse() * rot).to_euler(EulerRot::XYZ);
+        match self.axis {
+            KeskoAxis::X | KeskoAxis::NegX => self.rotation = rotation.0,
+            KeskoAxis::Y | KeskoAxis::NegY => self.rotation = rotation.1,
+            KeskoAxis::Z | KeskoAxis::NegZ => self.rotation = rotation.2,
+            _ => {}
+        }
+    }
+
+    pub fn rotation(&self) -> f32 {
+        self.rotation
+    }
+
+    pub fn state(&self) -> JointState {
+        JointState::Revolute {
+            axis: self.axis,
+            angle: self.rotation
+        }
     }
 }
 
@@ -66,21 +113,15 @@ impl From<RevoluteJoint> for GenericJoint {
     }
 }
 
-impl From<GenericJoint> for RevoluteJoint {
-    fn from(_joint: GenericJoint) -> Self {
-        todo!("Implement this when we need to convert back to the specific joint");
-    }
-}
-
 
 #[cfg(test)]
 mod tests {
 
     use bevy::math::Vec2;
-    use bevy::prelude::{Transform, Vec3};
+    use bevy::prelude::{Transform, Vec3, Entity};
     use rapier3d::dynamics::JointAxis;
     use rapier3d::prelude::GenericJoint;
-    use crate::{default, IntoRapier, joint::Axis};
+    use crate::{IntoRapier, joint::KeskoAxis};
     use super::RevoluteJoint;
 
     #[test]
@@ -89,14 +130,12 @@ mod tests {
         let expected_parent_transform = Transform::from_translation(Vec3::new(1.0, 2.0, 3.0));
         let expected_child_transform = Transform::from_translation(Vec3::new(4.0, 5.0, 6.0));
 
-        let fixed_joint = RevoluteJoint {
-            parent_anchor: expected_parent_transform,
-            child_anchor: expected_child_transform,
-            axis: Axis::X,
-            ..default()
-        };
+        let joint = RevoluteJoint::attach_to(Entity::from_raw(0))
+            .with_parent_anchor(expected_parent_transform)
+            .with_child_anchor(expected_child_transform)
+            .with_axis(KeskoAxis::X);
 
-        let generic: GenericJoint = fixed_joint.into();
+        let generic: GenericJoint = joint.into();
 
         assert!(generic.as_revolute().is_some());
         assert_eq!(generic.local_anchor1(), expected_parent_transform.translation.into_rapier());
@@ -109,13 +148,11 @@ mod tests {
         let limit_min = -1.0;
         let limit_max = 1.0;
 
-        let fixed_joint = RevoluteJoint {
-            axis: Axis::X,
-            limits: Some(Vec2::new(-1.0, 1.0)),
-            ..default()
-        };
+        let joint = RevoluteJoint::attach_to(Entity::from_raw(0))
+            .with_axis(KeskoAxis::X)
+            .with_limits(Vec2::new(-1.0, 1.0));
 
-        let generic: GenericJoint = fixed_joint.into();
+        let generic: GenericJoint = joint.into();
 
         println!("{:?}", generic.limits);
 
@@ -127,7 +164,7 @@ mod tests {
     #[test]
     fn default_values() {
 
-        let joint = RevoluteJoint::default();
+        let joint = RevoluteJoint::attach_to(Entity::from_raw(0));
 
         let generic: GenericJoint = joint.into();
 

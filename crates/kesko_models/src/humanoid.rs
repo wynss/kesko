@@ -8,8 +8,7 @@ use kesko_physics::{
         RigidBodyName
     }, 
     joint::{
-        Axis,
-        Joint, 
+        KeskoAxis,
         revolute::RevoluteJoint, 
         fixed::FixedJoint
     }, 
@@ -96,15 +95,14 @@ impl Humanoid {
             Shape::Sphere { radius: 0.01, subdivisions: 5 },
             world_transform,
         ))
-        .insert(Joint::new(head, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-FRAC_PI_4, FRAC_PI_4)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(head)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::X)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("neck_x".to_owned()))
         .id();
@@ -118,15 +116,14 @@ impl Humanoid {
             Shape::Sphere { radius: 0.01, subdivisions: 5 },
             world_transform,
         ))
-        .insert(Joint::new(neck_x, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Y,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(neck_x)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::Y)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("neck_y".to_owned()))
         .id();
@@ -142,15 +139,14 @@ impl Humanoid {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(neck_y, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Z,
-            damping: DAMPING,
-            stiffness: STIFFNESS,
-            limits: Some(Vec2::new(-FRAC_PI_6, FRAC_PI_6)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(neck_y)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::Z)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-FRAC_PI_6, FRAC_PI_6))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("neck_z".to_owned()))
         .insert(Mass {val: MASS})
@@ -180,10 +176,11 @@ impl Humanoid {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(shoulder, FixedJoint {
-            parent_anchor,
-            child_anchor
-        }))
+        .insert(
+            FixedJoint::attach_to(shoulder)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("body_1".to_owned()))
         .insert(Mass {val: MASS})
@@ -199,10 +196,11 @@ impl Humanoid {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(body_1, FixedJoint {
-            parent_anchor,
-            child_anchor
-        }))
+        .insert(
+            FixedJoint::attach_to(body_1)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("body_2".to_owned()))
         .insert(Mass {val: MASS})
@@ -218,10 +216,11 @@ impl Humanoid {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(body_2, FixedJoint {
-            parent_anchor,
-            child_anchor
-        }))
+        .insert(
+            FixedJoint::attach_to(body_2)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("body_3".to_owned()))
         .insert(Mass {val: MASS})
@@ -246,22 +245,21 @@ impl Humanoid {
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -should_to_arm, 0.0)).with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.0, 0.0));
         let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
-        let left_upper_arm_z = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        let left_shoulder_z = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere { radius: ARM_RADIUS, subdivisions: 7 },
             material.clone(),
             world_transform,
             meshes
         ))
-        .insert(Joint::new(shoulder, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Z,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-FRAC_PI_6, PI)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(shoulder)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::Z)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-FRAC_PI_6, PI))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_shoulder_z".to_owned()))
         .insert(Mass {val: MASS})
@@ -270,22 +268,21 @@ impl Humanoid {
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -2.0*ARM_RADIUS, 0.0));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, ARM_UPPER_LENGTH / 2.0, 0.0));
         let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
-        let left_upper_arm_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        let left_shoulder_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Capsule { radius: ARM_RADIUS, length: ARM_UPPER_LENGTH },
             material.clone(),
             world_transform,
             meshes
         ))
-        .insert(Joint::new(left_upper_arm_z, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(left_shoulder_z)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::X)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(FRAC_PI_2, FRAC_PI_2))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_shoulder_x".to_owned()))
         .insert(Mass {val: MASS})
@@ -301,15 +298,14 @@ impl Humanoid {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(left_upper_arm_x, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-FRAC_PI_2, 0.0)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(left_shoulder_x)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::X)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-FRAC_PI_2, 0.0))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_elbow_x".to_owned()))
         .insert(Mass {val: MASS});
@@ -318,22 +314,21 @@ impl Humanoid {
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, should_to_arm, 0.0)).with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.0, 0.0));
         let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
-        let right_upper_arm_z = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        let right_shoulder_z = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere { radius: ARM_RADIUS, subdivisions: 7 },
             material.clone(),
             world_transform,
             meshes
         ))
-        .insert(Joint::new(shoulder, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Z,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-PI, FRAC_PI_6)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(shoulder)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::Z)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-PI, FRAC_PI_6))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_shoulder_z".to_owned()))
         .insert(Mass {val: MASS})
@@ -342,22 +337,21 @@ impl Humanoid {
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -2.0*ARM_RADIUS, 0.0));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, ARM_UPPER_LENGTH / 2.0, 0.0));
         let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
-        let right_upper_arm_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        let right_shoulder_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Capsule { radius: ARM_RADIUS, length: ARM_UPPER_LENGTH },
             material.clone(),
             world_transform,
             meshes
         ))
-        .insert(Joint::new(right_upper_arm_z, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(right_shoulder_z)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::X)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_shoulder_x".to_owned()))
         .insert(Mass {val: MASS})
@@ -373,15 +367,14 @@ impl Humanoid {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(right_upper_arm_x, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-FRAC_PI_2, 0.0)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(right_shoulder_x)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::X)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-FRAC_PI_2, 0.0))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_elbow_x".to_owned()))
         .insert(Mass {val: MASS});
@@ -403,22 +396,21 @@ impl Humanoid {
         let parent_anchor = Transform::from_translation(Vec3::new(-2.0*LEG_RADIUS, -hip_to_leg, 0.0)).with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.0, 0.0));
         let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
-        let left_upper_leg_z = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        let left_hip_z = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere { radius: LEG_RADIUS, subdivisions: 7 },
             material.clone(),
             world_transform,
             meshes
         ))
-        .insert(Joint::new(hip, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Z,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(hip)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::Z)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_hip_z".to_owned()))
         .insert(Mass {val: MASS})
@@ -427,22 +419,21 @@ impl Humanoid {
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -2.0*LEG_RADIUS, 0.0));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, UPPER_LEG_LENGTH / 2.0, 0.0));
         let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
-        let left_upper_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        let left_hip_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Capsule { radius: LEG_RADIUS, length: UPPER_LEG_LENGTH },
             material.clone(),
             world_transform,
             meshes
         ))
-        .insert(Joint::new(left_upper_leg_z, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(left_hip_z)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::X)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_hip_x".to_owned()))
         .insert(Mass {val: MASS})
@@ -451,22 +442,21 @@ impl Humanoid {
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -half_upper_leg, 0.0));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, half_lower_leg, 0.0));
         let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
-        let left_lower_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        let left_knee_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Capsule { radius: LEG_RADIUS, length: LOWER_LEG_LENGTH },
             material.clone(),
             world_transform,
             meshes
         ))
-        .insert(Joint::new(left_upper_leg_x, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(0.0, FRAC_PI_2)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(left_hip_x)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::X)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(0.0, FRAC_PI_2))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_knee_x".to_owned()))
         .insert(Mass {val: MASS})
@@ -482,15 +472,14 @@ impl Humanoid {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(left_lower_leg_x, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(0.0, FRAC_PI_2)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(left_knee_x)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::X)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(0.0, FRAC_PI_2))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_foot_x".to_owned()))
         .insert(Mass {val: MASS});
@@ -499,22 +488,21 @@ impl Humanoid {
         let parent_anchor = Transform::from_translation(Vec3::new(-2.0*LEG_RADIUS, hip_to_leg, 0.0)).with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.0, 0.0));
         let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
-        let right_upper_arm_z = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        let right_hip_z = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Sphere { radius: LEG_RADIUS, subdivisions: 7 },
             material.clone(),
             world_transform,
             meshes
         ))
-        .insert(Joint::new(hip, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Z,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(hip)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::Z)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_hip_z".to_owned()))
         .insert(Mass {val: MASS})
@@ -523,22 +511,21 @@ impl Humanoid {
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -2.0*LEG_RADIUS, 0.0));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, UPPER_LEG_LENGTH / 2.0, 0.0));
         let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
-        let right_upper_arm_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        let right_hip_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Capsule { radius: LEG_RADIUS, length: UPPER_LEG_LENGTH },
             material.clone(),
             world_transform,
             meshes
         ))
-        .insert(Joint::new(right_upper_arm_z, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-FRAC_PI_2, FRAC_PI_2)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(right_hip_z)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::X)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_hip_x".to_owned()))
         .insert(Mass {val: MASS})
@@ -547,22 +534,21 @@ impl Humanoid {
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -half_upper_leg, 0.0));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, half_lower_leg, 0.0));
         let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
-        let right_lower_leg_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
+        let right_knee_x = commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Capsule { radius: LEG_RADIUS, length: LOWER_LEG_LENGTH },
             material.clone(),
             world_transform,
             meshes
         ))
-        .insert(Joint::new(right_upper_arm_x, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(-FRAC_PI_2, 0.0)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(right_hip_x)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::X)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(-FRAC_PI_2, 0.0))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_knee_x".to_owned()))
         .insert(Mass {val: MASS})
@@ -578,15 +564,14 @@ impl Humanoid {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(right_lower_leg_x, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            stiffness: STIFFNESS,
-            damping: DAMPING,
-            limits: Some(Vec2::new(0.0, FRAC_PI_2)),
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(right_knee_x)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::X)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_limits(Vec2::new(0.0, FRAC_PI_2))
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("right_foot_x".to_owned()))
         .insert(Mass {val: MASS});
