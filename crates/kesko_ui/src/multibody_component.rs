@@ -10,12 +10,9 @@ use kesko_object_interaction::event::SelectEvent;
 use kesko_physics::{
     multibody::MultibodyRoot,
     joint::{
-        Joint,
-        JointAxis,
-        JointLimits,
         JointType, 
         JointMotorEvent,
-        MotorAction
+        MotorCommand, revolute::RevoluteJoint, prismatic::PrismaticJoint, spherical::SphericalJoint, KeskoAxis
     },
 };
 
@@ -31,10 +28,10 @@ struct JointData {
     val_axis_1: f32,
     val_axis_2: f32,
     val_axis_3: f32,
-    current_val_axis_1: f32,
-    current_val_axis_2: f32,
-    current_val_axis_3: f32,
-    limits: Option<JointLimits<f32>>
+    current_val_x: f32,
+    current_val_y: f32,
+    current_val_z: f32,
+    limits: Option<Vec2>
 }
 
 
@@ -57,7 +54,9 @@ impl MultibodyUIComponent {
         mut egui_context: ResMut<EguiContext>,
         mut comp: Query<&mut Self>,
         body_query: Query<(&MultibodyRoot, Option<&ControlDescription>)>,
-        joint_query: Query<&Joint>
+        revolute_joints: Query<&RevoluteJoint>,
+        prismatic_joints: Query<&PrismaticJoint>,
+        spherical_joints: Query<&SphericalJoint>,
     ) {
 
         // get a reference to 'self'
@@ -74,53 +73,50 @@ impl MultibodyUIComponent {
                     // Build map with relevant joint data to be displayed
                     let mut joints = BTreeMap::<Entity, JointData>::new();
                     for (name, entity) in root.child_map.iter() {
-                        if let Ok(joint) = joint_query.get(*entity) {
 
-                            // check which type of joint we are dealing with and add it to the component
-                            let joint_type = joint.get_type();
-                            match joint_type {
-                                JointType::Revolute => {
-                                    joints.insert(*entity, JointData {
-                                        name: name.clone(),
-                                        joint_type, 
-                                        val_axis_1: 0.0,
-                                        val_axis_2: 0.0,
-                                        val_axis_3: 0.0,
-                                        current_val_axis_1: 0.0,
-                                        current_val_axis_2: 0.0,
-                                        current_val_axis_3: 0.0,
-                                        limits: joint.get_limits(),
-                                    });
-                                },
-                                JointType::Spherical => {
-                                    joints.insert(*entity, JointData {
-                                        name: name.clone(),
-                                        joint_type, 
-                                        val_axis_1: 0.0,
-                                        val_axis_2: 0.0,
-                                        val_axis_3: 0.0,
-                                        current_val_axis_1: 0.0,
-                                        current_val_axis_2: 0.0,
-                                        current_val_axis_3: 0.0,
-                                        // TODO: Add here
-                                        limits: None
-                                    });
-                                },
-                                JointType::Prismatic => {
-                                    joints.insert(*entity, JointData {
-                                        name: name.clone(),
-                                        joint_type, 
-                                        val_axis_1: 0.0,
-                                        val_axis_2: 0.0,
-                                        val_axis_3: 0.0,
-                                        current_val_axis_1: 0.0,
-                                        current_val_axis_2: 0.0,
-                                        current_val_axis_3: 0.0,
-                                        limits: joint.get_limits()
-                                    });
-                                }
-                                _ => {}
-                            }
+                        if let Ok(joint) = revolute_joints.get(*entity) {
+                            joints.insert(*entity, JointData {
+                                name: name.clone(),
+                                joint_type: JointType::Revolute,
+                                val_axis_1: 0.0,
+                                val_axis_2: 0.0,
+                                val_axis_3: 0.0,
+                                current_val_x: 0.0,
+                                current_val_y: 0.0,
+                                current_val_z: 0.0,
+                                limits: joint.limits,
+                            });
+                        } 
+                        else if let Ok(joint) = prismatic_joints.get(*entity) {
+                            joints.insert(*entity, JointData {
+                                name: name.clone(),
+                                joint_type: JointType::Prismatic,
+                                val_axis_1: 0.0,
+                                val_axis_2: 0.0,
+                                val_axis_3: 0.0,
+                                current_val_x: 0.0,
+                                current_val_y: 0.0,
+                                current_val_z: 0.0,
+                                limits: joint.limits
+                            });
+
+                        }
+                        else if let Ok(_) = spherical_joints.get(*entity) {
+                            joints.insert(*entity, JointData {
+                                name: name.clone(),
+                                joint_type: JointType::Spherical,
+                                val_axis_1: 0.0,
+                                val_axis_2: 0.0,
+                                val_axis_3: 0.0,
+                                current_val_x: 0.0,
+                                current_val_y: 0.0,
+                                current_val_z: 0.0,
+                                limits: None
+                            });
+
+                        } 
+                        else {
+
                         }
                     }
                     comp.multibody_joints = Some(joints);
@@ -128,10 +124,23 @@ impl MultibodyUIComponent {
                 } else if let Some(joints) = &mut comp.multibody_joints {
                     // just update the component data with current joint values
                     for (joint_entity, joint_data) in joints.iter_mut() {
-                        if let Ok(joint) = joint_query.get(*joint_entity) {
-                            joint_data.current_val_axis_1 = joint.get_rot_x();
-                            joint_data.current_val_axis_2 = joint.get_rot_y();
-                            joint_data.current_val_axis_3 = joint.get_rot_z();
+                        if let Ok(joint) = revolute_joints.get(*joint_entity) {
+                            let val = Self::smooth_joint_val(joint.rotation().to_degrees());
+                            match joint.axis {
+                                KeskoAxis::X => joint_data.current_val_x = val,
+                                KeskoAxis::Y => joint_data.current_val_y = val,
+                                KeskoAxis::Z => joint_data.current_val_z = val,
+                                _ => {}
+                            }
+                        }
+                        else if let Ok(joint) = prismatic_joints.get(*joint_entity) {
+                            let val = joint.position();
+                            match joint.axis {
+                                KeskoAxis::X => joint_data.current_val_x = val,
+                                KeskoAxis::Y => joint_data.current_val_y = val,
+                                KeskoAxis::Z => joint_data.current_val_z = val,
+                                _ => {}
+                            }
                         }
                     }
                 }
@@ -230,9 +239,9 @@ impl MultibodyUIComponent {
 
                                     ui.label(joint_data.name.clone());
                                     ui.label(format!("{:?}", joint_data.joint_type));
-                                    ui.label(format!("{:.1}", Self::smooth_joint_val(joint_data.current_val_axis_1.to_degrees())));
-                                    ui.label(format!("{:.1}", Self::smooth_joint_val(joint_data.current_val_axis_2.to_degrees())));
-                                    ui.label(format!("{:.1}", Self::smooth_joint_val(joint_data.current_val_axis_3.to_degrees())));
+                                    ui.label(format!("{:.2}", joint_data.current_val_x));
+                                    ui.label(format!("{:.2}", joint_data.current_val_y));
+                                    ui.label(format!("{:.2}", joint_data.current_val_z));
 
                                     match joint_data.joint_type {
                                         JointType::Revolute => {
@@ -277,7 +286,7 @@ impl MultibodyUIComponent {
             // send motor action if the value has changed
             joint_motor_event_writer.send(JointMotorEvent {
                 entity: *joint_entity,
-                action: MotorAction::PositionRevolute { position: joint_data.val_axis_1.to_radians() }
+                action: MotorCommand::PositionRevolute { position: joint_data.val_axis_1.to_radians(), stiffness: None, damping: None}
             });
         }
     }
@@ -287,7 +296,7 @@ impl MultibodyUIComponent {
             // send motor action if the value has changed
             joint_motor_event_writer.send(JointMotorEvent {
                 entity: *joint_entity,
-                action: MotorAction::PositionPrismatic { position: joint_data.val_axis_1 }
+                action: MotorCommand::PositionPrismatic { position: joint_data.val_axis_1, stiffness: None, damping: None}
             });
         }
     }
@@ -299,9 +308,9 @@ impl MultibodyUIComponent {
             if ui.add(egui::Slider::new(&mut joint_data.val_axis_1, Self::get_slider_range(joint_data.limits, &joint_data.joint_type)).suffix("°").text("X")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
                     entity: *joint_entity,
-                    action: MotorAction::PositionSpherical { 
+                    action: MotorCommand::PositionSpherical { 
                         position: joint_data.val_axis_1.to_radians(),
-                        axis: JointAxis::AngX
+                        axis: KeskoAxis::AngX
                     }
                 });
             }
@@ -309,9 +318,9 @@ impl MultibodyUIComponent {
             if ui.add(egui::Slider::new(&mut joint_data.val_axis_2, Self::get_slider_range(joint_data.limits, &joint_data.joint_type)).suffix("°").text("Y")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
                     entity: *joint_entity,
-                    action: MotorAction::PositionSpherical { 
+                    action: MotorCommand::PositionSpherical { 
                         position: joint_data.val_axis_2.to_radians(),
-                        axis: JointAxis::AngY
+                        axis: KeskoAxis::AngY
                     }
                 });
             }
@@ -319,9 +328,9 @@ impl MultibodyUIComponent {
             if ui.add(egui::Slider::new(&mut joint_data.val_axis_3, Self::get_slider_range(joint_data.limits, &joint_data.joint_type)).suffix("°").text("Z")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
                     entity: *joint_entity,
-                    action: MotorAction::PositionSpherical { 
+                    action: MotorCommand::PositionSpherical { 
                         position: joint_data.val_axis_3.to_radians(),
-                        axis: JointAxis::AngZ
+                        axis: KeskoAxis::AngZ
                     }
                 });
             }
@@ -329,18 +338,18 @@ impl MultibodyUIComponent {
     }
 
     /// Create a slider range from limits
-    fn get_slider_range(limits: Option<JointLimits<f32>>, joint_type: &JointType) -> RangeInclusive<f32> {
+    fn get_slider_range(limits: Option<Vec2>, joint_type: &JointType) -> RangeInclusive<f32> {
 
         match joint_type {
             &JointType::Revolute => {
                 match limits {
-                    Some(limits) => RangeInclusive::<f32>::new(limits.min.to_degrees(), limits.max.to_degrees()),
+                    Some(limits) => RangeInclusive::<f32>::new(limits.x.to_degrees(), limits.y.to_degrees()),
                     None => RangeInclusive::<f32>::new(-180.0, 180.0)
                 }
             },
             &JointType::Prismatic => {
                 match limits {
-                    Some(limits) => RangeInclusive::<f32>::new(limits.min, limits.max),
+                    Some(limits) => RangeInclusive::<f32>::new(limits.x, limits.y),
                     None => RangeInclusive::<f32>::new(-1.0, 1.0)
                 }
             }

@@ -8,8 +8,7 @@ use kesko_physics::{
         RigidBodyName
     },
     joint::{
-        Joint,
-        Axis,
+        KeskoAxis,
         revolute::RevoluteJoint
     }, 
     mass::Mass
@@ -45,7 +44,7 @@ pub fn spawn(
 
 
     let leg_stiffness = 1.0;
-    let leg_damping = 0.3;
+    let leg_damping = 0.1;
 
     // Frame
     let body = commands.spawn_bundle(MeshPhysicBodyBundle::from(RigidBody::Dynamic,
@@ -71,14 +70,14 @@ pub fn spawn(
         world_transform,
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(Joint::new(body, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::X,
-        stiffness: leg_stiffness,
-        damping: leg_damping,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(body)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::X)
+            .with_motor_params(leg_stiffness, leg_damping)
+            .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+    )
     .insert(Mass{ val: mass_leg})
     .insert(RigidBodyName("left_front_x".to_owned()))
     .id();
@@ -93,14 +92,14 @@ pub fn spawn(
         world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(Joint::new(left_front_x, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::Z,
-        stiffness: leg_stiffness,
-        damping: leg_damping,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(left_front_x)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Z)
+            .with_motor_params(leg_stiffness, leg_damping)
+            .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+    )
     .insert(Mass{ val: mass_leg})
     .insert(RigidBodyName("left_front_z".to_owned()));
 
@@ -116,14 +115,14 @@ pub fn spawn(
         world_transform,
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(Joint::new(body, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::X,
-        stiffness: leg_stiffness,
-        damping: leg_damping,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(body)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::X)
+            .with_motor_params(leg_stiffness, leg_damping)
+            .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+    )
     .insert(Mass{ val: mass_leg})
     .insert(RigidBodyName("right_front_x".to_owned()))
     .id();
@@ -138,14 +137,14 @@ pub fn spawn(
         world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(Joint::new(right_front_x, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::Z,
-        stiffness: leg_stiffness,
-        damping: leg_damping,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(right_front_x)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Z)
+            .with_motor_params(leg_stiffness, leg_damping)
+            .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+    )
     .insert(Mass{ val: mass_leg})
     .insert(RigidBodyName("right_front_z".to_owned()));
 
@@ -161,14 +160,14 @@ pub fn spawn(
         world_transform,
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(Joint::new(body, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::X,
-        stiffness: leg_stiffness,
-        damping: leg_damping,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(body)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::X)
+            .with_motor_params(leg_stiffness, leg_damping)
+            .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+    )
     .insert(Mass{ val: mass_leg})
     .insert(RigidBodyName("left_rear_x".to_owned()))
     .id();
@@ -183,14 +182,14 @@ pub fn spawn(
         world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(Joint::new(left_rear_leg_x, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::Z,
-        stiffness: leg_stiffness,
-        damping: leg_damping,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(left_rear_leg_x)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Z)
+            .with_motor_params(leg_stiffness, leg_damping)
+            .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+    )
     .insert(Mass{ val: mass_leg})
     .insert(RigidBodyName("left_rear_z".to_owned()));
 
@@ -206,14 +205,14 @@ pub fn spawn(
         world_transform,
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(Joint::new(body, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::X,
-        stiffness: leg_stiffness,
-        damping: leg_damping,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(body)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::X)
+            .with_motor_params(leg_stiffness, leg_damping)
+            .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+    )
     .insert(Mass{ val: mass_leg})
     .insert(RigidBodyName("right_rear_x".to_owned()))
     .id();
@@ -228,14 +227,14 @@ pub fn spawn(
         world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
         meshes
     )).insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(Joint::new(right_rear_leg_x, RevoluteJoint {
-        parent_anchor,
-        child_anchor,
-        axis: Axis::Z,
-        stiffness: leg_stiffness,
-        damping: leg_damping,
-        ..default()
-    }))
+    .insert(
+        RevoluteJoint::attach_to(right_rear_leg_x)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Z)
+            .with_motor_params(leg_stiffness, leg_damping)
+            .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+    )
     .insert(Mass{ val: mass_leg})
     .insert(RigidBodyName("right_rear_z".to_owned()));
 }

@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use kesko_physics::{
     rigid_body::{RigidBody, RigidBodyName},
     joint::{
-        Joint,
         spherical::SphericalJoint
     }
 };
@@ -53,11 +52,11 @@ pub fn spawn(
             world_transform,
             meshes
         ))
-        .insert(Joint::new(root, SphericalJoint {
-            parent_anchor,
-            child_anchor,
-            ..default()
-        }))
+        .insert(
+            SphericalJoint::attach_to(root)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName(format!("joint {i}")))
         .id();

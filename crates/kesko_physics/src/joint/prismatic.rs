@@ -2,32 +2,85 @@ use bevy::prelude::*;
 use rapier3d::prelude::{GenericJoint, PrismaticJointBuilder, Real};
 use crate::conversions::IntoRapier;
 
-use super::{
-    JointTrait, AxisIntoVec, Axis
-};
+use super::{AxisIntoVec, KeskoAxis, JointState};
 
 
+#[derive(Component, Clone, Copy)]
 pub struct PrismaticJoint {
+    pub parent: Entity,
     pub parent_anchor: Transform,
     pub child_anchor: Transform,
-    pub axis: Axis,
+    pub axis: KeskoAxis,
     pub limits: Option<Vec2>,
     pub stiffness: f32,
     pub damping: f32,
-    pub max_motor_force: Real
+    pub max_motor_force: Real,
+
+    position: f32
 }
 
-impl Default for PrismaticJoint {
-    fn default() -> Self {
-        Self { 
+impl PrismaticJoint {
+    pub fn attach_to(parent: Entity) -> Self {
+        Self {
+            parent,
             parent_anchor: Transform::default(), 
             child_anchor: Transform::default(), 
-            axis: Axis::X, 
+            axis: KeskoAxis::X, 
             limits: None,
             damping: 0.0,
             stiffness: 0.0,
-            max_motor_force: Real::MAX
+            max_motor_force: Real::MAX,
+
+            position: 0.0
         }
+    }
+
+    pub fn with_parent_anchor(mut self, parent_anchor: Transform) -> Self {
+        self.parent_anchor = parent_anchor;
+        self
+    }
+
+    pub fn with_child_anchor(mut self, child_anchor: Transform) -> Self {
+        self.child_anchor = child_anchor;
+        self
+    }
+
+    pub fn with_axis(mut self, axis: KeskoAxis) -> Self {
+        self.axis = axis;
+        self
+    }
+
+    pub fn with_limits(mut self, limits: Vec2) -> Self {
+        self.limits = Some(limits);
+        self
+    }
+
+    pub fn with_motor_params(mut self, stiffness: f32, damping: f32) -> Self {
+        self.stiffness = stiffness;
+        self.damping = damping;
+        self
+    }
+
+    pub fn with_max_motor_force(mut self, max_motor_force: f32) -> Self {
+        self.max_motor_force = max_motor_force;
+        self
+    }
+
+    pub fn update_position(&mut self, translation: Vec3) {
+        match self.axis {
+            KeskoAxis::X | KeskoAxis::NegX => self.position = translation.x,
+            KeskoAxis::Y | KeskoAxis::NegY => self.position = translation.y,
+            KeskoAxis::Z | KeskoAxis::NegZ => self.position = translation.z,
+            _ => error!("Prismatic joint does not have a valid axis")
+        }
+    }
+
+    pub fn position(&self) -> f32 {
+        self.position
+    }
+
+    pub fn state(&self) -> JointState {
+        JointState::Prismatic { axis: self.axis, position: self.position }
     }
 }
 
@@ -52,28 +105,14 @@ impl From<PrismaticJoint> for GenericJoint {
     }
 }
 
-impl JointTrait for PrismaticJoint {
-    fn parent_anchor(&self) -> Transform {
-        self.parent_anchor
-    }
-
-    fn child_anchor(&self) -> Transform {
-        self.child_anchor
-    }
-
-    fn get_axis(&self) -> Option<Axis> {
-        Some(self.axis)
-    }
-}
-
 
 #[cfg(test)]
 mod tests {
     use bevy::math::Vec2;
-    use bevy::prelude::{Transform, Vec3};
+    use bevy::prelude::{Transform, Vec3, Entity};
     use rapier3d::dynamics::JointAxis;
     use rapier3d::prelude::GenericJoint;
-    use crate::{default, IntoRapier, joint::Axis};
+    use crate::{IntoRapier, joint::KeskoAxis};
     use super::PrismaticJoint;
 
     #[test]
@@ -82,13 +121,11 @@ mod tests {
         let expected_parent_transform = Transform::from_translation(Vec3::new(1.0, 2.0, 3.0));
         let expected_child_transform = Transform::from_translation(Vec3::new(4.0, 5.0, 6.0));
 
-        let fixed_joint = PrismaticJoint {
-            parent_anchor: expected_parent_transform,
-            child_anchor: expected_child_transform,
-            ..default()
-        };
+        let joint = PrismaticJoint::attach_to(Entity::from_raw(0))
+            .with_parent_anchor(expected_parent_transform)
+            .with_child_anchor(expected_child_transform);
 
-        let generic: GenericJoint = fixed_joint.into();
+        let generic: GenericJoint = joint.into();
 
         assert!(generic.as_prismatic().is_some());
         assert_eq!(generic.local_anchor1(), expected_parent_transform.translation.into_rapier());
@@ -101,13 +138,11 @@ mod tests {
         let limit_min = -1.0;
         let limit_max = 1.0;
 
-        let fixed_joint = PrismaticJoint {
-            axis: Axis::X,
-            limits: Some(Vec2::new(-1.0, 1.0)),
-            ..default()
-        };
+        let joint = PrismaticJoint::attach_to(Entity::from_raw(0))
+            .with_axis(KeskoAxis::X)
+            .with_limits(Vec2::new(-1.0, 1.0));
 
-        let generic: GenericJoint = fixed_joint.into();
+        let generic: GenericJoint = joint.into();
 
         println!("{:?}", generic.limits);
 
@@ -119,7 +154,7 @@ mod tests {
     #[test]
     fn no_limits() {
 
-        let joint = PrismaticJoint::default();
+        let joint = PrismaticJoint::attach_to(Entity::from_raw(0));
         let generic: GenericJoint = joint.into();
 
         assert!(generic.limits(JointAxis::AngX).is_none());

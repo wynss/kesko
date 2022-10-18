@@ -8,11 +8,10 @@ use kesko_physics::{
         RigidBodyName
     },
     joint::{
-        Joint,
-        Axis,
+        KeskoAxis,
         fixed::FixedJoint,
         revolute::RevoluteJoint,
-        JointMotorEvent, MotorAction
+        JointMotorEvent, MotorCommand
     },
     multibody::MultibodyRoot, mass::Mass
 };
@@ -70,15 +69,17 @@ impl Car {
         let wheel_radius = 0.18;
         let wheel_width = 0.08;
         let wheel_base = frame_width + 0.1;
-        let wbh = wheel_base / 2.0;
+        let wbh = wheel_base / 2.0 + 0.01;
 
         let wall_thickness = 0.05;
         let wall_height = 0.2;
         let half_wall_height = wall_height / 2.0;
         let half_wall_thick = wall_thickness / 2.0;
 
-        let stiffness = 1.0;
+        let stiffness = 10.0;
         let damping = 10.0;
+
+        let mass = 0.5;
 
         // Frame
         let frame = commands.spawn_bundle( MeshPhysicBodyBundle::from(
@@ -89,7 +90,7 @@ impl Car {
             meshes
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 1.0 })
+        .insert(Mass { val: mass })
         .insert(RigidBodyName(NAME.to_owned()))
         .insert(ControlDescription("Use the WASD keys to manoeuver the car".to_owned()))
         .id();
@@ -105,10 +106,11 @@ impl Car {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(frame, FixedJoint {
-            parent_anchor,
-            child_anchor
-        }))
+        .insert(
+            FixedJoint::attach_to(frame)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+        )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
         // back wall
@@ -122,10 +124,12 @@ impl Car {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(frame, FixedJoint {
-            parent_anchor,
-            child_anchor
-        }))
+        .insert(
+            FixedJoint::attach_to(frame)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+        )
+        .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
         // left wall
@@ -139,10 +143,12 @@ impl Car {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(frame, FixedJoint {
-            parent_anchor,
-            child_anchor
-        }))
+        .insert(
+            FixedJoint::attach_to(frame)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+        )
+        .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
         // right wall
@@ -156,10 +162,12 @@ impl Car {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(frame, FixedJoint {
-            parent_anchor,
-            child_anchor
-        }))
+        .insert(
+            FixedJoint::attach_to(frame)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+        )
+        .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
 
@@ -173,20 +181,20 @@ impl Car {
             Shape::Sphere { radius: 0.01, subdivisions: 5},
             world_transform,
         ))
-        .insert(Joint::new(frame, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            limits: Some(Vec2::new(-FRAC_PI_6, FRAC_PI_6)),
-            stiffness,
-            damping: 0.1,
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(frame)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::X)
+            .with_motor_params(stiffness, 0.1)
+            .with_limits(Vec2::new(-FRAC_PI_6, FRAC_PI_6))
+        )
+        .insert(Mass { val: mass })
         .insert(RigidBodyName(LEFT_FRONT_WHEEL_TURN.to_owned()))
         .id();
 
         // left front wheel
-        let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.1, 0.0));
+        let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.11, 0.0));
         let child_anchor = Transform::default();
         let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
         commands.spawn_bundle( MeshPhysicBodyBundle::from(
@@ -196,12 +204,13 @@ impl Car {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(left_front_link, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Y,
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(left_front_link)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Y)
+        )
+        .insert(Mass { val: mass })
         .insert(RigidBodyName(LEFT_FRONT_WHEEL.to_owned()))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
@@ -215,21 +224,21 @@ impl Car {
             Shape::Sphere { radius: 0.01, subdivisions: 5},
             world_transform,
         ))
-        .insert(Joint::new(frame, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::X,
-            limits: Some(Vec2::new(-FRAC_PI_6, FRAC_PI_6)),
-            stiffness,
-            damping: 0.1,
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(frame)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::X)
+            .with_motor_params(stiffness, 0.1)
+            .with_limits(Vec2::new(-FRAC_PI_6, FRAC_PI_6))
+        )
+        .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName(RIGHT_FRONT_WHEEL_TURN.to_owned()))
         .id();
 
         // right front wheel
-        let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.1, 0.0));
+        let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.11, 0.0));
         let child_anchor = Transform::default();
         let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
         commands.spawn_bundle( MeshPhysicBodyBundle::from(
@@ -239,12 +248,13 @@ impl Car {
             world_transform,
             meshes
         ))
-        .insert(Joint::new(right_front_link, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Y,
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(right_front_link)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Y)
+        )
+        .insert(Mass { val: mass })
         .insert(RigidBodyName(RIGHT_FRONT_WHEEL.to_owned()))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
@@ -258,13 +268,14 @@ impl Car {
             world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
         ))
-        .insert(Joint::new(frame, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Y,
-            damping,
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(frame)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Y)
+            .with_motor_params(0.0, damping)
+        )
+        .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName(LEFT_REAR_WHEEL.to_owned()));
 
@@ -279,13 +290,14 @@ impl Car {
             world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
         ))
-        .insert(Joint::new(frame, RevoluteJoint {
-            parent_anchor,
-            child_anchor,
-            axis: Axis::Y,
-            damping,
-            ..default()
-        }))
+        .insert(
+            RevoluteJoint::attach_to(frame)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Y)
+            .with_motor_params(0.0, damping)
+        )
+        .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName(RIGHT_REAR_WHEEL.to_owned()));
 
@@ -363,13 +375,13 @@ impl Car {
                         if let Some(entity) = car_body.child_map.get(RIGHT_REAR_WHEEL) {
                             joint_event_writer.send(JointMotorEvent {
                                 entity: *entity,
-                                action: MotorAction::VelocityRevolute { velocity: -velocity }
+                                action: MotorCommand::VelocityRevolute { velocity: -velocity, damping: None }
                             });
                         }
                         if let Some(entity) = car_body.child_map.get(LEFT_REAR_WHEEL) {
                             joint_event_writer.send(JointMotorEvent {
                                 entity: *entity,
-                                action: MotorAction::VelocityRevolute { velocity }
+                                action: MotorCommand::VelocityRevolute { velocity, damping: None }
                             });
                         }
                     },
@@ -384,7 +396,7 @@ impl Car {
                         if let Some(entity) = car_body.child_map.get(LEFT_FRONT_WHEEL_TURN) {
                             joint_event_writer.send(JointMotorEvent { 
                                 entity: *entity,
-                                action: MotorAction::PositionRevolute { position: -position } 
+                                action: MotorCommand::PositionRevolute { position: -position, stiffness: None, damping: None } 
                             })
                         } else {
                             error!("Could not get {}", LEFT_FRONT_WHEEL_TURN);
@@ -393,7 +405,7 @@ impl Car {
                         if let Some(entity) = car_body.child_map.get(RIGHT_FRONT_WHEEL_TURN) {
                             joint_event_writer.send(JointMotorEvent { 
                                 entity: *entity,
-                                action: MotorAction::PositionRevolute { position }
+                                action: MotorCommand::PositionRevolute { position, stiffness: None, damping: None }
                             })
                         } else {
                             error!("Could not get {}", RIGHT_FRONT_WHEEL_TURN);
@@ -417,7 +429,7 @@ struct CarController {
 impl Default for CarController {
     fn default() -> Self {
        Self {
-            max_velocity: 20.0,
+            max_velocity: 12.0,
             max_turn_angle: FRAC_PI_6,
        } 
     }

@@ -4,7 +4,6 @@ use fnv::FnvHashMap;
 
 use crate::{
     conversions::IntoRapier, 
-    mass::Mass, 
     gravity::GravityScale
 };
 
@@ -23,7 +22,7 @@ pub enum RigidBody {
 pub struct CanSleep(pub bool);
 
 // Name of a rigid body
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct RigidBodyName(pub String);
 
 #[derive(Component)]
@@ -40,21 +39,16 @@ pub(crate) fn add_rigid_bodies(
         Entity, 
         &RigidBody, 
         &Transform, 
-        Option<&Mass>, 
         Option<&GravityScale>, 
         Option<&CanSleep>), 
         Without<RigidBodyHandle>>
 ) {
-    for (entity, rigid_body_comp, transform, mass, gravity_scale, can_sleep) in query.iter() {
+    for (entity, rigid_body_comp, transform, gravity_scale, can_sleep) in query.iter() {
 
         let mut rigid_body_builder = match rigid_body_comp {
             RigidBody::Fixed => rapier::RigidBodyBuilder::fixed(),
             RigidBody::Dynamic => rapier::RigidBodyBuilder::dynamic()
         };
-
-        if let Some(mass) = mass {
-            rigid_body_builder = rigid_body_builder.additional_mass(mass.val);
-        }
         
         if let Some(gravity_scale) = gravity_scale {
             rigid_body_builder = rigid_body_builder.gravity_scale(gravity_scale.val);

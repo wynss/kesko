@@ -12,9 +12,8 @@ use kesko_physics::{
         MultiBodyStates
     },
     joint::{
-        Joint,
         JointState,
-        JointMotorEvent, MotorAction,
+        JointMotorEvent, MotorCommand, revolute::RevoluteJoint, prismatic::PrismaticJoint,
     }
 };
 
@@ -69,7 +68,7 @@ pub fn handle_motor_command_requests(
                         if let Some(e) = root.child_map.get(joint_name) {
                             motor_event_writer.send(JointMotorEvent {
                                 entity: *e,
-                                action: MotorAction::PositionRevolute { position: *val }
+                                action: MotorCommand::PositionRevolute { position: *val, stiffness: None, damping: None}
                             });
                         }
                     }
@@ -85,7 +84,8 @@ pub fn handle_serializable_state_request(
     mut system_response_writer: EventWriter<SystemResponseEvent>,
     multibody_root_query: Query<(&MultibodyRoot, &Transform)>,
     multibody_child_query: Query<(&MultibodyChild, &Transform)>,
-    joint_query: Query<&Joint>
+    revolute_joints: Query<&RevoluteJoint>,
+    prismatic_joints: Query<&PrismaticJoint>
 ) {
 
     for event in system_requests.iter() {
@@ -103,13 +103,18 @@ pub fn handle_serializable_state_request(
 
                 // Get joint angles
                 let joint_states: BTreeMap<String, Option<JointState>> = root.child_map.iter().map(|(name, e)| {
-                    let orientation = match joint_query.get(*e) {
-                        Ok(joint) => {
-                            Some(joint.get_state())
-                        }
-                        Err(_) => None
+
+                    let state = if let Ok(joint) = revolute_joints.get(*e) {
+                        Some(joint.state())
+                    }
+                    else if let Ok(joint) = prismatic_joints.get(*e) {
+                        Some(joint.state())
+                    }
+                    else {
+                        None
                     };
-                    (name.clone(), orientation)
+
+                    (name.clone(), state)
                 }).collect();
 
                 MultiBodyState {

@@ -1,8 +1,6 @@
-use bevy::{prelude::*, render::{texture::ImageSettings, render_resource::{SamplerDescriptor, AddressMode}}};
+use bevy::prelude::*;
 
-use kesko_core::{
-    interaction::groups::GroupDynamic, 
-};
+use kesko_core::interaction::groups::GroupDynamic;
 
 use kesko_plugins::CorePlugins;
 use kesko_diagnostic::DiagnosticsPlugins;
@@ -29,14 +27,6 @@ fn main() {
     .add_plugin(CarPlugin)
     .add_plugin(WheelyPlugin)
     .add_startup_system(test_scene)
-    .insert_resource(ImageSettings {
-        default_sampler: SamplerDescriptor {
-            address_mode_u: AddressMode::Repeat,
-            address_mode_v: AddressMode::Repeat,
-            address_mode_w: AddressMode::Repeat,
-            ..Default::default()
-        },
-    })
     .run();
 }
 
@@ -45,7 +35,6 @@ fn test_scene(
     mut commands: Commands, 
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>
 ) {
 
     kesko_models::plane::spawn(

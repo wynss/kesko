@@ -2,11 +2,11 @@ use bevy::prelude::*;
 use rapier3d::prelude::{GenericJoint, JointAxis, SphericalJointBuilder};
 
 use crate::conversions::IntoRapier;
-use super::{JointTrait, Axis};
 
 
-#[derive(Default)]
+#[derive(Component)]
 pub struct SphericalJoint {
+    pub parent: Entity,
     pub parent_anchor: Transform,
     pub child_anchor: Transform,
     pub x_ang_limit: Option<Vec2>,
@@ -20,17 +20,49 @@ pub struct SphericalJoint {
     pub z_damping: f32,
 }
 
+impl SphericalJoint {
 
-impl JointTrait for SphericalJoint {
-    fn parent_anchor(&self) -> Transform {
-        self.parent_anchor
-    }
-    fn child_anchor(&self) -> Transform {
-        self.child_anchor
+    pub fn attach_to(parent: Entity) -> Self {
+        Self {
+            parent,
+            parent_anchor: Transform::default(),
+            child_anchor: Transform::default(),
+            x_ang_limit: None,
+            y_ang_limit: None,
+            z_ang_limit: None,
+            x_stiffness: 0.0,
+            x_damping: 0.0,
+            y_stiffness: 0.0,
+            y_damping: 0.0,
+            z_stiffness: 0.0,
+            z_damping: 0.0,
+
+        }
     }
 
-    fn get_axis(&self) -> Option<Axis> {
-        None
+    pub fn with_parent_anchor(mut self, parent_anchor: Transform) -> Self {
+        self.parent_anchor = parent_anchor;
+        self
+    }
+
+    pub fn with_child_anchor(mut self, child_anchor: Transform) -> Self {
+        self.child_anchor = child_anchor;
+        self
+    }
+
+    pub fn with_x_limits(mut self, limits: Vec2) -> Self {
+        self.x_ang_limit = Some(limits);
+        self
+    }
+
+    pub fn with_y_limits(mut self, limits: Vec2) -> Self {
+        self.y_ang_limit = Some(limits);
+        self
+    }
+
+    pub fn with_z_limits(mut self, limits: Vec2) -> Self {
+        self.z_ang_limit = Some(limits);
+        self
     }
 }
 
@@ -79,10 +111,10 @@ impl From<GenericJoint> for SphericalJoint {
 #[cfg(test)]
 mod tests {
     use bevy::math::Vec2;
-    use bevy::prelude::{Transform, Vec3};
+    use bevy::prelude::{Transform, Vec3, Entity};
     use rapier3d::dynamics::JointAxis;
     use rapier3d::prelude::GenericJoint;
-    use crate::{default, IntoRapier};
+    use crate::IntoRapier;
     use super::SphericalJoint;
 
     #[test]
@@ -91,13 +123,11 @@ mod tests {
         let expected_parent_transform = Transform::from_translation(Vec3::new(1.0, 2.0, 3.0));
         let expected_child_transform = Transform::from_translation(Vec3::new(4.0, 5.0, 6.0));
 
-        let fixed_joint = SphericalJoint {
-            parent_anchor: expected_parent_transform,
-            child_anchor: expected_child_transform,
-            ..default()
-        };
+        let joint = SphericalJoint::attach_to(Entity::from_raw(0))
+            .with_parent_anchor(expected_parent_transform)
+            .with_child_anchor(expected_child_transform);
 
-        let generic: GenericJoint = fixed_joint.into();
+        let generic: GenericJoint = joint.into();
 
         assert!(generic.as_spherical().is_some());
         assert_eq!(generic.local_frame1, expected_parent_transform.into_rapier());
@@ -116,14 +146,12 @@ mod tests {
         let z_min = -3.0;
         let z_max = 3.0;
 
-        let fixed_joint = SphericalJoint {
-            x_ang_limit: Some(Vec2::new(-1.0, 1.0)),
-            y_ang_limit: Some(Vec2::new(-2.0, 2.0)),
-            z_ang_limit: Some(Vec2::new(-3.0, 3.0)),
-            ..default()
-        };
+        let joint = SphericalJoint::attach_to(Entity::from_raw(0))
+            .with_x_limits(Vec2::new(-1.0, 1.0))
+            .with_y_limits(Vec2::new(-2.0, 2.0))
+            .with_z_limits(Vec2::new(-3.0, 3.0));
 
-        let generic: GenericJoint = fixed_joint.into();
+        let generic: GenericJoint = joint.into();
 
         let x_ang_limits = generic.limits(JointAxis::AngX).expect("No limits for AngX");
         let y_ang_limits = generic.limits(JointAxis::AngY).expect("No limits for AngY");
@@ -142,7 +170,7 @@ mod tests {
     #[test]
     fn default_values() {
 
-        let joint = SphericalJoint::default();
+        let joint = SphericalJoint::attach_to(Entity::from_raw(0));
 
         let generic: GenericJoint = joint.into();
 

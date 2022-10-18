@@ -3,15 +3,16 @@ pub mod fixed;
 pub mod revolute;
 pub mod prismatic;
 
-use bevy::prelude::*;
-use rapier3d::prelude as rapier;
-use rapier3d::dynamics::GenericJoint;
-pub use rapier3d::prelude::{JointLimits, JointAxis};
 use serde::{Serialize, Deserialize};
 use fnv::FnvHashMap;
+use bevy::prelude::*;
+use rapier3d::prelude as rapier;
 
 use crate::rigid_body::{Entity2BodyHandle, RigidBodyHandle};
-use crate::conversions::{IntoBevy, IntoRapier};
+use crate::conversions::IntoBevy;
+
+use self::prismatic::PrismaticJoint;
+use self::revolute::RevoluteJoint;
 
 
 pub type Entity2JointHandle = FnvHashMap<Entity, rapier::MultibodyJointHandle>;
@@ -20,43 +21,59 @@ pub type Entity2JointHandle = FnvHashMap<Entity, rapier::MultibodyJointHandle>;
 pub(crate) trait AxisIntoVec {
     fn into_unitvec(self) -> rapier::UnitVector<rapier::Real>;
 }
-impl AxisIntoVec for Axis {
+impl AxisIntoVec for KeskoAxis {
     fn into_unitvec(self) -> rapier::UnitVector<rapier::Real> {
         match self {
-            Axis::X => rapier::Vector::x_axis(),
-            Axis::Y => rapier::Vector::y_axis(),
-            Axis::Z => rapier::Vector::z_axis(),
-            Axis::NegX => -rapier::Vector::x_axis(),
-            Axis::NegY => -rapier::Vector::y_axis(),
-            Axis::NegZ => -rapier::Vector::z_axis()
+            KeskoAxis::X | KeskoAxis::AngX => rapier::Vector::x_axis(),
+            KeskoAxis::Y | KeskoAxis::AngY => rapier::Vector::y_axis(),
+            KeskoAxis::Z | KeskoAxis::AngZ => rapier::Vector::z_axis(),
+            KeskoAxis::NegX => -rapier::Vector::x_axis(),
+            KeskoAxis::NegY => -rapier::Vector::y_axis(),
+            KeskoAxis::NegZ => -rapier::Vector::z_axis()
         }
     }
 }
 
-/// Override Rapiers JointAxis since it did not inlcude negative axis
-#[derive(Clone, Copy, Serialize, Deserialize)]
-pub enum Axis {
+impl From<KeskoAxis> for rapier::JointAxis {
+    fn from(value: KeskoAxis) -> Self {
+        match value {
+            KeskoAxis::X | KeskoAxis::NegX => rapier::JointAxis::X,
+            KeskoAxis::Y | KeskoAxis::NegY => rapier::JointAxis::Y,
+            KeskoAxis::Z | KeskoAxis::NegZ => rapier::JointAxis::Z,
+            KeskoAxis::AngX => rapier::JointAxis::AngX,
+            KeskoAxis::AngY => rapier::JointAxis::AngY,
+            KeskoAxis::AngZ => rapier::JointAxis::AngZ,
+        }
+    }
+}
+
+/// Override Rapiers JointAxis since it did not include negative axis
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+pub enum KeskoAxis {
     X,
     Y,
     Z,
     NegX,
     NegY,
-    NegZ
+    NegZ,
+    AngX,
+    AngY,
+    AngZ
 }
 
 /// used to send joint state outside Kesko
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "lowercase", tag = "type")]
 pub enum JointState {
-    Spherical{ 
-        angle: Vec3
-    },
-    Revolute{ 
-        axis: Axis,
+    Revolute { 
+        axis: KeskoAxis,
         angle: f32,
+    },
+    Prismatic {
+        axis: KeskoAxis,
+        position: f32
     }
 }
-
 
 /// Enum to indicate joint type
 #[derive(Debug)]
@@ -65,100 +82,6 @@ pub enum JointType {
     Revolute,
     Prismatic,
     Spherical
-}
-
-pub trait JointTrait {
-    fn parent_anchor(&self) -> Transform;
-    fn child_anchor(&self) -> Transform;
-    fn get_axis(&self) -> Option<Axis>;
-}
-
-/// Component for connecting two bodies with a joint. This component should be added to the body that wants to connect
-/// to another body
-#[derive(Component)]
-pub struct Joint {
-    /// entity that the entity with the component should attach to
-    parent: Entity,
-    /// Rapier joint
-    joint: GenericJoint,
-    /// local joint_orientation
-    local_joint_rot: Quat,
-    /// parent anchor
-    parent_anchor: Transform,
-    /// child anchor
-    child_anchor: Transform,
-    /// axis that the joint is constrained to move around/along
-    axis: Option<Axis>
-}
-
-impl Joint {
-    pub fn new(parent: Entity, joint: impl Into<GenericJoint> + JointTrait) -> Self 
-    {
-
-        let parent_anchor = joint.parent_anchor();
-        let child_anchor = joint.child_anchor();
-        let axis = joint.get_axis();
-
-        Self {
-            parent,
-            joint: joint.into(),
-            local_joint_rot: Quat::default(),
-            parent_anchor,
-            child_anchor,
-            axis
-        }
-    }
-
-    pub fn get_type(&self) -> JointType {
-        let joint_type = if self.joint.as_fixed().is_some() {
-            JointType::Fixed
-        } else if self.joint.as_spherical().is_some() {
-            JointType::Spherical
-        } else if self.joint.as_prismatic().is_some() {
-            JointType::Prismatic
-        } else {
-            JointType::Revolute
-        };
-        joint_type
-    }
-
-    pub fn get_limits(&self) -> Option<JointLimits<f32>> {
-        if let Some(rev_joint) = self.joint.as_revolute() {
-            if let Some(limits) = rev_joint.limits() {
-                return Some(*limits);
-            }
-        } else if let Some(prism_joint) = self.joint.as_prismatic() {
-            if let Some(limits) = prism_joint.limits() {
-                return Some(*limits);
-            }
-        }
-        None
-    }
-
-    pub fn get_rot_x(&self) -> f32 {
-        self.local_joint_rot.to_euler(EulerRot::XYZ).0
-    }
-
-    pub fn get_rot_y(&self) -> f32 {
-        self.local_joint_rot.to_euler(EulerRot::XYZ).1
-    }
-
-    pub fn get_rot_z(&self) -> f32 {
-        self.local_joint_rot.to_euler(EulerRot::XYZ).2
-    }
-
-    pub fn get_state(&self) -> JointState {
-        match self.axis {
-            Some(axis) => {
-                match axis {
-                    Axis::X | Axis::NegX => JointState::Revolute{ axis, angle: self.get_rot_x() },
-                    Axis::Y | Axis::NegY => JointState::Revolute{ axis, angle: self.get_rot_y() },
-                    Axis::Z | Axis::NegZ => JointState::Revolute{ axis, angle: self.get_rot_z() },
-                }
-            }
-            None => JointState::Spherical{ angle: self.local_joint_rot.to_euler(EulerRot::XYZ).into() }
-        }
-    }
 }
 
 /// Component that holds a handle to an entity's joint.
@@ -174,14 +97,37 @@ pub(crate) fn add_multibody_joints(
     mut entity_2_joint_handle: ResMut<Entity2JointHandle>,
     mut multibody_joint_set: ResMut<rapier::MultibodyJointSet>,
     entity_body_map: Res<Entity2BodyHandle>,
-    query: Query<(Entity, &Joint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>
+    revolute_joints: Query<(Entity, &revolute::RevoluteJoint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>,
+    prismatic_joints: Query<(Entity, &prismatic::PrismaticJoint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>,
+    fixed_joints: Query<(Entity, &fixed::FixedJoint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>,
 ) {
-
-    for (entity, joint_comp) in query.iter() {
+    for (entity, joint) in revolute_joints.iter() {
         let joint_handle = multibody_joint_set.insert(
-            *entity_body_map.get(&joint_comp.parent).unwrap(),
+            *entity_body_map.get(&joint.parent).unwrap(),
             *entity_body_map.get(&entity).unwrap(),
-            joint_comp.joint,
+            *joint,
+            true
+        ).unwrap();
+
+        entity_2_joint_handle.insert(entity, joint_handle);
+        commands.entity(entity).insert(MultibodyJointHandle(joint_handle));
+    }
+    for (entity, joint) in prismatic_joints.iter() {
+        let joint_handle = multibody_joint_set.insert(
+            *entity_body_map.get(&joint.parent).unwrap(),
+            *entity_body_map.get(&entity).unwrap(),
+            *joint,
+            true
+        ).unwrap();
+
+        entity_2_joint_handle.insert(entity, joint_handle);
+        commands.entity(entity).insert(MultibodyJointHandle(joint_handle));
+    }
+    for (entity, joint) in fixed_joints.iter() {
+        let joint_handle = multibody_joint_set.insert(
+            *entity_body_map.get(&joint.parent).unwrap(),
+            *entity_body_map.get(&entity).unwrap(),
+            *joint,
             true
         ).unwrap();
 
@@ -195,19 +141,24 @@ pub(crate) fn add_multibody_joints(
 /// TODO: Add velocity
 pub(crate) fn update_joint_pos_system(
     multibody_joint_set: Res<rapier::MultibodyJointSet>,
-    mut handle_query: Query<(&mut Joint, &MultibodyJointHandle), (With<MultibodyJointHandle>, With<Joint>)>,
+    mut revolute_joints: Query<(&mut RevoluteJoint, &MultibodyJointHandle), (With<MultibodyJointHandle>, With<RevoluteJoint>)>,
+    mut prismatic_joints: Query<(&mut PrismaticJoint, &MultibodyJointHandle), (With<MultibodyJointHandle>, With<PrismaticJoint>)>,
 ) {
-    for (mut joint, handle) in handle_query.iter_mut() {
+    for (mut joint, handle) in revolute_joints.iter_mut() {
         if let Some((mb, link_index)) = multibody_joint_set.get(handle.0) {
             if let Some(link) = mb.link(link_index) {
-
                 // we have the joint transformation in the parent frame
-                let body_to_parent = link.joint().body_to_parent();
-
-                // convert to local orientation by multiplying by the inverse of anchor's rotation
-                joint.local_joint_rot = (
-                    joint.parent_anchor.rotation.into_rapier().inverse() * joint.child_anchor.rotation.into_rapier().inverse() * body_to_parent.rotation
-                ).into_bevy();
+                let (_, rot) = link.joint().body_to_parent().into_bevy();
+                joint.update_rotation(rot);
+            }
+        }
+    }
+    for (mut joint, handle) in prismatic_joints.iter_mut() {
+        if let Some((mb, link_index)) = multibody_joint_set.get(handle.0) {
+            if let Some(link) = mb.link(link_index) {
+                // we have the joint transformation in the parent frame
+                let (translation, _) = link.joint().body_to_parent().into_bevy();
+                joint.update_position(translation);
             }
         }
     }
@@ -217,30 +168,45 @@ pub(crate) fn update_joint_pos_system(
 #[derive(Debug)]
 pub struct JointMotorEvent {
     pub entity: Entity,
-    pub action: MotorAction
+    pub action: MotorCommand
 }
 
 #[derive(Debug)]
-pub enum MotorAction {
+pub enum MotorCommand {
     PositionRevolute {
-        position: f32
+        position: f32,
+        stiffness: Option<f32>,
+        damping: Option<f32>
     },
     VelocityRevolute {
-        velocity: f32
+        velocity: f32,
+        damping: Option<f32>
     },
     PositionSpherical {
         position: f32,
-        axis: rapier::JointAxis
+        axis: KeskoAxis
     },
     VelocitySpherical {
         velocity: f32,
-        axis: rapier::JointAxis,
+        axis: KeskoAxis,
     },
     PositionPrismatic {
         position: f32,
+        stiffness: Option<f32>,
+        damping: Option<f32>
     },
     VelocityPrismatic {
         velocity: f32,
+        damping: Option<f32>
+    },
+    SetStiffness {
+        val: f32
+    },
+    SetDamping {
+        val: f32
+    },
+    HoldPosition {
+        stiffness: Option<f32>
     }
 }
 
@@ -262,59 +228,112 @@ pub(crate) fn update_joint_motors_system(
                     Some(joint_link) => {
 
                         match event.action {
-                            MotorAction::PositionRevolute { position } => {
+                            MotorCommand::PositionRevolute { position, stiffness, damping } => {
                                 match joint_link.joint.data.as_revolute_mut() {
                                     Some(rev_joint) => {
                                         let motor = rev_joint.motor().expect("Joint should have a motor");
-                                        rev_joint.set_motor_position(position, motor.stiffness, motor.damping); 
+
+                                        let stiffness = match stiffness {
+                                            Some(stiffness) => stiffness,
+                                            None => motor.stiffness
+                                        };
+
+                                        let damping = match damping {
+                                            Some(damping) => damping,
+                                            None => motor.damping
+                                        };
+
+                                        rev_joint.set_motor_position(position, stiffness, damping); 
                                     },
                                     None => { info!("Joint was not a revolute joint for revolute joint event"); }
                                 }
                             },
-                            MotorAction::VelocityRevolute { velocity } => {
+                            MotorCommand::VelocityRevolute { velocity, damping } => {
                                 match joint_link.joint.data.as_revolute_mut() {
                                     Some(rev_joint) => { 
                                         let motor = rev_joint.motor().expect("Joint should have a motor");
-                                        rev_joint.set_motor_velocity(velocity, motor.damping); 
+
+                                        let damping = match damping {
+                                            Some(damping) => damping,
+                                            None => motor.damping
+                                        };
+
+                                        rev_joint.set_motor_velocity(velocity, damping); 
                                     },
                                     None => { info!("Joint was not a revolute joint for revolute joint event"); }
                                 }
                             },
-                            MotorAction::PositionSpherical {axis, position } => {
+                            MotorCommand::PositionSpherical {axis, position } => {
                                 match joint_link.joint.data.as_spherical_mut() {
                                     Some(spherical_joint) => {
-                                        let motor = spherical_joint.motor(axis).expect("Joint should have a motor");
-                                        spherical_joint.set_motor_position(axis, position, motor.stiffness, motor.damping); 
+                                        let motor = spherical_joint.motor(axis.into()).expect("Joint should have a motor");
+                                        spherical_joint.set_motor_position(axis.into(), position, motor.stiffness, motor.damping); 
                                     },
                                     None => { info!("Joint was not a spherical joint for spherical joint event"); }
                                 }
                             },
-                            MotorAction::VelocitySpherical {axis, velocity } => {
+                            MotorCommand::VelocitySpherical {axis, velocity } => {
                                 match joint_link.joint.data.as_spherical_mut() {
                                     Some(spherical_joint) => { 
-                                        let motor = spherical_joint.motor(axis).expect("Joint should have a motor");
-                                        spherical_joint.set_motor_velocity(axis, velocity, motor.damping); 
+                                        let motor = spherical_joint.motor(axis.into()).expect("Joint should have a motor");
+                                        spherical_joint.set_motor_velocity(axis.into(), velocity, motor.damping); 
                                     },
                                     None => { info!("Joint was not a spherical joint for spherical joint event"); }
                                 }
                             },
-                            MotorAction::PositionPrismatic { position } => {
+                            MotorCommand::PositionPrismatic { position, stiffness, damping } => {
                                 match joint_link.joint.data.as_prismatic_mut() {
                                     Some(prismatic_joint) => { 
                                         let motor = prismatic_joint.motor().expect("Joint should have a motor");
-                                        prismatic_joint.set_motor_position(position, motor.stiffness, motor.damping);
+
+                                        let stiffness = match stiffness {
+                                            Some(stiffness) => stiffness,
+                                            None => motor.stiffness
+                                        };
+
+                                        let damping = match damping {
+                                            Some(damping) => damping,
+                                            None => motor.damping
+                                        };
+
+                                        prismatic_joint.set_motor_position(position, stiffness, damping);
                                     }
                                     None => { info!("Joint was not a prismatic joint for prismatic joint event"); }
                                 }
                             },
-                            MotorAction::VelocityPrismatic { velocity } => {
+                            MotorCommand::VelocityPrismatic { velocity, damping } => {
                                 match joint_link.joint.data.as_prismatic_mut() {
                                     Some(prismatic_joint) => { 
                                         let motor = prismatic_joint.motor().expect("Joint should have a motor");
-                                        prismatic_joint.set_motor_velocity(velocity, motor.damping); 
+                                        let damping = match damping {
+                                            Some(damping) => damping,
+                                            None => motor.damping
+                                        };
+                                        prismatic_joint.set_motor_velocity(velocity, damping); 
                                     }
                                     None => { info!("Joint was not a prismatic joint for prismatic joint event"); }
                                 }
+                            },
+                            MotorCommand::SetStiffness { val } => {
+                                if let Some(joint) = joint_link.joint.data.as_revolute_mut() {
+                                    let motor = joint.motor().expect("Joint should have a motor");
+                                    joint.set_motor(motor.target_pos, motor.target_vel, val, motor.damping);
+                                } else if let Some(joint) = joint_link.joint.data.as_prismatic_mut() {
+                                    let motor = joint.motor().expect("Joint should have a motor");
+                                    joint.set_motor(motor.target_pos, motor.target_vel, val, motor.damping);
+                                }
+                            },
+                            MotorCommand::SetDamping { val } => {
+                                if let Some(joint) = joint_link.joint.data.as_revolute_mut() {
+                                    let motor = joint.motor().expect("Joint should have a motor");
+                                    joint.set_motor(motor.target_pos, motor.target_vel, motor.stiffness, val);
+                                } else if let Some(joint) = joint_link.joint.data.as_prismatic_mut() {
+                                    let motor = joint.motor().expect("Joint should have a motor");
+                                    joint.set_motor(motor.target_pos, motor.target_vel, motor.stiffness, val);
+                                }
+                            },
+                            MotorCommand::HoldPosition { stiffness } => {
+                                todo!();
                             }
                         }
                     }
@@ -350,10 +369,11 @@ mod tests {
             .id();
 
         let expected_transform = Transform::from_translation(Vec3::X);
-        let joint = Joint::new(parent_entity, FixedJoint {
+        let joint = FixedJoint {
+            parent: parent_entity,
             parent_anchor: expected_transform,
             child_anchor: expected_transform
-        });
+        };
 
         let child_body_handle = rapier::RigidBodyHandle::from_raw_parts(2, 0);
         let child_entity = world
@@ -428,7 +448,7 @@ mod tests {
 
         // Setup and send test event for setting the velocity
         let mut events = Events::<JointMotorEvent>::default();
-        events.send(JointMotorEvent { entity: entity, action: MotorAction::VelocityRevolute { velocity: expected_vel }});
+        events.send(JointMotorEvent { entity: entity, action: MotorCommand::VelocityRevolute { velocity: expected_vel, damping: None}});
         world.insert_resource(events);
 
         // Run stage
@@ -466,8 +486,10 @@ mod tests {
 
         events.send(JointMotorEvent { 
             entity, 
-            action: MotorAction::PositionRevolute { 
-                position: expected_pos
+            action: MotorCommand::PositionRevolute { 
+                position: expected_pos,
+                stiffness: None,
+                damping: None
             }
         });
         world.insert_resource(events);
@@ -496,8 +518,8 @@ mod tests {
         // create and insert joint
         let expected_vel = 2.3;
         let expected_factor = 3.4;
-        let test_axis = rapier::JointAxis::AngX;
-        let joint = rapier::SphericalJointBuilder::new().motor(test_axis, 0.0, expected_vel, 0.0, expected_factor).build();
+        let test_axis = KeskoAxis::AngX;
+        let joint = rapier::SphericalJointBuilder::new().motor(test_axis.into(), 0.0, expected_vel, 0.0, expected_factor).build();
         let joint_handle = joint_set.insert(body_handle1, body_handle2, joint, true).unwrap();
 
         world.insert_resource(joint_set);
@@ -507,7 +529,7 @@ mod tests {
         let mut events = Events::<JointMotorEvent>::default();
         events.send(JointMotorEvent { 
             entity: entity, 
-            action: MotorAction::VelocitySpherical {
+            action: MotorCommand::VelocitySpherical {
                 velocity: expected_vel, 
                 axis: test_axis
             }
@@ -524,8 +546,8 @@ mod tests {
 
         // test correct values
         let res_joint = multibody.link(link_id).unwrap().joint;
-        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().target_vel, expected_vel);
-        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().damping, expected_factor);
+        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis.into()).unwrap().target_vel, expected_vel);
+        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis.into()).unwrap().damping, expected_factor);
 
     }
 
@@ -537,10 +559,10 @@ mod tests {
         let expected_pos = 2.3;
         let expected_damping = 3.4;
         let expected_stiffness = 4.5;
-        let test_axis = rapier::JointAxis::AngY;
+        let test_axis = KeskoAxis::AngY;
 
         // create and insert joint
-        let joint = rapier::SphericalJointBuilder::new().motor(test_axis, expected_pos, 0.0, expected_stiffness, expected_damping).build();
+        let joint = rapier::SphericalJointBuilder::new().motor(test_axis.into(), expected_pos, 0.0, expected_stiffness, expected_damping).build();
         let joint_handle = joint_set.insert(body_handle1, body_handle2, joint, true).unwrap();
 
         world.insert_resource(joint_set);
@@ -550,7 +572,7 @@ mod tests {
         let mut events = Events::<JointMotorEvent>::default();
         events.send(JointMotorEvent { 
             entity, 
-            action: MotorAction::PositionSpherical {
+            action: MotorCommand::PositionSpherical {
                 position: expected_pos, 
                 axis: test_axis
             }
@@ -567,9 +589,9 @@ mod tests {
 
         // test correct values
         let res_joint = multibody.link(link_id).unwrap().joint;
-        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().target_pos, expected_pos);
-        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().damping, expected_damping);
-        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().stiffness, expected_stiffness);
+        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis.into()).unwrap().target_pos, expected_pos);
+        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis.into()).unwrap().damping, expected_damping);
+        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis.into()).unwrap().stiffness, expected_stiffness);
 
     }
 
