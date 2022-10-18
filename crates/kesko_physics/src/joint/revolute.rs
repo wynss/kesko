@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::prelude::*;
+use rapier3d::prelude as rapier;
 
 use crate::conversions::IntoRapier;
 
@@ -15,7 +15,7 @@ pub struct RevoluteJoint {
     pub limits: Option<Vec2>,
     pub damping: f32,
     pub stiffness: f32,
-    pub max_motor_force: Real,
+    pub max_motor_force: rapier::Real,
 
     rotation: f32
 }
@@ -30,7 +30,7 @@ impl RevoluteJoint {
             limits: None,
             damping: 0.0,
             stiffness: 0.0,
-            max_motor_force: Real::MAX,
+            max_motor_force: rapier::Real::MAX,
             rotation: 0.0
         }
     }
@@ -70,10 +70,13 @@ impl RevoluteJoint {
         // convert to local orientation by multiplying by the inverse of anchor's rotation
         let rotation = (self.parent_anchor.rotation.inverse() * self.child_anchor.rotation.inverse() * rot).to_euler(EulerRot::XYZ);
         match self.axis {
-            KeskoAxis::X | KeskoAxis::NegX => self.rotation = rotation.0,
-            KeskoAxis::Y | KeskoAxis::NegY => self.rotation = rotation.1,
-            KeskoAxis::Z | KeskoAxis::NegZ => self.rotation = rotation.2,
-            _ => {}
+            KeskoAxis::X => self.rotation = rotation.0,
+            KeskoAxis::NegX => self.rotation = -rotation.0,
+            KeskoAxis::Y => self.rotation = rotation.1,
+            KeskoAxis::NegY => self.rotation = -rotation.1,
+            KeskoAxis::Z => self.rotation = rotation.2,
+            KeskoAxis::NegZ => self.rotation = -rotation.2,
+            _ => error!("Revolute joint does not have a valid axis")
         }
     }
 
@@ -89,10 +92,10 @@ impl RevoluteJoint {
     }
 }
 
-impl From<RevoluteJoint> for GenericJoint {
-    fn from(joint: RevoluteJoint) -> GenericJoint {
+impl From<RevoluteJoint> for rapier::GenericJoint {
+    fn from(joint: RevoluteJoint) -> rapier::GenericJoint {
         
-        let mut builder = RevoluteJointBuilder::new(joint.axis.into_unitvec())
+        let mut builder = rapier::RevoluteJointBuilder::new(joint.axis.into_unitvec())
             .local_anchor1(joint.parent_anchor.translation.into_rapier())
             .local_anchor2(joint.child_anchor.translation.into_rapier());
 
@@ -106,7 +109,7 @@ impl From<RevoluteJoint> for GenericJoint {
             builder = builder.limits(limits.into());
         }
 
-        let mut generic: GenericJoint = builder.into();
+        let mut generic: rapier::GenericJoint = builder.into();
         generic.local_frame1.rotation = joint.parent_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
         generic.local_frame1.rotation = joint.child_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
         generic
