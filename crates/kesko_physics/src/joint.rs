@@ -213,13 +213,13 @@ pub enum MotorCommand {
 pub(crate) fn update_joint_motors_system(
     mut joint_event: EventReader<JointMotorEvent>,
     mut joint_set: ResMut<rapier::MultibodyJointSet>,
-    mut query: Query<&MultibodyJointHandle, With<MultibodyJointHandle>>
+    mut query: Query<(Option<&RevoluteJoint>, Option<&PrismaticJoint>, &MultibodyJointHandle), With<MultibodyJointHandle>>
 ) {
 
     for event in joint_event.iter() {
         match query.get_mut(event.entity) {
             Err(e) => error!("{:?}", e),
-            Ok(joint_handle) => match joint_set.get_mut(joint_handle.0) {
+            Ok((revolute_joint, prismatic_joint, joint_handle)) => match joint_set.get_mut(joint_handle.0) {
 
                 None => { error!("Could not get joint from joint set")},
                 Some((mb, id)) => match mb.link_mut(id) {
@@ -333,7 +333,25 @@ pub(crate) fn update_joint_motors_system(
                                 }
                             },
                             MotorCommand::HoldPosition { stiffness } => {
-                                todo!();
+                                if let Some(prismatic_joint) = prismatic_joint {
+                                    let joint = joint_link.joint.data.as_prismatic_mut().expect("Prismatic component should have a prismatic joint");
+                                    let motor = joint.motor().expect("Joint should have a motor");
+
+                                    let stiffness = match stiffness {
+                                        Some(stiffness) => stiffness,
+                                        None => motor.stiffness
+                                    };
+                                    joint.set_motor_position(prismatic_joint.position(), stiffness, 0.0);
+                                } else if let Some(revolute_joint) = revolute_joint {
+                                    let joint = joint_link.joint.data.as_revolute_mut().expect("Prismatic component should have a prismatic joint");
+                                    let motor = joint.motor().expect("Joint should have a motor");
+
+                                    let stiffness = match stiffness {
+                                        Some(stiffness) => stiffness,
+                                        None => motor.stiffness
+                                    };
+                                    joint.set_motor_position(revolute_joint.rotation(), stiffness, 0.0);
+                                };
                             }
                         }
                     }

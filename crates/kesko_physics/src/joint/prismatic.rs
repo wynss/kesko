@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::prelude::{GenericJoint, PrismaticJointBuilder, Real};
+use rapier3d::prelude as rapier;
 use crate::conversions::IntoRapier;
 
 use super::{AxisIntoVec, KeskoAxis, JointState};
@@ -14,7 +14,7 @@ pub struct PrismaticJoint {
     pub limits: Option<Vec2>,
     pub stiffness: f32,
     pub damping: f32,
-    pub max_motor_force: Real,
+    pub max_motor_force: rapier::Real,
 
     position: f32
 }
@@ -29,7 +29,7 @@ impl PrismaticJoint {
             limits: None,
             damping: 0.0,
             stiffness: 0.0,
-            max_motor_force: Real::MAX,
+            max_motor_force: rapier::Real::MAX,
 
             position: 0.0
         }
@@ -68,9 +68,12 @@ impl PrismaticJoint {
 
     pub fn update_position(&mut self, translation: Vec3) {
         match self.axis {
-            KeskoAxis::X | KeskoAxis::NegX => self.position = translation.x,
-            KeskoAxis::Y | KeskoAxis::NegY => self.position = translation.y,
-            KeskoAxis::Z | KeskoAxis::NegZ => self.position = translation.z,
+            KeskoAxis::X => self.position = translation.x,
+            KeskoAxis::NegX => self.position = -translation.x,
+            KeskoAxis::Y => self.position = translation.y,
+            KeskoAxis::NegY => self.position = -translation.y,
+            KeskoAxis::Z => self.position = translation.z,
+            KeskoAxis::NegZ => self.position = -translation.z,
             _ => error!("Prismatic joint does not have a valid axis")
         }
     }
@@ -84,9 +87,9 @@ impl PrismaticJoint {
     }
 }
 
-impl From<PrismaticJoint> for GenericJoint {
-    fn from(joint: PrismaticJoint) -> GenericJoint {
-        let mut builder = PrismaticJointBuilder::new(joint.axis.into_unitvec())
+impl From<PrismaticJoint> for rapier::GenericJoint {
+    fn from(joint: PrismaticJoint) -> rapier::GenericJoint {
+        let mut builder = rapier::PrismaticJointBuilder::new(joint.axis.into_unitvec())
             .local_anchor1(joint.parent_anchor.translation.into_rapier())
             .local_anchor2(joint.child_anchor.translation.into_rapier());
         
@@ -98,7 +101,7 @@ impl From<PrismaticJoint> for GenericJoint {
             builder = builder.limits(limits.into());
         }
 
-        let mut generic: GenericJoint = builder.into();
+        let mut generic: rapier::GenericJoint = builder.into();
         generic.local_frame1.rotation = joint.parent_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
         generic.local_frame1.rotation = joint.child_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
         generic
