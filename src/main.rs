@@ -1,8 +1,6 @@
-use bevy::{prelude::*, render::{texture::ImageSettings, render_resource::{SamplerDescriptor, AddressMode}}};
+use bevy::prelude::*;
 
-use kesko_core::{
-    interaction::groups::GroupDynamic, 
-};
+use kesko_core::interaction::groups::GroupDynamic;
 
 use kesko_plugins::CorePlugins;
 use kesko_diagnostic::DiagnosticsPlugins;
@@ -29,14 +27,6 @@ fn main() {
     .add_plugin(CarPlugin)
     .add_plugin(WheelyPlugin)
     .add_startup_system(test_scene)
-    .insert_resource(ImageSettings {
-        default_sampler: SamplerDescriptor {
-            address_mode_u: AddressMode::Repeat,
-            address_mode_v: AddressMode::Repeat,
-            address_mode_w: AddressMode::Repeat,
-            ..Default::default()
-        },
-    })
     .run();
 }
 
@@ -79,30 +69,30 @@ fn test_scene(
         &mut meshes,
     );
 
-    // kesko_models::humanoid::Humanoid::spawn(
-    //     &mut commands,
-    //     materials.add(StandardMaterial { 
-    //         base_color: Color::ORANGE,
-    //         perceptual_roughness: 1.0,
-    //         ..default()
-    //     }), 
-    //     Transform::from_xyz(2.0, 2.0, 2.0),
-    //     &mut meshes
-    // );
+    kesko_models::humanoid::Humanoid::spawn(
+        &mut commands,
+        materials.add(StandardMaterial { 
+            base_color: Color::ORANGE,
+            perceptual_roughness: 1.0,
+            ..default()
+        }), 
+        Transform::from_xyz(2.0, 2.0, 2.0),
+        &mut meshes
+    );
 
-    // // spawn sphere that will generate collision events
-    // commands.spawn_bundle(PbrBundle {
-    //     material: materials.add(Color::PURPLE.into()),
-    //     mesh: meshes.add(Mesh::from(shape::Icosphere {radius: 0.2, subdivisions: 5})),
-    //     transform: Transform::from_translation(Vec3::new(0.0, 1.0, 2.0)),
-    //     ..default()
-    // })
-    // .insert(RigidBody::Dynamic)
-    // .insert(ColliderShape::Sphere { radius: 0.2 })
-    // .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    // .insert(Force::default())
-    // .insert(GravityScale::default())
-    // .insert(GenerateCollisionEvents);
+    // spawn sphere that will generate collision events
+    commands.spawn_bundle(PbrBundle {
+        material: materials.add(Color::PURPLE.into()),
+        mesh: meshes.add(Mesh::from(shape::Icosphere {radius: 0.2, subdivisions: 5})),
+        transform: Transform::from_translation(Vec3::new(0.0, 1.0, 2.0)),
+        ..default()
+    })
+    .insert(RigidBody::Dynamic)
+    .insert(ColliderShape::Sphere { radius: 0.2 })
+    .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+    .insert(Force::default())
+    .insert(GravityScale::default())
+    .insert(GenerateCollisionEvents);
 
     // Light
     const HALF_SIZE: f32 = 10.0;

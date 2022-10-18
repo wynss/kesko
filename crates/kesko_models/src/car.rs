@@ -76,8 +76,10 @@ impl Car {
         let half_wall_height = wall_height / 2.0;
         let half_wall_thick = wall_thickness / 2.0;
 
-        let stiffness = 1.0;
+        let stiffness = 10.0;
         let damping = 10.0;
+
+        let mass = 0.5;
 
         // Frame
         let frame = commands.spawn_bundle( MeshPhysicBodyBundle::from(
@@ -88,7 +90,7 @@ impl Car {
             meshes
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 1.0 })
+        .insert(Mass { val: mass })
         .insert(RigidBodyName(NAME.to_owned()))
         .insert(ControlDescription("Use the WASD keys to manoeuver the car".to_owned()))
         .id();
@@ -127,6 +129,7 @@ impl Car {
             .with_parent_anchor(parent_anchor)
             .with_child_anchor(child_anchor)
         )
+        .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
         // left wall
@@ -145,6 +148,7 @@ impl Car {
             .with_parent_anchor(parent_anchor)
             .with_child_anchor(child_anchor)
         )
+        .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
         // right wall
@@ -163,6 +167,7 @@ impl Car {
             .with_parent_anchor(parent_anchor)
             .with_child_anchor(child_anchor)
         )
+        .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
 
@@ -184,6 +189,7 @@ impl Car {
             .with_motor_params(stiffness, 0.1)
             .with_limits(Vec2::new(-FRAC_PI_6, FRAC_PI_6))
         )
+        .insert(Mass { val: mass })
         .insert(RigidBodyName(LEFT_FRONT_WHEEL_TURN.to_owned()))
         .id();
 
@@ -204,6 +210,7 @@ impl Car {
             .with_child_anchor(child_anchor)
             .with_axis(KeskoAxis::Y)
         )
+        .insert(Mass { val: mass })
         .insert(RigidBodyName(LEFT_FRONT_WHEEL.to_owned()))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
@@ -225,6 +232,7 @@ impl Car {
             .with_motor_params(stiffness, 0.1)
             .with_limits(Vec2::new(-FRAC_PI_6, FRAC_PI_6))
         )
+        .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName(RIGHT_FRONT_WHEEL_TURN.to_owned()))
         .id();
@@ -246,6 +254,7 @@ impl Car {
             .with_child_anchor(child_anchor)
             .with_axis(KeskoAxis::Y)
         )
+        .insert(Mass { val: mass })
         .insert(RigidBodyName(RIGHT_FRONT_WHEEL.to_owned()))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
@@ -266,6 +275,7 @@ impl Car {
             .with_axis(KeskoAxis::Y)
             .with_motor_params(0.0, damping)
         )
+        .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName(LEFT_REAR_WHEEL.to_owned()));
 
@@ -287,6 +297,7 @@ impl Car {
             .with_axis(KeskoAxis::Y)
             .with_motor_params(0.0, damping)
         )
+        .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName(RIGHT_REAR_WHEEL.to_owned()));
 

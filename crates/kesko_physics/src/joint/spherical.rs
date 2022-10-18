@@ -129,7 +129,7 @@ mod tests {
     use bevy::prelude::{Transform, Vec3, Entity};
     use rapier3d::dynamics::JointAxis;
     use rapier3d::prelude::GenericJoint;
-    use crate::{default, IntoRapier};
+    use crate::IntoRapier;
     use super::SphericalJoint;
 
     #[test]

@@ -281,7 +281,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::X)
                 .with_motor_params(STIFFNESS, DAMPING)
-                .with_limits(Vec2::new(FRAC_PI_2, FRAC_PI_2))
+                .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("left_shoulder_x".to_owned()))

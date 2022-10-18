@@ -32,8 +32,11 @@ opt-level = 1
 [profile.dev.package."*"]
 opt-level = 3
 
+[profile.release]
+codegen-units = 1
+
 [dependencies]
-bevy = { version = "0.8.1", features = ["dynamic"] }
+bevy = { version = "0.8.1" }
 kesko_physics = { version = "0.1.0", path = "crates/kesko_physics" }
 kesko_core = { version = "0.1.0", path = "crates/kesko_core" }
 kesko_object_interaction = { version = "0.1.0", path = "crates/kesko_object_interaction"}

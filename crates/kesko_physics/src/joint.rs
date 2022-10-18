@@ -105,7 +105,7 @@ pub(crate) fn add_multibody_joints(
     entity_body_map: Res<Entity2BodyHandle>,
     revolute_joints: Query<(Entity, &revolute::RevoluteJoint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>,
     prismatic_joints: Query<(Entity, &prismatic::PrismaticJoint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>,
-    fixed_joints: Query<(Entity, &fixed::FixedJoint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>
+    fixed_joints: Query<(Entity, &fixed::FixedJoint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>,
 ) {
     for (entity, joint) in revolute_joints.iter() {
         let joint_handle = multibody_joint_set.insert(
@@ -129,11 +129,11 @@ pub(crate) fn add_multibody_joints(
         entity_2_joint_handle.insert(entity, joint_handle);
         commands.entity(entity).insert(MultibodyJointHandle(joint_handle));
     }
-    for (entity, joint_comp) in fixed_joints.iter() {
+    for (entity, joint) in fixed_joints.iter() {
         let joint_handle = multibody_joint_set.insert(
-            *entity_body_map.get(&joint_comp.parent).unwrap(),
+            *entity_body_map.get(&joint.parent).unwrap(),
             *entity_body_map.get(&entity).unwrap(),
-            *joint_comp,
+            *joint,
             true
         ).unwrap();
 
@@ -338,7 +338,9 @@ pub(crate) fn update_joint_motors_system(
                                     joint.set_motor(motor.target_pos, motor.target_vel, motor.stiffness, val);
                                 }
                             },
-                            _ => {todo!()}
+                            MotorCommand::HoldPosition { stiffness } => {
+                                todo!();
+                            }
                         }
                     }
                 }
@@ -522,8 +524,8 @@ mod tests {
         // create and insert joint
         let expected_vel = 2.3;
         let expected_factor = 3.4;
-        let test_axis = rapier::JointAxis::AngX;
-        let joint = rapier::SphericalJointBuilder::new().motor(test_axis, 0.0, expected_vel, 0.0, expected_factor).build();
+        let test_axis = KeskoAxis::AngX;
+        let joint = rapier::SphericalJointBuilder::new().motor(test_axis.into(), 0.0, expected_vel, 0.0, expected_factor).build();
         let joint_handle = joint_set.insert(body_handle1, body_handle2, joint, true).unwrap();
 
         world.insert_resource(joint_set);
@@ -550,8 +552,8 @@ mod tests {
 
         // test correct values
         let res_joint = multibody.link(link_id).unwrap().joint;
-        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().target_vel, expected_vel);
-        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().damping, expected_factor);
+        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis.into()).unwrap().target_vel, expected_vel);
+        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis.into()).unwrap().damping, expected_factor);
 
     }
 
@@ -563,10 +565,10 @@ mod tests {
         let expected_pos = 2.3;
         let expected_damping = 3.4;
         let expected_stiffness = 4.5;
-        let test_axis = rapier::JointAxis::AngY;
+        let test_axis = KeskoAxis::AngY;
 
         // create and insert joint
-        let joint = rapier::SphericalJointBuilder::new().motor(test_axis, expected_pos, 0.0, expected_stiffness, expected_damping).build();
+        let joint = rapier::SphericalJointBuilder::new().motor(test_axis.into(), expected_pos, 0.0, expected_stiffness, expected_damping).build();
         let joint_handle = joint_set.insert(body_handle1, body_handle2, joint, true).unwrap();
 
         world.insert_resource(joint_set);
@@ -593,9 +595,9 @@ mod tests {
 
         // test correct values
         let res_joint = multibody.link(link_id).unwrap().joint;
-        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().target_pos, expected_pos);
-        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().damping, expected_damping);
-        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis).unwrap().stiffness, expected_stiffness);
+        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis.into()).unwrap().target_pos, expected_pos);
+        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis.into()).unwrap().damping, expected_damping);
+        assert_eq!(res_joint.data.as_spherical().unwrap().motor(test_axis.into()).unwrap().stiffness, expected_stiffness);
 
     }
 
