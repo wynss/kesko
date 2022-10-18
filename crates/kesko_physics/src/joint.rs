@@ -47,7 +47,7 @@ impl From<KeskoAxis> for rapier::JointAxis {
     }
 }
 
-/// Override Rapiers JointAxis since it did not inlcude negative axis
+/// Override Rapiers JointAxis since it did not include negative axis
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum KeskoAxis {
     X,
@@ -82,12 +82,6 @@ pub enum JointType {
     Revolute,
     Prismatic,
     Spherical
-}
-
-pub trait JointTrait {
-    fn parent_anchor(&self) -> Transform;
-    fn child_anchor(&self) -> Transform;
-    fn get_axis(&self) -> Option<KeskoAxis>;
 }
 
 /// Component that holds a handle to an entity's joint.

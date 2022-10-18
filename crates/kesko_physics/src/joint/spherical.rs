@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use rapier3d::prelude::{GenericJoint, JointAxis, SphericalJointBuilder};
 
 use crate::conversions::IntoRapier;
-use super::{JointTrait, KeskoAxis};
 
 
 #[derive(Component)]
@@ -64,20 +63,6 @@ impl SphericalJoint {
     pub fn with_z_limits(mut self, limits: Vec2) -> Self {
         self.z_ang_limit = Some(limits);
         self
-    }
-}
-
-
-impl JointTrait for SphericalJoint {
-    fn parent_anchor(&self) -> Transform {
-        self.parent_anchor
-    }
-    fn child_anchor(&self) -> Transform {
-        self.child_anchor
-    }
-
-    fn get_axis(&self) -> Option<KeskoAxis> {
-        None
     }
 }
 
