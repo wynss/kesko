@@ -1,5 +1,6 @@
 import logging
 from os import isatty
+from signal import raise_signal
 import subprocess
 from typing import Optional
 import json
@@ -8,14 +9,15 @@ import numpy as np
 import torch
 
 from .config import KESKO_BIN_PATH, URL
-from .protocol import (
-    LINKS, ApplyControlAction, Communicator, Despawn, DespawnAll, KeskoRequest, 
-    GetState, Shutdown,
-    JOINT_STATES, MULTIBODY_STATES, NAME, MULTIBODY_SPAWNED
+from .protocol import KeskoRequest
+from .protocol.communicator import Communicator
+from .protocol.commands import (
+    ApplyControl, Despawn, DespawnAll, GetState, Shutdown
 )
+from .protocol.response import KeskoResponse, CollisionStarted, MultibodySpawned, CollisionStopped, MultibodyStates
 
 
-logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',  level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',  level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +39,8 @@ class Kesko:
     def initialize(self):
         subprocess.Popen(KESKO_BIN_PATH)
         
-    def send(self, actions: list) -> Optional[list]:
+    def send(self, actions: list) -> KeskoResponse:
+
         if actions is not None:
             if not isinstance(actions, list):
                 actions = [actions]
@@ -53,12 +56,11 @@ class Kesko:
 
         # Because we get some strange things from the Serialization on Kesko's side
         json_response = [resp[-1] for resp in response.json()]
-        # logger.debug(json_response)
-        self._parse_response(json_response)
-        
-        return json_response
 
-    def step(self, actions: Optional[list] = None):
+        response_objects = self._parse_response(json_response)
+        return response_objects
+
+    def step(self, actions: Optional[list] = None) -> KeskoResponse:
         
         if actions is not None:
             if not isinstance(actions, list):
@@ -69,10 +71,10 @@ class Kesko:
     
     def _prepare_actions(self, actions: list):
         for action in actions:
-            if isinstance(action, ApplyControlAction):
+            if isinstance(action, ApplyControl):
                 if isinstance(action.values, (np.ndarray, torch.Tensor)):
                     # convert tensor or array to dict
-                    action.values = {joint_name: val for joint_name, val in zip(self.bodies[action.id].joints, action.values.tolist())}
+                    action.values = {joint_name: val for joint_name, val in zip(self.bodies[action.id].links, action.values.tolist())}
             elif isinstance(action, DespawnAll) or action == DespawnAll:
                 self.bodies = {}
             elif isinstance(action, Despawn):
@@ -80,18 +82,33 @@ class Kesko:
 
         return actions
     
-    def _parse_response(self, response):
-        for rp in response:
-            if isinstance(rp, dict):
-                if MULTIBODY_SPAWNED in rp:
-                    body = rp[MULTIBODY_SPAWNED]
-                    if body[NAME] not in self.bodies:
-                        # Add body info
-                        body_id = body['id']
-                        self.bodies[body_id] = Multibody(id=body_id, name=body[NAME], joints=body[LINKS])
-    
-    def get_body_name(self, idx: int) -> Optional[str]:
-        return list(self.bodies.keys())[idx]
+    def _parse_response(self, responses) -> KeskoResponse:
+        """Parses the responses and deserializes them into their corresponding dataclass"""
+
+        response_objects = []
+        for response in responses:
+
+            if MultibodySpawned.__name__ in response:
+                multibody = MultibodySpawned(**response[MultibodySpawned.__name__])
+                if multibody.id not in self.bodies:
+                    # Add body info
+                    self.bodies[multibody.id] = multibody
+
+                response_objects.append(multibody)    
+
+            elif CollisionStarted.__name__ in response:
+                collision_started = CollisionStarted(**response[CollisionStarted.__name__])
+                response_objects.append(collision_started)
+                
+            elif CollisionStopped.__name__ in response:
+                collision_stopped = CollisionStopped(**response[CollisionStopped.__name__])
+                response_objects.append(collision_stopped)
+            
+            elif MultibodyStates.__name__ in response:
+                multibody_states = [MultibodyStates(**mb) for mb in response[MultibodyStates.__name__]]
+                response_objects.extend(multibody_states)
+
+        return KeskoResponse(response_objects)
     
     def close(self):
         # send close command to Nora

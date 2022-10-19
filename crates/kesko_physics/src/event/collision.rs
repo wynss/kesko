@@ -10,12 +10,8 @@ pub struct GenerateCollisionEvents;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum CollisionEvent {
-    Started {
-        data: CollisionData
-    },
-    Stopped {
-        data: CollisionData
-    }
+    CollisionStarted(CollisionData),
+    CollisionStopped(CollisionData)
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -72,24 +68,24 @@ impl CollisionEventHandler {
             match event {
                 rapier::geometry::CollisionEvent::Started(handle1, handle2, flag) => {
                     if let (Some(coll1), Some(coll2)) = (colliders.get(handle1), colliders.get(handle2)) {
-                        event_writer.send(CollisionEvent::Started {
-                            data: CollisionData {
+                        event_writer.send(CollisionEvent::CollisionStarted(
+                            CollisionData {
                                 entity1: Entity::from_bits(coll1.user_data as u64),
                                 entity2: Entity::from_bits(coll2.user_data as u64),
                                 flag
                             }
-                        })
+                        ))
                     }
                 },
                 rapier::geometry::CollisionEvent::Stopped(handle1, handle2, flag) => {
                     if let (Some(coll1), Some(coll2)) = (colliders.get(handle1), colliders.get(handle2)) {
-                        event_writer.send(CollisionEvent::Stopped {
-                            data: CollisionData {
+                        event_writer.send(CollisionEvent::CollisionStopped (
+                            CollisionData {
                                 entity1: Entity::from_bits(coll1.user_data as u64),
                                 entity2: Entity::from_bits(coll2.user_data as u64),
                                 flag
                             }
-                        })
+                        ))
                     }
                 }
             }

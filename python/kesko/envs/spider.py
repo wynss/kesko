@@ -5,7 +5,8 @@ import gym
 import numpy as np
 
 from ..kesko import Kesko
-from ..protocol import GLOBAL_POSITION, DespawnAll, GetState, PausePhysics, RunPhysics, SpawnAction, ApplyControlAction, MULTIBODY_STATES
+from ..protocol.commands import DespawnAll, GetState, PausePhysics, RunPhysics, Spawn, ApplyControl
+from ..protocol.response import KeskoResponse, MultibodyStates
 from ..color import Color
 from ..model import KeskoModel
 
@@ -23,10 +24,11 @@ class SpiderEnv(gym.Env):
         self._setup()
     
     def _setup(self):
+
         # Spawn models and start physics
         self._kesko.send([
-            SpawnAction(model=KeskoModel.Plane, position=[0.0, 0.0, 0.0], color=Color.WHITE),
-            SpawnAction(model=KeskoModel.Spider, position=[0.0, 2.0, 0.0], color=Color.GREEN)
+            Spawn(model=KeskoModel.Plane, position=[0.0, 0.0, 0.0], color=Color.WHITE),
+            Spawn(model=KeskoModel.Spider, position=[0.0, 2.0, 0.0], color=Color.GREEN)
         ])
 
         # Kesko stores all the bodies that are in the environment, get the body named by base name.
@@ -37,7 +39,7 @@ class SpiderEnv(gym.Env):
             raise ValueError(f"Could not get body from Kesko: {e}")
 
         # get initial state 
-        initial_state = self._get_state_from_response(self._kesko.send(GetState))
+        initial_state = self._get_state(self._kesko.send(GetState))
         tensor_state = self._to_tensor(initial_state)
 
         self._kesko.send(RunPhysics)
@@ -47,33 +49,36 @@ class SpiderEnv(gym.Env):
         high = np.pi / 6.0
         
         # Define actions space
-        dim_actions_space = len(self.spider_body.joints)
+        dim_actions_space = len(self.spider_body.links)
         self.action_space = gym.spaces.Box(low=low* np.ones((dim_actions_space,)), high=high * np.zeros((dim_actions_space,)))
 
         self.observation_space = gym.spaces.Space(tensor_state.shape)
 
         return tensor_state
 
-    def _to_tensor(self, state: dict):
+    def _to_tensor(self, state: MultibodyStates):
 
-        position = state["global_position"]
-        orientation = state["global_orientation"]
-        angular_velocity = state["global_angular_velocity"]
-        joint_positions = [state['angle'] for state in state["joint_states"].values()]
+        position = state.global_position
+        orientation = state.global_orientation
+        angular_velocity = state.global_angular_velocity
+        joint_positions = [joint_state.angle for joint_state in state.joint_states.values()]
 
-        state_tensor = torch.FloatTensor(position + orientation + angular_velocity + joint_positions, device=self.device)
+        state_tensor = torch.FloatTensor(
+            position + orientation + angular_velocity + joint_positions, 
+            device=self.device
+        )
         return state_tensor
 
         
     def step(self, action: Union[np.ndarray, torch.Tensor]):
 
-        state = self._get_state_from_response(self._kesko.step(ApplyControlAction(self.spider_body.id, action)))
+        state = self._get_state(self._kesko.step(ApplyControl(self.spider_body.id, action)))
 
         # calc reward, distance moved from last step. only considering the horizontal movement
         if self.prev_position is None:
             reward = 0
         else:
-            position = torch.Tensor(state[GLOBAL_POSITION])
+            position = torch.Tensor(state.global_position)
             reward = (position[0, 2] - self.prev_position[0, 2]).pow(2).sum().sqrt()
             self.prev_position = position
 
@@ -97,7 +102,8 @@ class SpiderEnv(gym.Env):
     def close(self):
         self._kesko.close()
 
-    def _get_state_from_response(self, response) -> dict:
-        multibody_states = [resp for resp in response if MULTIBODY_STATES in resp][0][MULTIBODY_STATES]
-        spider_state = [body for body in multibody_states if body['name'] == self.spider_body.name][0]
-        return spider_state
+    def _get_state(self, response: KeskoResponse) -> MultibodyStates:
+        state = response.get_state_for_body(self.spider_body.name)
+        if state is None:
+            raise ValueError("Could not get state")
+        return state

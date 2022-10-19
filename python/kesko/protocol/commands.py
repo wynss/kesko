@@ -1,33 +1,18 @@
-import logging
 from typing import Union
 
 import torch
 
-import requests
-from requests.adapters import HTTPAdapter, Retry
-
-from .color import Rgba, Color
-from .model import KeskoModel
+from ..model import KeskoModel
+from ..color import Rgba, Color
 
 
-logger = logging.getLogger(__name__)
-
-NAME = "name"
-MULTIBODY_STATES = "multibody_states"
-MULTIBODY_SPAWNED = "MultibodySpawned"
-
-JOINT_STATES = "joint_states"
-LINKS = 'links'
-GLOBAL_POSITION = "global_position"
-
-
-class CheckAliveAction:
+class CheckAlive:
     def to_json(self):
-        return CheckAliveAction.to_json()
+        return CheckAlive.to_json()
     def to_json():
         return "IsAlive"
 
-class SpawnAction:
+class Spawn:
     def __init__(self, model: KeskoModel, position: list[int], color: Union[Rgba, Color]):
         self._model = model
         self._position = position
@@ -76,7 +61,7 @@ class GetState:
         return "GetState"
     
     
-class ApplyControlAction:
+class ApplyControl:
     def __init__(self, id: int, values: Union[dict[str, float], torch.Tensor]):
         self.id = id
         self.values = values
@@ -102,32 +87,3 @@ class RunPhysics:
     
     def to_json():
         return "RunPhysics"
-
-
-class KeskoRequest:
-    def __init__(self, actions):
-        self._actions = actions
-    
-    def to_json(self):
-        return {
-            "commands": [action.to_json() for action in self._actions]
-        }
-
-
-class Communicator:
-    def __init__(self, url: str, max_retries: int = 5, backoff_factor: float = 0.5):
-        self.url = url
-        self.sess = requests.Session()
-        max_retries = Retry(total=max_retries, backoff_factor=backoff_factor)
-        self.sess.mount("http://", HTTPAdapter(max_retries=max_retries))
-        
-    def request(self, request: KeskoRequest):
-        msg = request.to_json()
-        logger.debug(f"Sending {msg}")
-        res = self.sess.get(self.url, json=msg)
-        return res
-
-if __name__ == '__main__':
-    request = KeskoRequest([GetState(), Shutdown()])
-    print(request.to_json())
- 

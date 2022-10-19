@@ -1,6 +1,8 @@
 pub mod collision;
 pub mod spawn;
 
+use std::collections::BTreeMap;
+
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 use serde::{Serialize, Deserialize};
@@ -34,7 +36,7 @@ pub enum PhysicResponseEvent {
     MultibodySpawned {
         id: u64,
         name: String,
-        links: Vec<String>
+        links: BTreeMap<String, Entity>
     },
     RigidBodySpawned {
         id: u64,

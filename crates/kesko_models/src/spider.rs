@@ -103,6 +103,7 @@ pub fn spawn(
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
     )
     .insert(Mass{ val: mass_leg})
+    .insert(GenerateCollisionEvents)
     .insert(RigidBodyName("left_front_z".to_owned()));
 
     // right front leg x

@@ -17,6 +17,7 @@ use kesko_physics::{
     },
     rapier_extern::rapier::prelude as rapier
 };
+use serde::{Serialize, Deserialize};
 
 
 pub enum SystemRequestEvent {
@@ -29,8 +30,9 @@ pub enum SystemRequestEvent {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone)]
 pub enum SystemResponseEvent {
-    State(MultiBodyStates),
+    MultibodyStates(MultiBodyStates),
     WillExitApp,
     Alive,
     Ok(String),
@@ -129,7 +131,7 @@ pub fn handle_serializable_state_request(
 
             }).collect::<Vec<MultiBodyState>>();
 
-            system_response_writer.send(SystemResponseEvent::State(MultiBodyStates { multibody_states: states }));
+            system_response_writer.send(SystemResponseEvent::MultibodyStates(MultiBodyStates(states)));
         }
     }
 }

@@ -28,20 +28,7 @@ pub(crate) fn handle_responses(
     }
 
     for event in response_events.iter() {
-        match event {
-            SystemResponseEvent::State(states) => {
-                responses.push(serde_traitobject::Box::new(states.clone()));
-            },
-            SystemResponseEvent::Alive => {
-                responses.push(serde_traitobject::Box::new("alive".to_owned()));
-            }
-            SystemResponseEvent::Ok(msg) => {
-                responses.push(serde_traitobject::Box::new(msg.clone()));
-            }
-            _ => {
-                responses.push(serde_traitobject::Box::new("OK".to_owned()));
-            }
-        }
+        responses.push(serde_traitobject::Box::new(event.clone()));
     }
 
     if !responses.is_empty() {
