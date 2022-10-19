@@ -4,18 +4,26 @@ use std::io::Write;
 use bevy::prelude::*;
 
 use kesko_core::event::SystemResponseEvent;
-use kesko_physics::event::PhysicResponseEvent;
+use kesko_physics::event::{
+    PhysicResponseEvent,
+    collision::CollisionEvent
+};
 
 
 pub(crate) fn handle_responses(
     mut tcp_stream: ResMut<TcpStream>,
     mut response_events:  EventReader<SystemResponseEvent>,
-    mut spawn_event:  EventReader<PhysicResponseEvent>
+    mut physic_events:  EventReader<PhysicResponseEvent>,
+    mut collision_events:  EventReader<CollisionEvent>
 ) {
 
     let mut responses: Vec<serde_traitobject::Box<dyn serde_traitobject::Any>> = Vec::new();
 
-    for event in spawn_event.iter() {
+    for event in physic_events.iter() {
+        responses.push(serde_traitobject::Box::new(event.clone()));
+    }
+
+    for event in collision_events.iter() {
         responses.push(serde_traitobject::Box::new(event.clone()));
     }
 

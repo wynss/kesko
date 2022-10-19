@@ -5,7 +5,7 @@ import gym
 import numpy as np
 
 from ..kesko import Kesko
-from ..protocol import GLOBAL_POSITION, Despawn, DespawnAll, GetState, PausePhysics, RunPhysics, SpawnAction, ApplyControlAction, MULTIBODY_STATES
+from ..protocol import GLOBAL_POSITION, DespawnAll, GetState, PausePhysics, RunPhysics, SpawnAction, ApplyControlAction, MULTIBODY_STATES
 from ..color import Color
 from ..model import KeskoModel
 
@@ -80,8 +80,6 @@ class SpiderEnv(gym.Env):
         state = self._to_tensor(state)
 
         # TODO: Kesko need support to send collision events back to detect if the spider has fallen on its back 
-        terminated = False
-
         done = False
         if self.max_steps is not None:
             if self.step_count > self.max_steps:
@@ -89,7 +87,7 @@ class SpiderEnv(gym.Env):
 
         self.step_count += 1
 
-        return state, reward, terminated, done, {}
+        return state, reward, done, {}
     
     def reset(self):
         self._kesko.send([PausePhysics, DespawnAll])

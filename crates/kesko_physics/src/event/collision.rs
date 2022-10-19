@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use serde::{Serialize, Deserialize};
+
 use crate::rapier_extern::rapier;
 
 
@@ -6,7 +8,7 @@ use crate::rapier_extern::rapier;
 #[derive(Component)]
 pub struct GenerateCollisionEvents;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum CollisionEvent {
     Started {
         data: CollisionData
@@ -16,7 +18,7 @@ pub enum CollisionEvent {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CollisionData {
     pub entity1: Entity,
     pub entity2: Entity,

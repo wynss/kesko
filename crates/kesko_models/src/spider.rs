@@ -11,7 +11,8 @@ use kesko_physics::{
         KeskoAxis,
         revolute::RevoluteJoint
     }, 
-    mass::Mass
+    mass::Mass,
+    event::collision::GenerateCollisionEvents
 };
 use kesko_object_interaction::InteractiveBundle;
 use kesko_core::{
@@ -56,6 +57,7 @@ pub fn spawn(
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(Mass{ val: mass_body})
     .insert(RigidBodyName("spider".to_owned()))
+    .insert(GenerateCollisionEvents)
     .id();
 
     // left front leg x

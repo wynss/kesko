@@ -15,7 +15,7 @@ from .protocol import (
 )
 
 
-logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',  level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',  level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -53,7 +53,7 @@ class Kesko:
 
         # Because we get some strange things from the Serialization on Kesko's side
         json_response = [resp[-1] for resp in response.json()]
-        logger.debug(json_response)
+        # logger.debug(json_response)
         self._parse_response(json_response)
         
         return json_response
