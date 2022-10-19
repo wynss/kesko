@@ -97,9 +97,9 @@ impl From<PrismaticJoint> for rapier::GenericJoint {
             builder = builder.set_motor(0.0, 0.0, joint.stiffness, joint.damping).motor_max_force(joint.max_motor_force);
         }
 
-        // if let Some(limits) = joint.limits {
-        //     builder = builder.limits(limits.into());
-        // }
+        if let Some(limits) = joint.limits {
+            builder = builder.limits([limits.x as rapier::Real, limits.y as rapier::Real]);
+        }
 
         let mut generic: rapier::GenericJoint = builder.into();
         generic.local_frame1.rotation = joint.parent_anchor.rotation.into_rapier() * generic.local_frame1.rotation;

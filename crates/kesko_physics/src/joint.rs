@@ -17,6 +17,8 @@ use self::revolute::RevoluteJoint;
 
 pub type Entity2JointHandle = FnvHashMap<Entity, rapier::MultibodyJointHandle>;
 
+
+
 /// trait for converting an axis into a unit vector
 pub(crate) trait AxisIntoVec {
     fn into_unitvec(self) -> rapier::UnitVector<rapier::Real>;

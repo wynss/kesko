@@ -83,17 +83,17 @@ impl From<SphericalJoint> for rapier::GenericJoint {
         }
 
         // set rotational limits if any
-        // if let Some(x_ang_limit) = joint.x_ang_limit {
-        //     builder = builder.limits(JointAxis::AngX, x_ang_limit.into());
-        // }
+        if let Some(x_ang_limit) = joint.x_ang_limit {
+            builder = builder.limits(rapier::JointAxis::AngX, [x_ang_limit.x as rapier::Real, x_ang_limit.y as rapier::Real]);
+        }
 
-        // if let Some(y_ang_limit) = joint.y_ang_limit {
-        //     builder = builder.limits(JointAxis::AngY, y_ang_limit.into());
-        // }
+        if let Some(y_ang_limit) = joint.y_ang_limit {
+            builder = builder.limits(rapier::JointAxis::AngY, [y_ang_limit.x as rapier::Real, y_ang_limit.y as rapier::Real]);
+        }
 
-        // if let Some(z_ang_limit) = joint.z_ang_limit {
-        //     builder = builder.limits(JointAxis::AngZ, z_ang_limit.into());
-        // }
+        if let Some(z_ang_limit) = joint.z_ang_limit {
+            builder = builder.limits(rapier::JointAxis::AngZ, [z_ang_limit.x as rapier::Real, z_ang_limit.y as rapier::Real]);
+        }
 
         let mut generic: rapier::GenericJoint = builder.into();
         *generic

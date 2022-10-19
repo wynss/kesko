@@ -105,9 +105,9 @@ impl From<RevoluteJoint> for rapier::GenericJoint {
 
         builder = builder.motor_max_force(joint.max_motor_force);
 
-        // if let Some(limits) = joint.limits {
-        //     builder = builder.limits(limits.into());
-        // }
+        if let Some(limits) = joint.limits {
+            builder = builder.limits([limits.x as rapier::Real, limits.y as rapier::Real]);
+        }
 
         let mut generic: rapier::GenericJoint = builder.into();
         generic.local_frame1.rotation = joint.parent_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
@@ -119,9 +119,7 @@ impl From<RevoluteJoint> for rapier::GenericJoint {
 
 #[cfg(test)]
 mod tests {
-
-    use bevy::math::Vec2;
-    use bevy::prelude::{Transform, Vec3, Entity};
+    use bevy::prelude::{Transform, Vec3, Vec2, Entity};
     use crate::rapier_extern::rapier::dynamics::JointAxis;
     use crate::rapier_extern::rapier::prelude::GenericJoint;
     use crate::{IntoRapier, joint::KeskoAxis};
