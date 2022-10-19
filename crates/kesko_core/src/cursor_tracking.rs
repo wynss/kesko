@@ -97,9 +97,9 @@ pub(crate) fn update_tracking_controller_system<T: Component + Default>(
                 let mut control_output = track.controller.act(pos_diff);
 
                 if let Some(mass) = multibody_mass {
-                    control_output *= mass.val;
+                    control_output *= mass.val as f32;
                 } else {
-                    control_output *= mass.val;
+                    control_output *= mass.val as f32;
                 }
 
                 force.vec = control_output;

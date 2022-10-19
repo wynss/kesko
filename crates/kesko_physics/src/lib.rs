@@ -8,11 +8,12 @@ pub mod joint;
 pub mod event;
 pub mod multibody;
 mod conversions;
+pub mod rapier_extern;
 
 use bevy::prelude::*;
 use bevy::math::Vec3;
 use iyes_loopless::prelude::*;
-use rapier3d::prelude as rapier;
+use self::rapier_extern::rapier::prelude as rapier;
 
 use conversions::{IntoRapier, IntoBevy};
 use gravity::Gravity;

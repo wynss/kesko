@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::prelude as rapier;
+use crate::rapier_extern::rapier::prelude as rapier;
 
 use crate::conversions::IntoRapier;
 
@@ -13,11 +13,11 @@ pub struct RevoluteJoint {
     pub child_anchor: Transform,
     pub axis: KeskoAxis,
     pub limits: Option<Vec2>,
-    pub damping: f32,
-    pub stiffness: f32,
+    pub damping: rapier::Real,
+    pub stiffness: rapier::Real,
     pub max_motor_force: rapier::Real,
 
-    rotation: f32
+    rotation: rapier::Real
 }
 
 impl RevoluteJoint {
@@ -55,13 +55,13 @@ impl RevoluteJoint {
         self
     }
 
-    pub fn with_motor_params(mut self, stiffness: f32, damping: f32) -> Self {
+    pub fn with_motor_params(mut self, stiffness: rapier::Real, damping: rapier::Real) -> Self {
         self.stiffness = stiffness;
         self.damping = damping;
         self
     }
 
-    pub fn with_max_motor_force(mut self, max_motor_force: f32) -> Self {
+    pub fn with_max_motor_force(mut self, max_motor_force: rapier::Real) -> Self {
         self.max_motor_force = max_motor_force;
         self
     }
@@ -70,17 +70,17 @@ impl RevoluteJoint {
         // convert to local orientation by multiplying by the inverse of anchor's rotation
         let rotation = (self.parent_anchor.rotation.inverse() * self.child_anchor.rotation.inverse() * rot).to_euler(EulerRot::XYZ);
         match self.axis {
-            KeskoAxis::X => self.rotation = rotation.0,
-            KeskoAxis::NegX => self.rotation = -rotation.0,
-            KeskoAxis::Y => self.rotation = rotation.1,
-            KeskoAxis::NegY => self.rotation = -rotation.1,
-            KeskoAxis::Z => self.rotation = rotation.2,
-            KeskoAxis::NegZ => self.rotation = -rotation.2,
+            KeskoAxis::X => self.rotation = rotation.0 as rapier::Real,
+            KeskoAxis::NegX => self.rotation = -rotation.0 as rapier::Real,
+            KeskoAxis::Y => self.rotation = rotation.1 as rapier::Real,
+            KeskoAxis::NegY => self.rotation = -rotation.1 as rapier::Real,
+            KeskoAxis::Z => self.rotation = rotation.2 as rapier::Real,
+            KeskoAxis::NegZ => self.rotation = -rotation.2 as rapier::Real,
             _ => error!("Revolute joint does not have a valid axis")
         }
     }
 
-    pub fn rotation(&self) -> f32 {
+    pub fn rotation(&self) -> rapier::Real {
         self.rotation
     }
 
@@ -106,7 +106,7 @@ impl From<RevoluteJoint> for rapier::GenericJoint {
         builder = builder.motor_max_force(joint.max_motor_force);
 
         if let Some(limits) = joint.limits {
-            builder = builder.limits(limits.into());
+            builder = builder.limits([limits.x as rapier::Real, limits.y as rapier::Real]);
         }
 
         let mut generic: rapier::GenericJoint = builder.into();
@@ -119,11 +119,9 @@ impl From<RevoluteJoint> for rapier::GenericJoint {
 
 #[cfg(test)]
 mod tests {
-
-    use bevy::math::Vec2;
-    use bevy::prelude::{Transform, Vec3, Entity};
-    use rapier3d::dynamics::JointAxis;
-    use rapier3d::prelude::GenericJoint;
+    use bevy::prelude::{Transform, Vec3, Vec2, Entity};
+    use crate::rapier_extern::rapier::dynamics::JointAxis;
+    use crate::rapier_extern::rapier::prelude::GenericJoint;
     use crate::{IntoRapier, joint::KeskoAxis};
     use super::RevoluteJoint;
 

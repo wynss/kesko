@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 use serde::{Serialize, Deserialize};
 
-use rapier3d::prelude as rapier;
+use crate::rapier_extern::rapier::prelude as rapier;
 
 use crate::{
     PhysicState,

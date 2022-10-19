@@ -1,9 +1,9 @@
 use bevy::prelude::*;
-use rapier3d::prelude as rapier;
+use crate::rapier_extern::rapier::prelude as rapier;
 use fnv::FnvHashMap;
 
-use super::rigid_body::RigidBodyHandle;
 use crate::{
+    rigid_body::RigidBodyHandle,
     mass::Mass, 
     event::collision::GenerateCollisionEvents
 };
@@ -14,28 +14,28 @@ pub type Entity2ColliderHandle = FnvHashMap<Entity, rapier::ColliderHandle>;
 #[derive(Component)]
 pub enum ColliderShape {
     Cuboid {
-        x_half: f32,
-        y_half: f32,
-        z_half: f32
+        x_half: rapier::Real,
+        y_half: rapier::Real,
+        z_half: rapier::Real
     },
     Sphere {
-        radius: f32
+        radius: rapier::Real
     },
     CapsuleX {
-        half_length: f32,
-        radius: f32
+        half_length: rapier::Real,
+        radius: rapier::Real
     },
     CapsuleY {
-        half_length: f32,
-        radius: f32
+        half_length: rapier::Real,
+        radius: rapier::Real
     },
     CapsuleZ {
-        half_length: f32,
-        radius: f32
+        half_length: rapier::Real,
+        radius: rapier::Real
     },
     Cylinder {
-        radius: f32,
-        length: f32
+        radius: rapier::Real,
+        length: rapier::Real
     }
 }
 
@@ -43,11 +43,11 @@ pub enum ColliderShape {
 #[derive(Component, Debug, Clone)]
 pub struct ColliderPhysicalProperties {
     /// density of the collider
-    pub density: f32,
+    pub density: rapier::Real,
     /// friction coefficient of the collider
-    pub friction: f32,
+    pub friction: rapier::Real,
     /// restitution coefficient, controls how elastic or bouncy the collider is
-    pub restitution: f32
+    pub restitution: rapier::Real
 }
 
 impl Default for ColliderPhysicalProperties {
@@ -141,7 +141,7 @@ pub(crate) fn add_colliders(
 mod tests {
 
     use bevy::prelude::*;
-    use rapier3d::prelude as rapier;
+    use crate::rapier_extern::rapier::prelude as rapier;
     use crate::collider::{Entity2ColliderHandle, ColliderShape, ColliderPhysicalProperties, add_colliders, ColliderHandle};
     use crate::rigid_body::{RigidBody, Entity2BodyHandle, add_rigid_bodies, BodyHandle2Entity};
 

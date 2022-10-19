@@ -3,6 +3,7 @@ use bevy::render::mesh::{PrimitiveTopology, Indices, Mesh, shape};
 use bevy::math::Vec3;
 
 use kesko_physics::collider::ColliderShape;
+use kesko_physics::rapier_extern::rapier::prelude as rapier;
 
 
 /// A cylinder which stands on the XZ plane
@@ -177,19 +178,19 @@ impl Shape {
     pub fn into_collider_shape(&self) -> ColliderShape {
         match self {
             Self::Sphere { radius , subdivisions: _} => {
-                ColliderShape::Sphere { radius: *radius }
+                ColliderShape::Sphere { radius: *radius as rapier::Real}
             },
             Self::Box { x_length, y_length, z_length } => {
-                ColliderShape::Cuboid { x_half: x_length / 2.0, y_half: y_length / 2.0, z_half: z_length / 2.0 }
+                ColliderShape::Cuboid { x_half: (x_length / 2.0) as rapier::Real, y_half: (y_length / 2.0) as rapier::Real, z_half: (z_length / 2.0) as rapier::Real }
             },
             Self::Cylinder { radius, length, resolution: _} => {
-                ColliderShape::Cylinder { radius: *radius, length: *length }
+                ColliderShape::Cylinder { radius: *radius as rapier::Real, length: *length as rapier::Real}
             },
             Self::Capsule { radius, length } => {
-                ColliderShape::CapsuleY { half_length: length / 2.0, radius: *radius }
+                ColliderShape::CapsuleY { half_length: (length / 2.0) as rapier::Real, radius: *radius as rapier::Real}
             },
             Self::Cube { size } => {
-                ColliderShape::Cuboid { x_half: size / 2.0, y_half: size / 2.0, z_half: size / 2.0 }
+                ColliderShape::Cuboid { x_half: (size / 2.0) as rapier::Real, y_half: (size / 2.0) as rapier::Real, z_half: (size / 2.0) as rapier::Real}
             }
         } 
     }

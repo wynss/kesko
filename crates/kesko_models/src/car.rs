@@ -13,7 +13,8 @@ use kesko_physics::{
         revolute::RevoluteJoint,
         JointMotorEvent, MotorCommand
     },
-    multibody::MultibodyRoot, mass::Mass
+    multibody::MultibodyRoot, mass::Mass,
+    rapier_extern::rapier::prelude as rapier
 };
 use kesko_object_interaction::InteractiveBundle;
 use kesko_core::{
@@ -422,15 +423,15 @@ impl Car {
 /// Should hold the settings for sensitivity etc
 #[derive(Component)]
 struct CarController {
-    max_velocity: f32,      // m/s
-    max_turn_angle: f32,    // rad
+    max_velocity: rapier::Real,      // m/s
+    max_turn_angle: rapier::Real,    // rad
 }
 
 impl Default for CarController {
     fn default() -> Self {
        Self {
             max_velocity: 12.0,
-            max_turn_angle: FRAC_PI_6,
+            max_turn_angle: FRAC_PI_6 as rapier::Real,
        } 
     }
 }

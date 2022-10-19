@@ -6,7 +6,7 @@ pub mod prismatic;
 use serde::{Serialize, Deserialize};
 use fnv::FnvHashMap;
 use bevy::prelude::*;
-use rapier3d::prelude as rapier;
+use crate::rapier_extern::rapier::prelude as rapier;
 
 use crate::rigid_body::{Entity2BodyHandle, RigidBodyHandle};
 use crate::conversions::IntoBevy;
@@ -16,6 +16,8 @@ use self::revolute::RevoluteJoint;
 
 
 pub type Entity2JointHandle = FnvHashMap<Entity, rapier::MultibodyJointHandle>;
+
+
 
 /// trait for converting an axis into a unit vector
 pub(crate) trait AxisIntoVec {
@@ -67,11 +69,11 @@ pub enum KeskoAxis {
 pub enum JointState {
     Revolute { 
         axis: KeskoAxis,
-        angle: f32,
+        angle: rapier::Real,
     },
     Prismatic {
         axis: KeskoAxis,
-        position: f32
+        position: rapier::Real
     }
 }
 
@@ -174,39 +176,39 @@ pub struct JointMotorEvent {
 #[derive(Debug)]
 pub enum MotorCommand {
     PositionRevolute {
-        position: f32,
-        stiffness: Option<f32>,
-        damping: Option<f32>
+        position: rapier::Real,
+        stiffness: Option<rapier::Real>,
+        damping: Option<rapier::Real>
     },
     VelocityRevolute {
-        velocity: f32,
-        damping: Option<f32>
+        velocity: rapier::Real,
+        damping: Option<rapier::Real>
     },
     PositionSpherical {
-        position: f32,
+        position: rapier::Real,
         axis: KeskoAxis
     },
     VelocitySpherical {
-        velocity: f32,
+        velocity: rapier::Real,
         axis: KeskoAxis,
     },
     PositionPrismatic {
-        position: f32,
-        stiffness: Option<f32>,
-        damping: Option<f32>
+        position: rapier::Real,
+        stiffness: Option<rapier::Real>,
+        damping: Option<rapier::Real>
     },
     VelocityPrismatic {
-        velocity: f32,
-        damping: Option<f32>
+        velocity: rapier::Real,
+        damping: Option<rapier::Real>
     },
     SetStiffness {
-        val: f32
+        val: rapier::Real
     },
     SetDamping {
-        val: f32
+        val: rapier::Real
     },
     HoldPosition {
-        stiffness: Option<f32>
+        stiffness: Option<rapier::Real>
     }
 }
 
@@ -366,6 +368,8 @@ pub(crate) fn update_joint_motors_system(
 mod tests {
     use bevy::ecs::event::Events;
 
+    use crate::rapier_extern::rapier::prelude as rapier;
+
     use crate::joint::fixed::FixedJoint;
     use crate::conversions::IntoRapier;
     use super::*;
@@ -377,7 +381,7 @@ mod tests {
         let mut test_stage = SystemStage::parallel();
         test_stage.add_system(add_multibody_joints);
 
-        world.init_resource::<rapier3d::prelude::MultibodyJointSet>();
+        world.init_resource::<rapier::MultibodyJointSet>();
         world.init_resource::<Entity2JointHandle>();
 
         let parent_body_handle = rapier::RigidBodyHandle::from_raw_parts(1, 0);
@@ -408,7 +412,7 @@ mod tests {
         test_stage.run(&mut world);
 
         let multibody_joint_set = world
-            .get_resource::<rapier3d::prelude::MultibodyJointSet>()
+            .get_resource::<rapier::MultibodyJointSet>()
             .expect("Could not get ImpulseJointSet").clone();
 
         // only on element in set
