@@ -1,5 +1,8 @@
 use bevy::prelude::*;
-use crate::rapier_extern::rapier::prelude as rapier;
+use crate::{
+    rapier_extern::rapier::prelude as rapier, 
+    mass::Mass
+};
 use fnv::FnvHashMap;
 
 use crate::{
@@ -39,11 +42,12 @@ pub(crate) fn add_rigid_bodies(
         Entity, 
         &RigidBody, 
         &Transform, 
+        Option<&Mass>,
         Option<&GravityScale>, 
         Option<&CanSleep>), 
         Without<RigidBodyHandle>>
 ) {
-    for (entity, rigid_body_comp, transform, gravity_scale, can_sleep) in query.iter() {
+    for (entity, rigid_body_comp, transform, mass, gravity_scale, can_sleep) in query.iter() {
 
         let mut rigid_body_builder = match rigid_body_comp {
             RigidBody::Fixed => rapier::RigidBodyBuilder::fixed(),
@@ -56,6 +60,9 @@ pub(crate) fn add_rigid_bodies(
 
         if let Some(can_sleep) = can_sleep {
             rigid_body_builder = rigid_body_builder.can_sleep(can_sleep.0);
+        }
+        if let Some(mass) = mass {
+            rigid_body_builder = rigid_body_builder.additional_mass(mass.val);
         }
 
         let rigid_body = rigid_body_builder

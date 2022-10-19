@@ -77,7 +77,9 @@ impl Plugin for PhysicsPlugin {
             .init_resource::<rapier::RigidBodySet>()            // Holds all the rigid bodies
             .init_resource::<rapier::ColliderSet>()             // Holds all the colliders
             .insert_resource(rapier::IntegrationParameters {            // sets the parameters that controls the simulation
-                erp: 0.99,
+                // setting this above 0.8 can cause instabilities, 
+                // if needed f64 feature should be used
+                erp: 0.8,
                 ..default()
             })   
             .init_resource::<rapier::IslandManager>()           // Keeps track of which dynamic rigid bodies that are moving and which are not
