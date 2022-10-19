@@ -79,12 +79,12 @@ class SpiderEnv(gym.Env):
         body_collision = response.get_collision_with_body(self.spider_body.id)
 
         # calc reward, distance moved from last step. only considering the horizontal movement
+        position = torch.Tensor(state.global_position)
         if self.prev_position is None:
-            reward = 0
+            reward = torch.Tensor([0.0], device=self.device)
         else:
-            position = torch.Tensor(state.global_position)
-            reward = (position[0, 2] - self.prev_position[0, 2]).pow(2).sum().sqrt()
-            self.prev_position = position
+            reward = (position[[0, 2]] - self.prev_position[[0, 2]]).pow(2).sum().sqrt()
+        self.prev_position = position
 
         state = self._to_tensor(state)
 
