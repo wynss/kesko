@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::prelude as rapier;
+use crate::rapier_extern::rapier::prelude as rapier;
 use crate::rigid_body::RigidBodyHandle;
 use crate::conversions::IntoRapier;
 

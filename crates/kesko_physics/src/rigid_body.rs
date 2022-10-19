@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::prelude as rapier;
+use crate::rapier_extern::rapier::prelude as rapier;
 use fnv::FnvHashMap;
 
 use crate::{
@@ -77,7 +77,7 @@ pub(crate) fn add_rigid_bodies(
 mod tests {
 
     use bevy::prelude::*;
-    use rapier3d::prelude as rapier;
+    use crate::rapier_extern::rapier::prelude as rapier;
     use crate::rigid_body::{add_rigid_bodies, Entity2BodyHandle, RigidBody, RigidBodyHandle, BodyHandle2Entity};
     use crate::conversions::IntoBevy;
 
@@ -91,7 +91,7 @@ mod tests {
 
         world.init_resource::<Entity2BodyHandle>();
         world.init_resource::<BodyHandle2Entity>();
-        world.init_resource::<rapier3d::prelude::RigidBodySet>();
+        world.init_resource::<rapier::RigidBodySet>();
 
 
         let entity = world

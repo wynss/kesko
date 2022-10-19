@@ -12,7 +12,8 @@ use kesko_physics::{
         revolute::RevoluteJoint, 
         fixed::FixedJoint
     }, 
-    mass::Mass
+    mass::Mass,
+    rapier_extern::rapier::prelude as rapier
 };
 use kesko_object_interaction::InteractiveBundle;
 use kesko_core::{
@@ -29,10 +30,10 @@ use super::Model;
 
 // For some reason we need to set the mass of the bodies, otherwise it behaves like there is almost
 // no gravity, seems like a bug in Rapier. For now use the same mass for all bodies
-const MASS: f32 = 0.1;
+const MASS: rapier::Real = 0.1;
 
-const STIFFNESS: f32 = 1.0;
-const DAMPING: f32 = 0.3;
+const STIFFNESS: rapier::Real = 1.0;
+const DAMPING: rapier::Real = 0.3;
 
 const HEAD_RADIUS: f32 = 0.13;
 const NECK_LENGTH: f32 = 0.13;

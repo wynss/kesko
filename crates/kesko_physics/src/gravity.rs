@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::dynamics::RigidBodySet;
+use crate::rapier_extern::rapier::dynamics::RigidBodySet;
 use crate::rigid_body::RigidBodyHandle;
 
 
@@ -22,8 +22,8 @@ impl Default for Gravity {
 
 #[derive(Component)]
 pub struct GravityScale {
-    pub val: f32,
-    pub initial_val: f32
+    pub val: f64,
+    pub initial_val: f64
 }
 
 impl Default for GravityScale {
@@ -33,7 +33,7 @@ impl Default for GravityScale {
 }
 
 impl GravityScale {
-    pub fn new(val: f32) -> Self {
+    pub fn new(val: f64) -> Self {
         Self { val, initial_val: val }
     }
 

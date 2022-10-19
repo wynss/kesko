@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::prelude as rapier;
+use crate::rapier_extern::rapier::prelude as rapier;
 use crate::conversions::IntoRapier;
 
 use super::{AxisIntoVec, KeskoAxis, JointState};
@@ -12,11 +12,11 @@ pub struct PrismaticJoint {
     pub child_anchor: Transform,
     pub axis: KeskoAxis,
     pub limits: Option<Vec2>,
-    pub stiffness: f32,
-    pub damping: f32,
+    pub stiffness: rapier::Real,
+    pub damping: rapier::Real,
     pub max_motor_force: rapier::Real,
 
-    position: f32
+    position: rapier::Real
 }
 
 impl PrismaticJoint {
@@ -55,30 +55,30 @@ impl PrismaticJoint {
         self
     }
 
-    pub fn with_motor_params(mut self, stiffness: f32, damping: f32) -> Self {
+    pub fn with_motor_params(mut self, stiffness: rapier::Real, damping: rapier::Real) -> Self {
         self.stiffness = stiffness;
         self.damping = damping;
         self
     }
 
-    pub fn with_max_motor_force(mut self, max_motor_force: f32) -> Self {
+    pub fn with_max_motor_force(mut self, max_motor_force: rapier::Real) -> Self {
         self.max_motor_force = max_motor_force;
         self
     }
 
     pub fn update_position(&mut self, translation: Vec3) {
         match self.axis {
-            KeskoAxis::X => self.position = translation.x,
-            KeskoAxis::NegX => self.position = -translation.x,
-            KeskoAxis::Y => self.position = translation.y,
-            KeskoAxis::NegY => self.position = -translation.y,
-            KeskoAxis::Z => self.position = translation.z,
-            KeskoAxis::NegZ => self.position = -translation.z,
+            KeskoAxis::X => self.position = translation.x as rapier::Real,
+            KeskoAxis::NegX => self.position = -translation.x as rapier::Real,
+            KeskoAxis::Y => self.position = translation.y as rapier::Real,
+            KeskoAxis::NegY => self.position = -translation.y as rapier::Real,
+            KeskoAxis::Z => self.position = translation.z as rapier::Real,
+            KeskoAxis::NegZ => self.position = -translation.z as rapier::Real,
             _ => error!("Prismatic joint does not have a valid axis")
         }
     }
 
-    pub fn position(&self) -> f32 {
+    pub fn position(&self) -> rapier::Real {
         self.position
     }
 
@@ -94,12 +94,12 @@ impl From<PrismaticJoint> for rapier::GenericJoint {
             .local_anchor2(joint.child_anchor.translation.into_rapier());
         
         if joint.stiffness > 0.0 || joint.damping > 0.0 {
-            builder = builder.set_motor(0.0, 0.0, joint.stiffness, joint.damping).motor_max_force(joint.max_motor_force);
+            builder = builder.set_motor(0.0, 0.0, joint.stiffness as f64, joint.damping as f64).motor_max_force(joint.max_motor_force);
         }
 
-        if let Some(limits) = joint.limits {
-            builder = builder.limits(limits.into());
-        }
+        // if let Some(limits) = joint.limits {
+        //     builder = builder.limits(limits.into());
+        // }
 
         let mut generic: rapier::GenericJoint = builder.into();
         generic.local_frame1.rotation = joint.parent_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
@@ -113,8 +113,8 @@ impl From<PrismaticJoint> for rapier::GenericJoint {
 mod tests {
     use bevy::math::Vec2;
     use bevy::prelude::{Transform, Vec3, Entity};
-    use rapier3d::dynamics::JointAxis;
-    use rapier3d::prelude::GenericJoint;
+    use crate::rapier_extern::rapier::dynamics::JointAxis;
+    use crate::rapier_extern::rapier::prelude::GenericJoint;
     use crate::{IntoRapier, joint::KeskoAxis};
     use super::PrismaticJoint;
 

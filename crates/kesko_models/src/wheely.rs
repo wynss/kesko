@@ -14,7 +14,8 @@ use kesko_physics::{
         prismatic::PrismaticJoint, 
         fixed::FixedJoint
     },
-    multibody::MultibodyRoot, mass::Mass
+    multibody::MultibodyRoot, mass::Mass,
+    rapier_extern::rapier::prelude as rapier,
 };
 use kesko_object_interaction::InteractiveBundle;
 use kesko_core::{
@@ -60,15 +61,17 @@ impl Plugin for WheelyPlugin {
 
 #[derive(Component)]
 struct WheelyController {
-    wheel_velocity: f32,
-    arm_velocity: f32
+    wheel_velocity: rapier::Real,
+    arm_link1_velocity: rapier::Real,
+    arm_link2_velocity: rapier::Real
 }
 
 impl Default for WheelyController {
     fn default() -> Self {
         Self {
             wheel_velocity: 6.0,
-            arm_velocity: 1.0
+            arm_link1_velocity: 3.0,
+            arm_link2_velocity: 1.0
         }
     }
 }
@@ -165,7 +168,7 @@ impl Wheely {
         .insert(Mass { val: 0.5 })
         .insert(RigidBodyName(RIGHT_WHEEL.to_owned()));
         
-        // back wheel
+        // back wheel turn link
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -hh, -rh));
         let child_anchor = Transform::default();
         let world_transform = world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
@@ -185,6 +188,7 @@ impl Wheely {
         .insert(RigidBodyName("back_wheel_turn".to_owned()))
         .id();
         
+        // back wheel
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -BACK_WHEEL_RADIUS - 0.01, -BACK_WHEEL_RADIUS))
             .with_rotation(Quat::from_rotation_z(FRAC_PI_2));
         let child_anchor = Transform::default();
@@ -390,32 +394,32 @@ impl Wheely {
                     },
                     WheelyControlEvent::ArmLink1Pos => {
                         let entity = root.child_map.get(ARM_LINK_1).expect("");
-                        let action = MotorCommand::VelocityRevolute { velocity: controller.arm_velocity, damping: None };
+                        let action = MotorCommand::VelocityRevolute { velocity: controller.arm_link1_velocity, damping: None };
                         joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::ArmLink1Neg => {
                         let entity = root.child_map.get(ARM_LINK_1).expect("");
-                        let action = MotorCommand::VelocityRevolute { velocity: -controller.arm_velocity, damping: None };
+                        let action = MotorCommand::VelocityRevolute { velocity: -controller.arm_link1_velocity, damping: None };
                         joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::ArmLink1Stop => {
                         let entity = root.child_map.get(ARM_LINK_1).expect("");
-                        let action = MotorCommand::VelocityRevolute { velocity: 0.0, damping: None };
+                        let action = MotorCommand::HoldPosition { stiffness: Some(1.0) };
                         joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::ArmLink2Pos => {
                         let entity = root.child_map.get(ARM_LINK_2).expect("");
-                        let action = MotorCommand::VelocityPrismatic { velocity: controller.arm_velocity, damping: None };
+                        let action = MotorCommand::VelocityPrismatic { velocity: controller.arm_link2_velocity, damping: None };
                         joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::ArmLink2Neg => {
                         let entity = root.child_map.get(ARM_LINK_2).expect("");
-                        let action = MotorCommand::VelocityPrismatic { velocity: -controller.arm_velocity, damping: None };
+                        let action = MotorCommand::VelocityPrismatic { velocity: -controller.arm_link2_velocity, damping: None };
                         joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                     WheelyControlEvent::ArmLink2Stop => {
                         let entity = root.child_map.get(ARM_LINK_2).expect("");
-                        let action = MotorCommand::VelocityPrismatic { velocity: 0.0, damping: None };
+                        let action = MotorCommand::HoldPosition { stiffness: Some(1.0) };
                         joint_event_writer.send(JointMotorEvent { entity: *entity, action });
                     },
                 }

@@ -14,6 +14,7 @@ use kesko_physics::{
         JointMotorEvent,
         MotorCommand, revolute::RevoluteJoint, prismatic::PrismaticJoint, spherical::SphericalJoint, KeskoAxis
     },
+    rapier_extern::rapier::prelude as rapier
 };
 
 use kesko_core::interaction::multibody_selection::MultibodySelectionEvent;
@@ -25,12 +26,12 @@ use kesko_models::ControlDescription;
 struct JointData {
     name: String,
     joint_type: JointType,
-    val_axis_1: f32,
-    val_axis_2: f32,
-    val_axis_3: f32,
-    current_val_x: f32,
-    current_val_y: f32,
-    current_val_z: f32,
+    val_axis_1: rapier::Real,
+    val_axis_2: rapier::Real,
+    val_axis_3: rapier::Real,
+    current_val_x: rapier::Real,
+    current_val_y: rapier::Real,
+    current_val_z: rapier::Real,
     limits: Option<Vec2>
 }
 
@@ -338,30 +339,30 @@ impl MultibodyUIComponent {
     }
 
     /// Create a slider range from limits
-    fn get_slider_range(limits: Option<Vec2>, joint_type: &JointType) -> RangeInclusive<f32> {
+    fn get_slider_range(limits: Option<Vec2>, joint_type: &JointType) -> RangeInclusive<rapier::Real> {
 
         match joint_type {
             &JointType::Revolute => {
                 match limits {
-                    Some(limits) => RangeInclusive::<f32>::new(limits.x.to_degrees(), limits.y.to_degrees()),
-                    None => RangeInclusive::<f32>::new(-180.0, 180.0)
+                    Some(limits) => RangeInclusive::<rapier::Real>::new(limits.x.to_degrees() as rapier::Real, limits.y.to_degrees() as rapier::Real),
+                    None => RangeInclusive::<rapier::Real>::new(-180.0, 180.0)
                 }
             },
             &JointType::Prismatic => {
                 match limits {
-                    Some(limits) => RangeInclusive::<f32>::new(limits.x, limits.y),
-                    None => RangeInclusive::<f32>::new(-1.0, 1.0)
+                    Some(limits) => RangeInclusive::<rapier::Real>::new(limits.x as rapier::Real, limits.y as rapier::Real),
+                    None => RangeInclusive::<rapier::Real>::new(-1.0, 1.0)
                 }
             }
             _ => {
-                RangeInclusive::<f32>::new(-180.0, 180.0)
+                RangeInclusive::<rapier::Real>::new(-180.0, 180.0)
             }
         }
     }
 
     /// to smoothen the displayed joint values since they can often be -0.0/0.0 which
     /// result in a very erratic UI behavior
-    fn smooth_joint_val(val: f32) -> f32 {
+    fn smooth_joint_val(val: rapier::Real) -> rapier::Real {
         if val.abs() < 1e-2 && val.is_sign_negative(){
             return 0.0
         }

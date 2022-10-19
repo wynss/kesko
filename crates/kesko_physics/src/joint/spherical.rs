@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::prelude::{GenericJoint, JointAxis, SphericalJointBuilder};
+use crate::rapier_extern::rapier::prelude as rapier;
 
 use crate::conversions::IntoRapier;
 
@@ -12,12 +12,12 @@ pub struct SphericalJoint {
     pub x_ang_limit: Option<Vec2>,
     pub y_ang_limit: Option<Vec2>,
     pub z_ang_limit: Option<Vec2>,
-    pub x_stiffness: f32,
-    pub x_damping: f32,
-    pub y_stiffness: f32,
-    pub y_damping: f32,
-    pub z_stiffness: f32,
-    pub z_damping: f32,
+    pub x_stiffness: rapier::Real,
+    pub x_damping: rapier::Real,
+    pub y_stiffness: rapier::Real,
+    pub y_damping: rapier::Real,
+    pub z_stiffness: rapier::Real,
+    pub z_damping: rapier::Real,
 }
 
 impl SphericalJoint {
@@ -66,44 +66,44 @@ impl SphericalJoint {
     }
 }
 
-impl From<SphericalJoint> for GenericJoint {
-    fn from(joint: SphericalJoint) -> GenericJoint {
+impl From<SphericalJoint> for rapier::GenericJoint {
+    fn from(joint: SphericalJoint) -> rapier::GenericJoint {
 
-        let mut builder = SphericalJointBuilder::new();
+        let mut builder = rapier::SphericalJointBuilder::new();
 
         // set activate and set motor parameters
         if joint.x_stiffness > 0.0 || joint.x_damping > 0.0 {
-            builder = builder.motor(JointAxis::AngX, 0.0, 0.0,  joint.x_stiffness, joint.x_damping);
+            builder = builder.motor(rapier::JointAxis::AngX, 0.0, 0.0,  joint.x_stiffness as f64, joint.x_damping as f64);
         }
         if joint.y_stiffness > 0.0 || joint.y_damping > 0.0 {
-            builder = builder.motor(JointAxis::AngY, 0.0, 0.0,  joint.y_stiffness, joint.y_damping);
+            builder = builder.motor(rapier::JointAxis::AngY, 0.0, 0.0,  joint.y_stiffness as f64, joint.y_damping as f64);
         }
         if joint.z_stiffness > 0.0 || joint.z_damping > 0.0 {
-            builder = builder.motor(JointAxis::AngZ, 0.0, 0.0,  joint.z_stiffness, joint.z_damping);
+            builder = builder.motor(rapier::JointAxis::AngZ, 0.0, 0.0,  joint.z_stiffness as f64, joint.z_damping as f64);
         }
 
         // set rotational limits if any
-        if let Some(x_ang_limit) = joint.x_ang_limit {
-            builder = builder.limits(JointAxis::AngX, x_ang_limit.into());
-        }
+        // if let Some(x_ang_limit) = joint.x_ang_limit {
+        //     builder = builder.limits(JointAxis::AngX, x_ang_limit.into());
+        // }
 
-        if let Some(y_ang_limit) = joint.y_ang_limit {
-            builder = builder.limits(JointAxis::AngY, y_ang_limit.into());
-        }
+        // if let Some(y_ang_limit) = joint.y_ang_limit {
+        //     builder = builder.limits(JointAxis::AngY, y_ang_limit.into());
+        // }
 
-        if let Some(z_ang_limit) = joint.z_ang_limit {
-            builder = builder.limits(JointAxis::AngZ, z_ang_limit.into());
-        }
+        // if let Some(z_ang_limit) = joint.z_ang_limit {
+        //     builder = builder.limits(JointAxis::AngZ, z_ang_limit.into());
+        // }
 
-        let mut generic: GenericJoint = builder.into();
+        let mut generic: rapier::GenericJoint = builder.into();
         *generic
             .set_local_frame1(joint.parent_anchor.into_rapier())
             .set_local_frame2(joint.child_anchor.into_rapier())
     }
 }
 
-impl From<GenericJoint> for SphericalJoint {
-    fn from(_joint: GenericJoint) -> Self {
+impl From<rapier::GenericJoint> for SphericalJoint {
+    fn from(_joint: rapier::GenericJoint) -> Self {
         todo!("Implement this when we need to convert back to the specific joint");
     }
 }
@@ -112,8 +112,8 @@ impl From<GenericJoint> for SphericalJoint {
 mod tests {
     use bevy::math::Vec2;
     use bevy::prelude::{Transform, Vec3, Entity};
-    use rapier3d::dynamics::JointAxis;
-    use rapier3d::prelude::GenericJoint;
+    use crate::rapier_extern::rapier::dynamics::JointAxis;
+    use crate::rapier_extern::rapier::prelude::GenericJoint;
     use crate::IntoRapier;
     use super::SphericalJoint;
 

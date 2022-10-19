@@ -14,7 +14,8 @@ use kesko_physics::{
     joint::{
         JointState,
         JointMotorEvent, MotorCommand, revolute::RevoluteJoint, prismatic::PrismaticJoint,
-    }
+    },
+    rapier_extern::rapier::prelude as rapier
 };
 
 
@@ -68,7 +69,7 @@ pub fn handle_motor_command_requests(
                         if let Some(e) = root.child_map.get(joint_name) {
                             motor_event_writer.send(JointMotorEvent {
                                 entity: *e,
-                                action: MotorCommand::PositionRevolute { position: *val, stiffness: None, damping: None}
+                                action: MotorCommand::PositionRevolute { position: *val as rapier::Real, stiffness: None, damping: None}
                             });
                         }
                     }

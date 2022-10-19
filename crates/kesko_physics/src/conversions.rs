@@ -1,8 +1,12 @@
 use bevy::math::{Vec3, Quat};
 use bevy::prelude::Transform;
-use rapier3d::prelude::UnitVector;
-use rapier3d::math::{Translation, Isometry, Vector};
 use nalgebra::{UnitQuaternion, Vector3, Quaternion, Point3, UnitVector3};
+
+use crate::rapier_extern::rapier::{
+    math::{
+        Translation, Isometry, Vector, Real, UnitVector
+    }
+};
 
 
 pub trait IntoBevy<T> {
@@ -10,34 +14,34 @@ pub trait IntoBevy<T> {
     fn into_bevy(self) -> T;
 }
 
-impl IntoBevy<Vec3> for Vector3<f32> {
+impl IntoBevy<Vec3> for Vector3<Real> {
     fn into_bevy(self) -> Vec3 {
-        Vec3::new(self.x, self.y, self.z)
+        Vec3::new(self.x as f32, self.y as f32, self.z as f32)
     }
 }
 
 
-impl IntoBevy<Vec3> for Translation<f32> {
+impl IntoBevy<Vec3> for Translation<Real> {
     fn into_bevy(self) -> Vec3 {
        self.vector.into_bevy()
     }
 }
 
-impl IntoBevy<Quat> for UnitQuaternion<f32> {
+impl IntoBevy<Quat> for UnitQuaternion<Real> {
     fn into_bevy(self) -> Quat {
-        Quat::from_xyzw(self.i, self.j, self.k, self.w)
+        Quat::from_xyzw(self.i as f32, self.j as f32, self.k as f32, self.w as f32)
     }
 }
 
-impl IntoBevy<(Vec3, Quat)> for Isometry<f32> {
+impl IntoBevy<(Vec3, Quat)> for Isometry<Real> {
     fn into_bevy(self) -> (Vec3, Quat) {
         (self.translation.into_bevy(), self.rotation.into_bevy())
     }
 }
 
-impl IntoBevy<Vec3> for UnitVector<f32> {
+impl IntoBevy<Vec3> for UnitVector<Real> {
     fn into_bevy(self) -> Vec3 {
-        Vec3::new(self.x, self.y, self.y)
+        Vec3::new(self.x as f32, self.y as f32, self.y as f32)
     }
 }
 
@@ -46,44 +50,44 @@ pub trait IntoRapier<T> {
     fn into_rapier(self) -> T;
 }
 
-impl IntoRapier<Vector3<f32>> for Vec3 {
-    fn into_rapier(self) -> Vector3<f32> {
-        Vector3::new(self.x, self.y, self.z)
+impl IntoRapier<Vector3<Real>> for Vec3 {
+    fn into_rapier(self) -> Vector3<Real> {
+        Vector3::new(self.x as Real, self.y as Real, self.z as Real)
     }
 }
 
-impl IntoRapier<Point3<f32>> for Vec3 {
-    fn into_rapier(self) -> Point3<f32> {
-        Point3::from([self.x, self.y, self.z])
+impl IntoRapier<Point3<Real>> for Vec3 {
+    fn into_rapier(self) -> Point3<Real> {
+        Point3::from([self.x as Real, self.y as Real, self.z as Real])
     }
 }
 
-impl IntoRapier<UnitVector3<f32>> for Vec3 {
-    fn into_rapier(self) -> UnitVector3<f32> {
+impl IntoRapier<UnitVector3<Real>> for Vec3 {
+    fn into_rapier(self) -> UnitVector3<Real> {
         UnitVector3::new_normalize(self.into_rapier())
     }
 }
 
-impl IntoRapier<Translation<f32>> for Vec3 {
-    fn into_rapier(self) -> Translation<f32> {
-        <Vec3 as IntoRapier<Vector<f32>>>::into_rapier(self).into()
+impl IntoRapier<Translation<Real>> for Vec3 {
+    fn into_rapier(self) -> Translation<Real> {
+        <Vec3 as IntoRapier<Vector<Real>>>::into_rapier(self).into()
     }
 }
 
-impl IntoRapier<UnitQuaternion<f32>> for Quat {
-    fn into_rapier(self) -> UnitQuaternion<f32> {
-        UnitQuaternion::new_normalize(Quaternion::new(self.w, self.x, self.y, self.z))
+impl IntoRapier<UnitQuaternion<Real>> for Quat {
+    fn into_rapier(self) -> UnitQuaternion<Real> {
+        UnitQuaternion::new_normalize(Quaternion::new(self.w as Real, self.x as Real, self.y as Real, self.z as Real))
     }
 }
 
-impl IntoRapier<Isometry<f32>> for (Vec3, Quat) {
-    fn into_rapier(self) -> Isometry<f32> {
+impl IntoRapier<Isometry<Real>> for (Vec3, Quat) {
+    fn into_rapier(self) -> Isometry<Real> {
         Isometry::from_parts(self.0.into_rapier(), self.1.into_rapier())
     }
 }
 
-impl IntoRapier<Isometry<f32>> for Transform {
-    fn into_rapier(self) -> Isometry<f32> {
+impl IntoRapier<Isometry<Real>> for Transform {
+    fn into_rapier(self) -> Isometry<Real> {
         Isometry::from_parts(self.translation.into_rapier(), self.rotation.into_rapier())
     }
 }

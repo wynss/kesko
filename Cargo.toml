@@ -37,7 +37,7 @@ codegen-units = 1
 
 [dependencies]
 bevy = { version = "0.8.1" }
-kesko_physics = { version = "0.1.0", path = "crates/kesko_physics" }
+kesko_physics = { version = "0.1.0", path = "crates/kesko_physics", features = ["f64"]}
 kesko_core = { version = "0.1.0", path = "crates/kesko_core" }
 kesko_object_interaction = { version = "0.1.0", path = "crates/kesko_object_interaction"}
 kesko_raycast = { version = "0.1.0", path = "crates/kesko_raycast"}

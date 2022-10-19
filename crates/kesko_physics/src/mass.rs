@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::prelude as rapier;
+use crate::rapier_extern::rapier::prelude as rapier;
 
 use crate::rigid_body::RigidBodyHandle;
 
@@ -7,14 +7,14 @@ use crate::rigid_body::RigidBodyHandle;
 /// Component for storing the mass of a rigid body
 #[derive(Component)]
 pub struct Mass {
-    pub val: f32
+    pub val: rapier::Real
 }
 
-/// Compnent that stores the mass of the multibody that a rigid body is part of
+/// Component that stores the mass of the multibody that a rigid body is part of
 /// Will be same as Mass of the body is not part of a multibody
 #[derive(Component)]
 pub struct MultibodyMass {
-    pub val: f32
+    pub val: rapier::Real
 }
 
 /// System for adding multi body mass to rigid bodies. If the body is not part of a multibody the mass will be equal
@@ -35,7 +35,7 @@ pub(crate) fn update_multibody_mass_system(
 /// 
 /// TODO: This could be improved since we will calculate the multibody mass for all the bodies in the multibody,
 /// but it is not crucial since it is a one timer. Could be when scaling up the amount of bodies
-fn mass_of_attached(handle: &rapier::RigidBodyHandle, multibody_set: &rapier::MultibodyJointSet, bodies: &rapier::RigidBodySet, parent_handle: Option<&rapier::RigidBodyHandle>) -> f32 {
+fn mass_of_attached(handle: &rapier::RigidBodyHandle, multibody_set: &rapier::MultibodyJointSet, bodies: &rapier::RigidBodySet, parent_handle: Option<&rapier::RigidBodyHandle>) -> f64 {
 
     let body = bodies.get(*handle).unwrap();
     let mut mass = body.mass();

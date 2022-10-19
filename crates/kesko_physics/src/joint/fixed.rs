@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use rapier3d::prelude::{
+use crate::rapier_extern::rapier::prelude::{
     GenericJoint, 
     FixedJointBuilder
 };
@@ -47,8 +47,8 @@ impl From<FixedJoint> for GenericJoint {
 #[cfg(test)]
 mod tests {
     use bevy::prelude::{Transform, Vec3, Entity};
-    use rapier3d::prelude::GenericJoint;
-    use rapier3d::dynamics::JointAxis;
+    use crate::rapier_extern::rapier::prelude::GenericJoint;
+    use crate::rapier_extern::rapier::dynamics::JointAxis;
     use crate::IntoRapier;
     use super::FixedJoint;
 
