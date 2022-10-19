@@ -34,12 +34,12 @@ pub enum PhysicResponseEvent {
     DespawnedBody(u64),
     DespawnedAllBodies,
     MultibodySpawned {
-        id: u64,
+        id: Entity,
         name: String,
         links: BTreeMap<String, Entity>
     },
     RigidBodySpawned {
-        id: u64,
+        id: Entity,
         name: String
     }
 }

@@ -74,7 +74,7 @@ class Kesko:
             if isinstance(action, ApplyControl):
                 if isinstance(action.values, (np.ndarray, torch.Tensor)):
                     # convert tensor or array to dict
-                    action.values = {joint_name: val for joint_name, val in zip(self.bodies[action.id].links, action.values.tolist())}
+                    action.values = {joint_name: val for joint_name, val in zip(self.bodies[action.name].links, action.values.tolist())}
             elif isinstance(action, DespawnAll) or action == DespawnAll:
                 self.bodies = {}
             elif isinstance(action, Despawn):
@@ -90,9 +90,9 @@ class Kesko:
 
             if MultibodySpawned.__name__ in response:
                 multibody = MultibodySpawned(**response[MultibodySpawned.__name__])
-                if multibody.id not in self.bodies:
+                if multibody.name not in self.bodies:
                     # Add body info
-                    self.bodies[multibody.id] = multibody
+                    self.bodies[multibody.name] = multibody
 
                 response_objects.append(multibody)    
 

@@ -17,13 +17,13 @@ pub(crate) fn send_spawned_events(
         if let Some(root) = root {
 
             event_writer.send(PhysicResponseEvent::MultibodySpawned{ 
-                id: entity.to_bits(),
+                id: entity,
                 name: root.name.clone(),
                 links: root.child_map.clone()
             });
         } else {
             event_writer.send(PhysicResponseEvent::RigidBodySpawned{ 
-                id: entity.to_bits(),
+                id: entity,
                 name: name.0.clone() 
             })
         }

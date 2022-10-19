@@ -62,14 +62,14 @@ class GetState:
     
     
 class ApplyControl:
-    def __init__(self, id: int, values: Union[dict[str, float], torch.Tensor]):
-        self.id = id
+    def __init__(self, name: str, values: Union[dict[str, float], torch.Tensor]):
+        self.name = name
         self.values = values
     
     def to_json(self):
         return {
             "ApplyMotorCommand": {
-                "id": self.id,
+                "name": self.name,
                 "command": self.values
             }
         }

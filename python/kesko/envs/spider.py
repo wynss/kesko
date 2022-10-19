@@ -42,22 +42,22 @@ class SpiderEnv(gym.Env):
         initial_state = self._get_state(self._kesko.send(GetState))
         tensor_state = self._to_tensor(initial_state)
 
+        # start physics
         self._kesko.send(RunPhysics)
 
         # TODO: Send the limits from Kesko
         low = -np.pi / 6.0
         high = np.pi / 6.0
         
-        # Define actions space
+        # Define spaces
         dim_actions_space = len(self.spider_body.links)
         self.action_space = gym.spaces.Box(low=low* np.ones((dim_actions_space,)), high=high * np.zeros((dim_actions_space,)))
-
         self.observation_space = gym.spaces.Space(tensor_state.shape)
 
         return tensor_state
 
     def _to_tensor(self, state: MultibodyStates):
-
+        """Convert state to tensor"""
         position = state.global_position
         orientation = state.global_orientation
         angular_velocity = state.global_angular_velocity
@@ -72,7 +72,11 @@ class SpiderEnv(gym.Env):
         
     def step(self, action: Union[np.ndarray, torch.Tensor]):
 
-        state = self._get_state(self._kesko.step(ApplyControl(self.spider_body.id, action)))
+        # perform action
+        response = self._kesko.step(ApplyControl(self.spider_body.name, action))
+
+        state = self._get_state(response)
+        body_collision = response.get_collision_with_body(self.spider_body.id)
 
         # calc reward, distance moved from last step. only considering the horizontal movement
         if self.prev_position is None:
@@ -84,8 +88,7 @@ class SpiderEnv(gym.Env):
 
         state = self._to_tensor(state)
 
-        # TODO: Kesko need support to send collision events back to detect if the spider has fallen on its back 
-        done = False
+        done = True if body_collision is not None else False
         if self.max_steps is not None:
             if self.step_count > self.max_steps:
                 done = True
