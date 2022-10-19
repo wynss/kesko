@@ -74,12 +74,11 @@ pub(crate) fn add_colliders(
         Entity, 
         &ColliderShape, 
         &RigidBodyHandle, 
-        Option<&Mass>,
         Option<&ColliderPhysicalProperties>, 
         Option<&GenerateCollisionEvents>), 
         Without<ColliderHandle>>
 ) {
-    for (entity, collider_shape, rigid_body_handle, mass, physical_props, gen_events) in query.iter() {
+    for (entity, collider_shape, rigid_body_handle, physical_props, gen_events) in query.iter() {
 
         let mut collider_builder = match collider_shape {
             ColliderShape::Cuboid {x_half, y_half, z_half} => {
@@ -101,10 +100,6 @@ pub(crate) fn add_colliders(
                 rapier::ColliderBuilder::cylinder(length / 2.0, *radius)
             }
         };
-
-        if let Some(mass) = mass {
-            collider_builder = collider_builder.mass(mass.val);
-        }
  
         if let Some(physical_props) = physical_props {
             collider_builder = collider_builder

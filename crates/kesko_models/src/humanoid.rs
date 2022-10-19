@@ -105,6 +105,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+        .insert(Mass {val: MASS})
         .insert(RigidBodyName("neck_x".to_owned()))
         .id();
 
@@ -126,6 +127,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
+        .insert(Mass {val: MASS})
         .insert(RigidBodyName("neck_y".to_owned()))
         .id();
         
