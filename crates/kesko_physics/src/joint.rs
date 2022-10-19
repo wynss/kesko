@@ -101,6 +101,7 @@ pub(crate) fn add_multibody_joints(
     entity_body_map: Res<Entity2BodyHandle>,
     revolute_joints: Query<(Entity, &revolute::RevoluteJoint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>,
     prismatic_joints: Query<(Entity, &prismatic::PrismaticJoint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>,
+    spherical_joints: Query<(Entity, &spherical::SphericalJoint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>,
     fixed_joints: Query<(Entity, &fixed::FixedJoint), (With<RigidBodyHandle>, Without<MultibodyJointHandle>)>,
 ) {
     for (entity, joint) in revolute_joints.iter() {
@@ -115,6 +116,17 @@ pub(crate) fn add_multibody_joints(
         commands.entity(entity).insert(MultibodyJointHandle(joint_handle));
     }
     for (entity, joint) in prismatic_joints.iter() {
+        let joint_handle = multibody_joint_set.insert(
+            *entity_body_map.get(&joint.parent).unwrap(),
+            *entity_body_map.get(&entity).unwrap(),
+            *joint,
+            true
+        ).unwrap();
+
+        entity_2_joint_handle.insert(entity, joint_handle);
+        commands.entity(entity).insert(MultibodyJointHandle(joint_handle));
+    }
+    for (entity, joint) in spherical_joints.iter() {
         let joint_handle = multibody_joint_set.insert(
             *entity_body_map.get(&joint.parent).unwrap(),
             *entity_body_map.get(&entity).unwrap(),
