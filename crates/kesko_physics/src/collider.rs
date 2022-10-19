@@ -108,9 +108,9 @@ pub(crate) fn add_colliders(
  
         if let Some(physical_props) = physical_props {
             collider_builder = collider_builder
-            .density(physical_props.density as f64)
-            .friction(physical_props.friction as f64)
-            .restitution(physical_props.restitution as f64);
+            .density(physical_props.density)
+            .friction(physical_props.friction)
+            .restitution(physical_props.restitution);
         }
 
         if gen_events.is_some() {
@@ -229,8 +229,8 @@ mod tests {
         let collider_set = world.get_resource::<rapier::ColliderSet>().unwrap();
         let collider = collider_set.get(collider_handle.0).unwrap();
 
-        assert_eq!(collider.density(), physical_properties.density as f64);
-        assert_eq!(collider.friction(), physical_properties.friction as f64);
-        assert_eq!(collider.restitution(), physical_properties.restitution as f64);
+        assert_eq!(collider.density(), physical_properties.density);
+        assert_eq!(collider.friction(), physical_properties.friction);
+        assert_eq!(collider.restitution(), physical_properties.restitution);
     }
 }

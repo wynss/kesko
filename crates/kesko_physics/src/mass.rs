@@ -35,7 +35,7 @@ pub(crate) fn update_multibody_mass_system(
 /// 
 /// TODO: This could be improved since we will calculate the multibody mass for all the bodies in the multibody,
 /// but it is not crucial since it is a one timer. Could be when scaling up the amount of bodies
-fn mass_of_attached(handle: &rapier::RigidBodyHandle, multibody_set: &rapier::MultibodyJointSet, bodies: &rapier::RigidBodySet, parent_handle: Option<&rapier::RigidBodyHandle>) -> f64 {
+fn mass_of_attached(handle: &rapier::RigidBodyHandle, multibody_set: &rapier::MultibodyJointSet, bodies: &rapier::RigidBodySet, parent_handle: Option<&rapier::RigidBodyHandle>) -> rapier::Real {
 
     let body = bodies.get(*handle).unwrap();
     let mut mass = body.mass();

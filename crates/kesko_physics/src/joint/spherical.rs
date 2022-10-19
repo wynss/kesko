@@ -73,13 +73,13 @@ impl From<SphericalJoint> for rapier::GenericJoint {
 
         // set activate and set motor parameters
         if joint.x_stiffness > 0.0 || joint.x_damping > 0.0 {
-            builder = builder.motor(rapier::JointAxis::AngX, 0.0, 0.0,  joint.x_stiffness as f64, joint.x_damping as f64);
+            builder = builder.motor(rapier::JointAxis::AngX, 0.0, 0.0,  joint.x_stiffness, joint.x_damping);
         }
         if joint.y_stiffness > 0.0 || joint.y_damping > 0.0 {
-            builder = builder.motor(rapier::JointAxis::AngY, 0.0, 0.0,  joint.y_stiffness as f64, joint.y_damping as f64);
+            builder = builder.motor(rapier::JointAxis::AngY, 0.0, 0.0,  joint.y_stiffness, joint.y_damping);
         }
         if joint.z_stiffness > 0.0 || joint.z_damping > 0.0 {
-            builder = builder.motor(rapier::JointAxis::AngZ, 0.0, 0.0,  joint.z_stiffness as f64, joint.z_damping as f64);
+            builder = builder.motor(rapier::JointAxis::AngZ, 0.0, 0.0,  joint.z_stiffness, joint.z_damping);
         }
 
         // set rotational limits if any

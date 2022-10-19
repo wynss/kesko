@@ -94,7 +94,7 @@ impl From<PrismaticJoint> for rapier::GenericJoint {
             .local_anchor2(joint.child_anchor.translation.into_rapier());
         
         if joint.stiffness > 0.0 || joint.damping > 0.0 {
-            builder = builder.set_motor(0.0, 0.0, joint.stiffness as f64, joint.damping as f64).motor_max_force(joint.max_motor_force);
+            builder = builder.set_motor(0.0, 0.0, joint.stiffness, joint.damping).motor_max_force(joint.max_motor_force);
         }
 
         // if let Some(limits) = joint.limits {

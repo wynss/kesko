@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::rapier_extern::rapier::dynamics::RigidBodySet;
+use crate::rapier_extern::rapier::prelude as rapier;
 use crate::rigid_body::RigidBodyHandle;
 
 
@@ -22,8 +22,8 @@ impl Default for Gravity {
 
 #[derive(Component)]
 pub struct GravityScale {
-    pub val: f64,
-    pub initial_val: f64
+    pub val: rapier::Real,
+    pub initial_val: rapier::Real
 }
 
 impl Default for GravityScale {
@@ -33,7 +33,7 @@ impl Default for GravityScale {
 }
 
 impl GravityScale {
-    pub fn new(val: f64) -> Self {
+    pub fn new(val: rapier::Real) -> Self {
         Self { val, initial_val: val }
     }
 
@@ -43,7 +43,7 @@ impl GravityScale {
 }
 
 pub(crate) fn update_gravity_scale_system(
-    mut rigid_bodies: ResMut<RigidBodySet>,
+    mut rigid_bodies: ResMut<rapier::RigidBodySet>,
     query: Query<(&RigidBodyHandle, &GravityScale), Changed<GravityScale>>
 ) {
     for (body_handle, gravity_scale) in query.iter() {

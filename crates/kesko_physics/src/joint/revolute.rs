@@ -61,8 +61,8 @@ impl RevoluteJoint {
         self
     }
 
-    pub fn with_max_motor_force(mut self, max_motor_force: f32) -> Self {
-        self.max_motor_force = max_motor_force as f64;
+    pub fn with_max_motor_force(mut self, max_motor_force: rapier::Real) -> Self {
+        self.max_motor_force = max_motor_force;
         self
     }
 
@@ -100,7 +100,7 @@ impl From<RevoluteJoint> for rapier::GenericJoint {
             .local_anchor2(joint.child_anchor.translation.into_rapier());
 
         if joint.stiffness > 0.0 || joint.damping > 0.0 {
-            builder = builder.motor(0.0, 0.0, joint.stiffness as f64, joint.damping as f64);
+            builder = builder.motor(0.0, 0.0, joint.stiffness, joint.damping);
         }
 
         builder = builder.motor_max_force(joint.max_motor_force);
