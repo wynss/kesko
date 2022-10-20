@@ -5,39 +5,58 @@ import gym
 import numpy as np
 
 from ..kesko import Kesko
-from ..protocol.commands import DespawnAll, GetState, PausePhysics, RunPhysics, Spawn, ApplyControl
+from ..protocol.commands import (
+    DespawnAll,
+    GetState,
+    PausePhysics,
+    RunPhysics,
+    Spawn,
+    ApplyControl,
+)
 from ..protocol.response import KeskoResponse, MultibodyStates
 from ..color import Color
 from ..model import KeskoModel
 
 
 class SpiderEnv(gym.Env):
-    def __init__(self, max_steps: Optional[int] = None, device: Optional[Union[str, torch.device]] = None): 
+    def __init__(
+        self,
+        max_steps: Optional[int] = None,
+        device: Optional[Union[str, torch.device]] = None,
+    ):
 
         self.device = device if device is not None else torch.device("cpu")
         self.max_steps = max_steps
         self.step_count = 0
         self.prev_position: Optional[torch.Tensor] = None
-        
+
         self._kesko = Kesko()
         self._kesko.initialize()
-    
+
     def _setup(self):
 
         # Spawn models and start physics
-        self._kesko.send([
-            Spawn(model=KeskoModel.Plane, position=[0.0, 0.0, 0.0], color=Color.WHITE),
-            Spawn(model=KeskoModel.Spider, position=[0.0, 2.0, 0.0], color=Color.GREEN)
-        ])
+        self._kesko.send(
+            [
+                Spawn(
+                    model=KeskoModel.Plane, position=[0.0, 0.0, 0.0], color=Color.WHITE
+                ),
+                Spawn(
+                    model=KeskoModel.Spider, position=[0.0, 2.0, 0.0], color=Color.GREEN
+                ),
+            ]
+        )
 
         # Kesko stores all the bodies that are in the environment, get the body named by base name.
         try:
-            self.spider_body = [body for body in self._kesko.bodies.values() if 'spider' in body.name][0]
+            self.spider_body = [
+                body for body in self._kesko.bodies.values() if "spider" in body.name
+            ][0]
         except IndexError as e:
             self.close()
             raise ValueError(f"Could not get body from Kesko: {e}")
 
-        # get initial state 
+        # get initial state
         initial_state = self._get_state(self._kesko.send(GetState))
         tensor_state = self._to_tensor(initial_state)
 
@@ -47,10 +66,13 @@ class SpiderEnv(gym.Env):
         # TODO: Send the limits from Kesko
         low = -np.pi / 6.0
         high = np.pi / 6.0
-        
+
         # Define spaces
         dim_actions_space = len(self.spider_body.links)
-        self.action_space = gym.spaces.Box(low=low* np.ones((dim_actions_space,)), high=high * np.zeros((dim_actions_space,)))
+        self.action_space = gym.spaces.Box(
+            low=low * np.ones((dim_actions_space,)),
+            high=high * np.zeros((dim_actions_space,)),
+        )
         self.observation_space = gym.spaces.Space(tensor_state.shape)
 
         return tensor_state
@@ -60,15 +82,16 @@ class SpiderEnv(gym.Env):
         position = state.global_position
         orientation = state.global_orientation
         angular_velocity = state.global_angular_velocity
-        joint_positions = [joint_state.angle for joint_state in state.joint_states.values()]
+        joint_positions = [
+            joint_state.angle for joint_state in state.joint_states.values()
+        ]
 
         state_tensor = torch.FloatTensor(
-            position + orientation + angular_velocity + joint_positions, 
-            device=self.device
+            position + orientation + angular_velocity + joint_positions,
+            device=self.device,
         )
         return state_tensor
 
-        
     def step(self, action: Union[np.ndarray, torch.Tensor]):
 
         # perform action
@@ -95,12 +118,12 @@ class SpiderEnv(gym.Env):
         self.step_count += 1
 
         return state, reward, done, {}
-    
+
     def reset(self):
         self._kesko.send([PausePhysics, DespawnAll])
         self.step_count = 0
         return self._setup(), {}
-    
+
     def close(self):
         self._kesko.close()
 

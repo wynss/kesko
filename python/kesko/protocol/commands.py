@@ -7,83 +7,107 @@ from ..color import Rgba, Color
 
 
 class CheckAlive:
-    def to_json(self):
-        return CheckAlive.to_json()
+    def __init__(self):
+        self.to_json = self._to_json
+
+    def _to_json(self):
+        return self.__class__.to_json()
+
+    @staticmethod
     def to_json():
         return "IsAlive"
 
+
 class Spawn:
-    def __init__(self, model: KeskoModel, position: list[int], color: Union[Rgba, Color]):
+    def __init__(
+        self, model: KeskoModel, position: list[float], color: Union[Rgba, Color]
+    ):
         self._model = model
         self._position = position
         self._color = color
-    
+
     def to_json(self):
         return {
             "SpawnModel": {
                 "model": self._model.name,
                 "position": self._position,
-                "color": self._color.to_json()
+                "color": self._color.to_json(),
             }
         }
+
 
 class Despawn:
-    def __init__(self, id: int):
-        self.id = id
-    
+    def __init__(self, name: str):
+        self.name = name
+
     def to_json(self):
-        return {
-            "Despawn": {
-                "id": self.id
-            }
-        }
+        return {"Despawn": {"name": self.name}}
+
 
 class DespawnAll:
-    def to_json(self):
-        return DespawnAll.to_json()
-    
+    def __init__(self):
+        self.to_json = self._to_json
+
+    def _to_json(self):
+        return self.__class__.to_json()
+
+    @staticmethod
     def to_json():
         return "DespawnAll"
- 
+
+
 class Shutdown:
-    def to_json(self):
-        return Shutdown.to_json()
-    
+    def __init__(self):
+        self.to_json = self._to_json
+
+    def _to_json(self):
+        return self.__class__.to_json()
+
+    @staticmethod
     def to_json():
         return "Close"
 
 
 class GetState:
-    def to_json(self):
-        return GetState.to_json()
+    def __init__(self):
+        self.to_json = self._to_json
 
+    def _to_json(self):
+        return self.__class__.to_json()
+
+    @staticmethod
     def to_json():
         return "GetState"
-    
-    
+
+
 class ApplyControl:
     def __init__(self, name: str, values: Union[dict[str, float], torch.Tensor]):
         self.name = name
         self.values = values
-    
+
     def to_json(self):
-        return {
-            "ApplyMotorCommand": {
-                "name": self.name,
-                "command": self.values
-            }
-        }
+        return {"ApplyMotorCommand": {"name": self.name, "command": self.values}}
+
 
 class PausePhysics:
-    def to_json(self):
-        return PausePhysics.to_json()
-    
+    def __init__(self):
+        self.to_json = self._to_json
+
+    def _to_json(self):
+        return self.__class__.to_json()
+
+    @staticmethod
     def to_json():
         return "PausePhysics"
 
+
 class RunPhysics:
-    def to_json(self):
-        return RunPhysics.to_json()
-    
+    def __init__(self):
+        self.to_json = self._to_json
+
+    def _to_json(self):
+        return self.__class__.to_json()
+
+    @staticmethod
     def to_json():
         return "RunPhysics"
