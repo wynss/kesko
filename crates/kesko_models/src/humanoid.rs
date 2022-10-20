@@ -32,7 +32,7 @@ use super::Model;
 // no gravity, seems like a bug in Rapier. For now use the same mass for all bodies
 const MASS: rapier::Real = 0.1;
 
-const STIFFNESS: rapier::Real = 1.0;
+const STIFFNESS: rapier::Real = 2.0;
 const DAMPING: rapier::Real = 0.3;
 
 const HEAD_RADIUS: f32 = 0.13;

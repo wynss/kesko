@@ -59,7 +59,7 @@ fn setup(
         &mut meshes
     );
 
-    models::snake::spawn(
+    models::snake::Snake::spawn(
         &mut commands,
         materials.add(Color::PINK.into()),
         Transform::from_xyz(0.0, 1.0, 0.0),

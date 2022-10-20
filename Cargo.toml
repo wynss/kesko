@@ -24,6 +24,9 @@ src = "src/main.rs"
 [[bin]]
 name = "kesko_tcp"
 
+[[bin]]
+name = "kesko_demo"
+
 # Enable a small amount of optimization in debug mode
 [profile.dev]
 opt-level = 1
