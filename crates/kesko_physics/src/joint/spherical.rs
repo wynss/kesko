@@ -4,7 +4,7 @@ use crate::rapier_extern::rapier::prelude as rapier;
 use crate::conversions::IntoRapier;
 
 
-#[derive(Component)]
+#[derive(Component, Clone, Copy)]
 pub struct SphericalJoint {
     pub parent: Entity,
     pub parent_anchor: Transform,
