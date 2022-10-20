@@ -3,7 +3,7 @@ import logging
 import requests
 from requests.adapters import HTTPAdapter, Retry
 
-from . import KeskoRequest
+from .request import KeskoRequest
 from .commands import GetState, Shutdown
 
 

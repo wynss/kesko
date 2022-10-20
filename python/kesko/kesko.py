@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 from .config import KESKO_BIN_PATH, URL
-from .protocol import KeskoRequest
+from .protocol.request import KeskoRequest
 from .protocol.communicator import Communicator
 from .protocol.commands import (
     ApplyControl, Despawn, DespawnAll, GetState, Shutdown

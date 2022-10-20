@@ -21,7 +21,6 @@ class SpiderEnv(gym.Env):
         
         self._kesko = Kesko()
         self._kesko.initialize()
-        self._setup()
     
     def _setup(self):
 
