@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 
 use bevy::prelude::*;
-use bevy::utils::hashbrown::HashMap;
 use crate::rapier_extern::rapier::prelude as rapier;
 use serde::{
     Serialize, Deserialize
@@ -57,35 +56,12 @@ pub struct MultibodyChild {
     pub child_map: BTreeMap<String, Entity>
 }
 
-/// Name registry to ensure all multibodies have a unique name
-pub struct MultibodyNameRegistry {
-    names: HashMap<String, i32>
-}
-impl MultibodyNameRegistry {
-    pub fn new() -> Self {
-        Self {
-            names: HashMap::<String, i32>::new()
-        }
-    }
-
-    pub fn create_unique_name(&mut self, name: &String) -> String {
-
-        if self.names.contains_key(name) {
-            *self.names.get_mut(name).expect("Should contain key") += 1;
-        } else {
-            self.names.insert(name.clone(), 0);
-        }
-        return format!("{}-{}", name, self.names.get(name).unwrap());
-    }
-}
-
 /// System that adds components related to multibodies
 /// 
 /// Todo: Look how to improve this, now it feels a bit complicated and not clear.
 #[allow(clippy::type_complexity)]
 pub(crate) fn add_multibodies(
     mut commands: Commands,
-    mut name_registry: ResMut<MultibodyNameRegistry>,
     multibody_joint_set: Res<rapier::MultibodyJointSet>,
     body_2_entity: Res<BodyHandle2Entity>,
     rigid_body_query: Query<
@@ -136,8 +112,8 @@ pub(crate) fn add_multibodies(
 
                 if handle.0 == multibody.root().rigid_body_handle() {
                     // We have a root
-                    // make the name unique
-                    name = name_registry.create_unique_name(&name);
+                    // make the name unique by combining the name and entity id
+                    name = format!("{}-{}", name, entity.id());
                     commands.entity(entity).insert(MultibodyRoot { 
                         name, 
                         linvel: Vec3::ZERO,
@@ -179,4 +155,64 @@ pub(crate) fn update_multibody_vel_angvel(
 #[cfg(test)]
 mod tests {
 
+    use super::*;
+    use crate::{
+        rigid_body,
+        joint,
+    };
+
+    #[test]
+    fn test_name() {
+
+        let mut app = App::new();
+
+        // add systems and resources for building a multibody
+        app.add_stage("Test", Schedule::default()).stage("Test", |stage: &mut Schedule| {
+            stage
+            .add_stage(
+                "Add bodies", 
+                SystemStage::single_threaded()
+                    .with_system(rigid_body::add_rigid_bodies)
+            )
+            .add_stage(
+                "Add joints", 
+                SystemStage::single_threaded()
+                    .with_system(joint::add_multibody_joints)
+            )
+            .add_stage(
+                "Add multi", 
+                SystemStage::single_threaded()
+                .with_system(add_multibodies)
+            )
+        });
+
+        app.init_resource::<rapier::RigidBodySet>();
+        app.init_resource::<rapier::MultibodyJointSet>();
+        app.init_resource::<joint::Entity2JointHandle>();
+        app.init_resource::<rigid_body::Entity2BodyHandle>();
+        app.init_resource::<rigid_body::BodyHandle2Entity>();
+
+        // add root 
+        let root_entity = app.world
+            .spawn()
+            .insert_bundle(TransformBundle::default())
+            .insert(rigid_body::RigidBody::Dynamic)
+            .insert(rigid_body::RigidBodyName("Root".to_owned()))
+            .id();
+
+        // attach a child
+        app.world
+            .spawn()
+            .insert_bundle(TransformBundle::default())
+            .insert(rigid_body::RigidBody::Dynamic)
+            .insert(joint::fixed::FixedJoint::attach_to(root_entity));
+
+        app.update();
+
+        // assert expected name
+        let expected_name = format!("Root-{}", root_entity.id());
+        let root_comp = app.world.get::<MultibodyRoot>(root_entity).unwrap();
+        assert_eq!(*root_comp.name, expected_name)
+
+    }
 }

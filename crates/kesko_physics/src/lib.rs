@@ -102,9 +102,6 @@ impl Plugin for PhysicsPlugin {
             .add_event::<event::PhysicResponseEvent>()
             .add_system(event::handle_events)
 
-            // Multibody name registry, making sure all multibodies have unique names
-            .insert_resource(multibody::MultibodyNameRegistry::new())
-
             .add_event::<joint::JointMotorEvent>()
 
             .add_stage_after(CoreStage::First, PhysicsStage, Schedule::default())
