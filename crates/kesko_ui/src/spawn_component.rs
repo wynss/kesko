@@ -26,7 +26,7 @@ impl Default for SpawnComponent {
             x: 0.0, 
             y: 5.0, 
             z: 0.0, 
-            color: egui::Color32::from_rgb(255, 0, 0),
+            color: egui::Color32::from_rgb(255, 90, 0),
             open: false,
             model: Model::Sphere
         }

@@ -79,12 +79,12 @@ pub fn spawn_system(
 
             match model {
                 Model::Spider => spider::spawn(&mut commands, material, *transform, &mut meshes),
-                Model::Snake => snake::spawn(&mut commands, material, *transform, &mut meshes),
+                Model::Snake => snake::Snake::spawn(&mut commands, material, *transform, &mut meshes),
                 Model::Car => {
                     let wheel_material = materials.add(Color::DARK_GRAY.into());
                     car::Car::spawn(&mut commands, material, wheel_material, *transform, &mut meshes);
                 },
-                Model::Sphere => sphere::spawn(&mut commands, material, *transform, &mut meshes),
+                Model::Sphere => sphere::Sphere::spawn(&mut commands, material, *transform, &mut meshes),
                 Model::Wheely => {
                     let wheel_material = materials.add(Color::DARK_GRAY.into());
                     wheely::Wheely::spawn(&mut commands, material, wheel_material, *transform, &mut meshes);
