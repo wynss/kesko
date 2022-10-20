@@ -1,10 +1,9 @@
 
-[flake8]per-file-ignores =
-    __init__.py:
+[flake8]
+per-file-ignores =
+    **/__init__.py:
         # import but unused
         F401
-        # unable to detect undefined names
-        F403
 exclude =
     venv,
     .git,
