@@ -53,6 +53,7 @@ pub struct PanOrbitCamera {
     pub zoom_vel: f32,
     pub zoom_acc: f32,
     pub zoom_friction: f32,
+    pub zoom_max_vel: f32,
 
     pub translation_vel: Vec3,
     pub translation_friction: f32,
@@ -84,6 +85,7 @@ impl Default for PanOrbitCamera {
             zoom_vel: 0.0,
             zoom_acc: 0.7,
             zoom_friction: 0.08,
+            zoom_max_vel: 1.5,
 
             translation_vel: Vec3::ZERO,
             translation_friction: 0.8,
@@ -117,6 +119,12 @@ fn send_camera_mouse_events(
         if key_input.pressed(KeyCode::Left) {
             translation.x -= 1.0;
         }
+        if key_input.pressed(KeyCode::Tab) {
+            translation.y += 1.0;
+        }
+        if key_input.pressed(KeyCode::LShift) {
+            translation.y -= 1.0;
+        }
 
         if translation != Vec3::ZERO {
             events.send(PanOrbitCameraEvents::Translate(translation));
@@ -141,11 +149,8 @@ fn send_camera_mouse_events(
         for event in mouse_scroll_events.iter() {
             scroll_delta += event.y;
         }
-
         if scroll_delta.abs() > 0.0 {
-            for _ in query.iter() {
-                events.send(PanOrbitCameraEvents::Zoom(scroll_delta));
-            }
+            events.send(PanOrbitCameraEvents::Zoom(scroll_delta));
         }
     }
 }
@@ -198,6 +203,7 @@ fn handle_camera_events(
                 PanOrbitCameraEvents::Zoom(scroll_move) => {
                     zoom_updated = true;
                     camera.zoom_vel += camera.zoom_acc * scroll_move.signum();
+                    camera.zoom_vel = camera.zoom_vel.clamp(-camera.zoom_max_vel, camera.zoom_max_vel);
                 },
                 PanOrbitCameraEvents::Translate(translation) => {
                     translation_updated = true;
