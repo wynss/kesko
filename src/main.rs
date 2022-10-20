@@ -34,7 +34,7 @@ fn main() {
 fn test_scene(
     mut commands: Commands, 
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut materials: ResMut<Assets<StandardMaterial>>
 ) {
 
     kesko_models::plane::spawn(
