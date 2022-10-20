@@ -17,6 +17,7 @@ use kesko_physics::{
     },
     rapier_extern::rapier::prelude as rapier
 };
+use serde::{Serialize, Deserialize};
 
 
 pub enum SystemRequestEvent {
@@ -24,13 +25,14 @@ pub enum SystemRequestEvent {
     ExitApp,
     IsAlive,
     ApplyMotorCommand {
-        id: u64,
+        name: String,
         command: HashMap<String, f32>
     }
 }
 
+#[derive(Serialize, Deserialize, Clone)]
 pub enum SystemResponseEvent {
-    State(MultiBodyStates),
+    MultibodyStates(MultiBodyStates),
     WillExitApp,
     Alive,
     Ok(String),
@@ -60,11 +62,10 @@ pub fn handle_motor_command_requests(
     multibody_root_query: Query<&MultibodyRoot>,
 ) {
     for event in system_requests.iter() {
-        if let SystemRequestEvent::ApplyMotorCommand { id, command } = event {
+        if let SystemRequestEvent::ApplyMotorCommand { name, command } = event {
 
-            let root_entity = Entity::from_bits(*id);
-            match multibody_root_query.get(root_entity) {
-                Ok(root) => {
+            multibody_root_query.for_each(|root| {
+                if root.name == *name {
                     for (joint_name, val) in command.iter() {
                         if let Some(e) = root.child_map.get(joint_name) {
                             motor_event_writer.send(JointMotorEvent {
@@ -73,9 +74,8 @@ pub fn handle_motor_command_requests(
                             });
                         }
                     }
-                },
-                Err(e) => error!("Could not get multibody root {:?}", e)
-            }
+                }
+            });
         }
     }
 }
@@ -129,7 +129,7 @@ pub fn handle_serializable_state_request(
 
             }).collect::<Vec<MultiBodyState>>();
 
-            system_response_writer.send(SystemResponseEvent::State(MultiBodyStates { multibody_states: states }));
+            system_response_writer.send(SystemResponseEvent::MultibodyStates(MultiBodyStates(states)));
         }
     }
 }

@@ -19,9 +19,7 @@ use crate::{
 };
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct MultiBodyStates {
-    pub multibody_states: Vec<MultiBodyState>
-}
+pub struct MultiBodyStates(pub Vec<MultiBodyState>);
 
 /// Used for sending data outside of Kesko
 #[derive(Serialize, Deserialize, Clone)]
@@ -45,7 +43,7 @@ pub struct MultibodyRoot {
     /// Angular velocity of body
     pub angvel: Vec3,
     /// Map from rigidbody name to entity that has a reference to a joint
-    pub child_map: HashMap<String, Entity>
+    pub child_map: BTreeMap<String, Entity>
 }
 
 /// Component to indicate that the entity is a multibody child entity
@@ -56,7 +54,7 @@ pub struct MultibodyChild {
     /// name of the root link
     pub root: Entity,
     /// Map from rigidbody name to entity that has a reference to a joint
-    pub child_map: HashMap<String, Entity>
+    pub child_map: BTreeMap<String, Entity>
 }
 
 /// Name registry to ensure all multibodies have a unique name
@@ -106,7 +104,7 @@ pub(crate) fn add_multibodies(
                 
                 // build a hash map with names and entity to store in the component.
                 // the component can later be used to easy get hold of different links and joints
-                let mut joints = HashMap::<String, Entity>::new();
+                let mut joints = BTreeMap::<String, Entity>::new();
 
                 for link in multibody.links() {
 

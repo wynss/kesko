@@ -7,22 +7,23 @@ class Rgba:
         self.green = green
         self.blue = blue
         self.alpha = alpha
-        
+
     def to_json(self):
         return {
             "Rgba": {
-               "red": self.red,
-               "green": self.green,
-               "blue": self.blue,
-               "alpha": self.alpha 
+                "red": self.red,
+                "green": self.green,
+                "blue": self.blue,
+                "alpha": self.alpha,
             }
         }
+
 
 class Color(Enum):
     WHITE = Rgba(1.0, 1.0, 1.0)
     RED = Rgba(1.0, 0.0, 0.0)
     GREEN = Rgba(0.0, 1.0, 0.0, 1.0)
     BLUE = Rgba(0.0, 0.0, 1.0, 1.0)
-    
+
     def to_json(self):
         return self.value.to_json()

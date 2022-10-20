@@ -10,8 +10,8 @@ f32 = ["dep:rapier3d"]
 [dependencies]
 bevy = "0.8.1"
 iyes_loopless = { git = "https://github.com/IyesGames/iyes_loopless.git", branch = "main"}
-rapier3d-f64 = { git = "https://github.com/wynss/rapier.git", optional = true }
-rapier3d = { git = "https://github.com/wynss/rapier.git", optional = true }
+rapier3d-f64 = { git = "https://github.com/wynss/rapier.git", optional = true, features = ["serde-serialize"]}
+rapier3d = { git = "https://github.com/wynss/rapier.git", optional = true, features = ["serde-serialize"] }
 nalgebra = "0.31.0"
 fnv = "1.0.7"
 crossbeam = "0.8.1"

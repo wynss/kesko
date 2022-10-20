@@ -16,16 +16,14 @@ pub(crate) fn send_spawned_events(
         debug!("Sending spawn event"); 
         if let Some(root) = root {
 
-            let mut links = root.child_map.keys().cloned().collect::<Vec<String>>();
-            links.sort();
             event_writer.send(PhysicResponseEvent::MultibodySpawned{ 
-                id: entity.to_bits(),
+                id: entity,
                 name: root.name.clone(),
-                links
+                links: root.child_map.clone()
             });
         } else {
             event_writer.send(PhysicResponseEvent::RigidBodySpawned{ 
-                id: entity.to_bits(),
+                id: entity,
                 name: name.0.clone() 
             })
         }

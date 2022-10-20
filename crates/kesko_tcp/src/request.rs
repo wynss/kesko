@@ -38,7 +38,7 @@ pub(crate) enum TcpCommand {
     DespawnAll,
 
     ApplyMotorCommand {
-        id: u64,
+        name: String,
         command: HashMap<String, f32>
     },
     PausePhysics,
@@ -109,7 +109,9 @@ pub(crate) fn handle_requests(
                                 TcpCommand::PausePhysics => physic_event_writer.send(PhysicRequestEvent::PausePhysics),
                                 TcpCommand::RunPhysics => physic_event_writer.send(PhysicRequestEvent::RunPhysics),
                                 TcpCommand::IsAlive => system_event_writer.send(SystemRequestEvent::IsAlive),
-                                TcpCommand::ApplyMotorCommand { id, command } => system_event_writer.send( SystemRequestEvent::ApplyMotorCommand { id, command }),
+                                TcpCommand::ApplyMotorCommand { name, command } => {
+                                    system_event_writer.send( SystemRequestEvent::ApplyMotorCommand { name, command })
+                                },
                                 TcpCommand::Despawn { id } => physic_event_writer.send(PhysicRequestEvent::DespawnBody(id)),
                                 TcpCommand::DespawnAll => physic_event_writer.send(PhysicRequestEvent::DespawnAll)
                             }
