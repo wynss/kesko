@@ -78,10 +78,7 @@ impl Plugin for CorePlugin {
                     .with_system(event::handle_system_events)
                     .with_system(event::handle_serializable_state_request)
                     .with_system(event::handle_motor_command_requests)
-            )
-
-            // close on ESC
-            .add_system(bevy::window::close_on_esc);
+            );
     }
 }
 

@@ -22,7 +22,7 @@ impl Snake {
         meshes: &mut Assets<Mesh>
     ) {
 
-        let radius = 0.1;
+        let radius = 0.07;
         let length = 0.3;
         let half_length = length / 2.0 + radius;
         let margin = 0.02;

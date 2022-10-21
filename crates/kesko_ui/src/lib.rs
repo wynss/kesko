@@ -58,7 +58,7 @@ fn initialize_ui_components_system(
     mut commands: Commands,
     mut egui_context: ResMut<EguiContext>,
 ) {
-    egui_context.as_mut().ctx_mut().set_visuals(egui::Visuals::dark());
+    egui_context.as_mut().ctx_mut().set_visuals(egui::Visuals::light());
     commands.spawn().insert(main_menu::MainMenuComponent::default());
     commands.spawn().insert(about::AboutComponent::default());
     commands.spawn().insert(spawn_component::SpawnComponent::default());
