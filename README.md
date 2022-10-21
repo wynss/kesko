@@ -33,7 +33,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-<img src="media/kesko.png" alt="drawing" style="width:800px;"/>
+<img src="media/kesko.png" alt="drawing" style="width:100%;"/>
 <br />
 Kesko is pre-release and in its infancy, quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
 
