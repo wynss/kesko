@@ -109,7 +109,7 @@ impl Wheely {
         let rh = BODY_RADIUS / 2.0 + 0.2;
         let wheel_offset = WHEEL_RADIUS / 4.0;
 
-        let damping = 100.0;
+        let damping = 3.0;
         let stiffness = 0.0;
 
         let body = commands.spawn_bundle(MeshPhysicBodyBundle::from(RigidBody::Dynamic,
@@ -119,7 +119,7 @@ impl Wheely {
             meshes
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 1.0 })
+        .insert(Mass { val: 0.5 })
         .insert(RigidBodyName(NAME.to_owned()))
         .insert(ControlDescription("Use following keys\nRight wheel: E-D\tLeft wheel: Q-A\tArm joint 1: R-F\tArm joint 2: T-G".to_owned()))
         .id();
@@ -143,7 +143,7 @@ impl Wheely {
             .with_motor_params(stiffness, damping)
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 0.5 })
+        .insert(Mass { val: 1.5 })
         .insert(RigidBodyName(LEFT_WHEEL.to_owned()));
 
         // right wheel
@@ -165,7 +165,7 @@ impl Wheely {
             .with_motor_params(stiffness, damping)
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 0.5 })
+        .insert(Mass { val: 1.5 })
         .insert(RigidBodyName(RIGHT_WHEEL.to_owned()));
         
         // back wheel turn link
@@ -236,7 +236,7 @@ impl Wheely {
             .with_parent_anchor(parent_anchor)
             .with_child_anchor(child_anchor)
         )
-        .insert(Mass { val: 0.5 })
+        .insert(Mass { val: 0.1 })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(RigidBodyName("arm_base".to_owned())).id();
         
@@ -256,10 +256,10 @@ impl Wheely {
             .with_child_anchor(child_anchor)
             .with_axis(KeskoAxis::X)
             .with_motor_params(10.0, 0.0)
-            .with_limits(Vec2::new(0.0, PI))
+            .with_limits(Vec2::new(0.0, PI - 0.001))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 0.5 })
+        .insert(Mass { val: 0.1 })
         .insert(RigidBodyName(ARM_LINK_1.to_owned()))
         .id();
         
@@ -282,7 +282,7 @@ impl Wheely {
             .with_limits(Vec2::new(0.0, 0.45))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 0.5 })
+        .insert(Mass { val: 0.1 })
         .insert(RigidBodyName(ARM_LINK_2.to_owned()));
 
     }
