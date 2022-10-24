@@ -4,8 +4,7 @@ use bevy::prelude::*;
 
 use kesko_physics::{
     rigid_body::{
-        RigidBody,
-        RigidBodyName
+        RigidBody
     },
     joint::{
         KeskoAxis,
@@ -62,7 +61,7 @@ fn setup_scene(
             .with_child_anchor(child_anchor)
     )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("spherical".to_owned()));
+    .insert(Name::new("spherical"));
     
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 1.2, 0.0));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
@@ -81,7 +80,7 @@ fn setup_scene(
             .with_motor_params(1.0, 0.1)
     )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("world_aligned_y".to_owned()));
+    .insert(Name::new("world_aligned_y"));
     
     let parent_anchor = Transform::from_translation(Vec3::new(2.0, 1.2, 0.0));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
@@ -100,7 +99,7 @@ fn setup_scene(
             .with_motor_params(1.0, 0.1)
     )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("world_aligned_x".to_owned()));
+    .insert(Name::new("world_aligned_x"));
 
     let parent_anchor = Transform::from_translation(Vec3::new(-2.0, 1.2, 0.0));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
@@ -119,7 +118,7 @@ fn setup_scene(
             .with_motor_params(1.0, 0.1)
     )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("world_aligned_z".to_owned()));
+    .insert(Name::new("world_aligned_z"));
     
     let parent_anchor = Transform::from_translation(Vec3::new(1.0, 1.2, 2.0)).with_rotation(Quat::from_rotation_x(FRAC_PI_2));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0));
@@ -138,7 +137,7 @@ fn setup_scene(
             .with_motor_params(1.0, 0.1)
     )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("x_90_x_parent_rot".to_owned()));
+    .insert(Name::new("x_90_x_parent_rot"));
     
     let parent_anchor = Transform::from_translation(Vec3::new(-1.0, 1.2, 2.0));
     let child_anchor = Transform::from_translation(Vec3::new(0.0, -0.5, 0.0)).with_rotation(Quat::from_rotation_x(FRAC_PI_2));
@@ -157,7 +156,7 @@ fn setup_scene(
             .with_motor_params(1.0, 0.1)
     )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("x_90_x_child_rot".to_owned()));
+    .insert(Name::new("x_90_x_child_rot"));
 
 
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 1.2, -2.0));
@@ -178,7 +177,7 @@ fn setup_scene(
             .with_motor_params(1.0, 0.1)
     )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("stick_1_z".to_owned()))
+    .insert(Name::new("stick_1_z"))
     .id();
 
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.6, 0.0));
@@ -200,7 +199,7 @@ fn setup_scene(
             .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
     )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("stick_2_x".to_owned()))
+    .insert(Name::new("stick_2_x"))
     .id();
 
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.6, 0.0)).with_rotation(Quat::from_rotation_x(-FRAC_PI_2));
@@ -221,7 +220,7 @@ fn setup_scene(
             .with_motor_params(1.0, 0.1)
     )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("stick_3_y".to_owned()))
+    .insert(Name::new("stick_3_y"))
     .id();
     
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.6, 0.0)).with_rotation(Quat::from_rotation_x(-FRAC_PI_2));
@@ -242,7 +241,7 @@ fn setup_scene(
             .with_motor_params(1.0, 0.1)
     )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("stick_4_y".to_owned()));
+    .insert(Name::new("stick_4_y"));
 
     // Light
     commands.spawn_bundle(DirectionalLightBundle {
@@ -276,7 +275,7 @@ fn build_test_bench(
     ))
     .insert(Mass { val: 10000000.0 })
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("base".to_owned()))
+    .insert(Name::new("base"))
     .id();
 
     // base pole
@@ -295,7 +294,7 @@ fn build_test_bench(
         .with_child_anchor(child_anchor)
     )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("base".to_owned()))
+    .insert(Name::new("base"))
     .id();
     
     let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.60, 0.0));
@@ -313,7 +312,7 @@ fn build_test_bench(
         .with_child_anchor(child_anchor)
     )
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-    .insert(RigidBodyName("bench".to_owned()))
+    .insert(Name::new("bench"))
     .id();
 
     (bench, world_transform)
