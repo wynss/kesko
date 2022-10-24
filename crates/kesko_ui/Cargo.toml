@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.8.1"
+bevy = { workspace = true }
 bevy_egui = "0.16.1"
 
 kesko_core = { path = "../kesko_core" }
