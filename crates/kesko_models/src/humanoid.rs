@@ -3,10 +3,7 @@ use std::f32::consts::{FRAC_PI_2, FRAC_PI_6, FRAC_PI_4, PI};
 use bevy::prelude::*;
 
 use kesko_physics::{
-    rigid_body::{
-        RigidBody,
-        RigidBodyName
-    }, 
+    rigid_body::RigidBody,
     joint::{
         KeskoAxis,
         revolute::RevoluteJoint, 
@@ -50,6 +47,32 @@ const UPPER_LEG_LENGTH: f32 = 0.3;
 const LOWER_LEG_LENGTH: f32 = 0.25;
 const FOOT_LENGTH: f32 = 0.15;
 
+// Entity names
+const NECK_X: &str = "neck_x";
+const NECK_Y: &str = "neck_y";
+const NECK_Z: &str = "neck_z";
+
+const TORSO_1: &str = "torso_1";
+const TORSO_2: &str = "torso_2";
+const TORSO_3: &str = "torso_3";
+
+const LEFT_SHOULDER_Z: &str = "left_shoulder_z";
+const LEFT_SHOULDER_X: &str = "left_shoulder_x";
+const LEFT_ELBOW_X: &str = "left_elbow_x";
+const RIGHT_SHOULDER_Z: &str = "right_shoulder_z";
+const RIGHT_SHOULDER_X: &str = "right_shoulder_x";
+const RIGHT_ELBOW_X: &str = "right_elbow_x";
+
+const LEFT_HIP_Z: &str = "left_hip_z";
+const LEFT_HIP_X: &str = "left_hip_x";
+const LEFT_KNEE_X: &str = "left_knee_x";
+const LEFT_FOOT_X: &str = "left_foot_x";
+
+const RIGHT_HIP_Z: &str = "right_hip_z";
+const RIGHT_HIP_X: &str = "right_hip_x";
+const RIGHT_KNEE_X: &str = "right_knee_x";
+const RIGHT_FOOT_X: &str = "right_foot_x";
+
 
 pub struct Humanoid;
 impl Humanoid {
@@ -68,7 +91,7 @@ impl Humanoid {
             meshes
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName(Model::Humanoid.name().to_owned()))
+        .insert(Name::new(Model::Humanoid.name().to_owned()))
         .insert(Mass {val: MASS})
         .id();
 
@@ -106,7 +129,7 @@ impl Humanoid {
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Mass {val: MASS})
-        .insert(RigidBodyName("neck_x".to_owned()))
+        .insert(Name::new(NECK_X))
         .id();
 
         // neck y
@@ -128,7 +151,7 @@ impl Humanoid {
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Mass {val: MASS})
-        .insert(RigidBodyName("neck_y".to_owned()))
+        .insert(Name::new(NECK_Y))
         .id();
         
         // neck z
@@ -151,7 +174,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_6, FRAC_PI_6))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("neck_z".to_owned()))
+        .insert(Name::new(NECK_Z))
         .insert(Mass {val: MASS})
         .id();
 
@@ -185,7 +208,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("body_1".to_owned()))
+        .insert(Name::new(TORSO_1))
         .insert(Mass {val: MASS})
         .id();
         
@@ -205,7 +228,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("body_2".to_owned()))
+        .insert(Name::new(TORSO_2))
         .insert(Mass {val: MASS})
         .id();
         
@@ -225,7 +248,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("body_3".to_owned()))
+        .insert(Name::new(TORSO_3))
         .insert(Mass {val: MASS})
         .id();
 
@@ -264,7 +287,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_6, PI))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("left_shoulder_z".to_owned()))
+        .insert(Name::new(LEFT_SHOULDER_Z))
         .insert(Mass {val: MASS})
         .id();
         
@@ -287,7 +310,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("left_shoulder_x".to_owned()))
+        .insert(Name::new(LEFT_SHOULDER_X))
         .insert(Mass {val: MASS})
         .id();
 
@@ -310,7 +333,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_2, 0.0))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("left_elbow_x".to_owned()))
+        .insert(Name::new(LEFT_ELBOW_X))
         .insert(Mass {val: MASS});
         
         // right arm
@@ -333,7 +356,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-PI, FRAC_PI_6))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("right_shoulder_z".to_owned()))
+        .insert(Name::new(RIGHT_SHOULDER_Z))
         .insert(Mass {val: MASS})
         .id();
         
@@ -356,7 +379,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("right_shoulder_x".to_owned()))
+        .insert(Name::new(RIGHT_SHOULDER_X))
         .insert(Mass {val: MASS})
         .id();
 
@@ -379,7 +402,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_2, 0.0))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("right_elbow_x".to_owned()))
+        .insert(Name::new(RIGHT_ELBOW_X))
         .insert(Mass {val: MASS});
 
     }
@@ -415,7 +438,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("left_hip_z".to_owned()))
+        .insert(Name::new(LEFT_HIP_Z))
         .insert(Mass {val: MASS})
         .id();
         
@@ -438,7 +461,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("left_hip_x".to_owned()))
+        .insert(Name::new(LEFT_HIP_X))
         .insert(Mass {val: MASS})
         .id();
         
@@ -461,7 +484,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(0.0, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("left_knee_x".to_owned()))
+        .insert(Name::new(LEFT_KNEE_X))
         .insert(Mass {val: MASS})
         .id();
 
@@ -484,7 +507,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(0.0, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("left_foot_x".to_owned()))
+        .insert(Name::new(LEFT_FOOT_X))
         .insert(Mass {val: MASS});
         
         // right leg
@@ -507,7 +530,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("right_hip_z".to_owned()))
+        .insert(Name::new(RIGHT_HIP_Z))
         .insert(Mass {val: MASS})
         .id();
         
@@ -530,7 +553,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("right_hip_x".to_owned()))
+        .insert(Name::new(RIGHT_HIP_X))
         .insert(Mass {val: MASS})
         .id();
         
@@ -553,7 +576,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(-FRAC_PI_2, 0.0))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("right_knee_x".to_owned()))
+        .insert(Name::new(RIGHT_KNEE_X))
         .insert(Mass {val: MASS})
         .id();
         
@@ -576,7 +599,7 @@ impl Humanoid {
                 .with_limits(Vec2::new(0.0, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("right_foot_x".to_owned()))
+        .insert(Name::new(RIGHT_FOOT_X))
         .insert(Mass {val: MASS});
 
     }

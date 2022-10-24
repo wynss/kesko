@@ -70,7 +70,7 @@ impl Default for PanOrbitCamera {
             orbit_sensitivity: 0.2,
             orbit_button: MouseButton::Right,
             orbit_vel: Vec2::ZERO,
-            orbit_max_vel: 10.0,
+            orbit_max_vel: 15.0,
             orbit_acc: 1.0,
             orbit_friction: 0.25,
 

@@ -4,8 +4,7 @@ use bevy::prelude::*;
 
 use kesko_physics::{
     rigid_body::{
-        RigidBody,
-        RigidBodyName
+        RigidBody
     },
     joint::{
         KeskoAxis,
@@ -29,7 +28,7 @@ use kesko_core::{
 
 use super::ControlDescription;
 
-
+// entity names
 const NAME: &str = "car";
 const RIGHT_FRONT_WHEEL_TURN: &str = "right_front_wheel_y";
 const LEFT_FRONT_WHEEL_TURN: &str = "left_front_wheel_y";
@@ -37,6 +36,10 @@ const RIGHT_FRONT_WHEEL: &str = "right_front_wheel_x";
 const LEFT_FRONT_WHEEL: &str = "left_front_wheel_x";
 const RIGHT_REAR_WHEEL: &str = "right_rear_wheel_x";
 const LEFT_REAR_WHEEL: &str = "left_rear_wheel_x";
+const LEFT_WALL: &str = "left_wall";
+const RIGHT_WALL: &str = "right_wall";
+const FRONT_WALL: &str = "front_wall";
+const BACK_WALL: &str = "back_wall";
 
 pub struct CarPlugin;
 impl Plugin for CarPlugin {
@@ -92,7 +95,7 @@ impl Car {
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Mass { val: mass })
-        .insert(RigidBodyName(NAME.to_owned()))
+        .insert(Name::new(NAME))
         .insert(ControlDescription("Use the WASD keys to manoeuver the car".to_owned()))
         .id();
         
@@ -112,6 +115,7 @@ impl Car {
             .with_parent_anchor(parent_anchor)
             .with_child_anchor(child_anchor)
         )
+        .insert(Name::new(FRONT_WALL))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
         // back wall
@@ -130,6 +134,7 @@ impl Car {
             .with_parent_anchor(parent_anchor)
             .with_child_anchor(child_anchor)
         )
+        .insert(Name::new(BACK_WALL))
         .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
@@ -149,6 +154,7 @@ impl Car {
             .with_parent_anchor(parent_anchor)
             .with_child_anchor(child_anchor)
         )
+        .insert(Name::new(LEFT_WALL))
         .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
@@ -168,6 +174,7 @@ impl Car {
             .with_parent_anchor(parent_anchor)
             .with_child_anchor(child_anchor)
         )
+        .insert(Name::new(RIGHT_WALL))
         .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
@@ -191,7 +198,7 @@ impl Car {
             .with_limits(Vec2::new(-FRAC_PI_6, FRAC_PI_6))
         )
         .insert(Mass { val: mass })
-        .insert(RigidBodyName(LEFT_FRONT_WHEEL_TURN.to_owned()))
+        .insert(Name::new(LEFT_FRONT_WHEEL_TURN))
         .id();
 
         // left front wheel
@@ -212,7 +219,7 @@ impl Car {
             .with_axis(KeskoAxis::Y)
         )
         .insert(Mass { val: mass })
-        .insert(RigidBodyName(LEFT_FRONT_WHEEL.to_owned()))
+        .insert(Name::new(LEFT_FRONT_WHEEL.to_owned()))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
         // right front link
@@ -235,7 +242,7 @@ impl Car {
         )
         .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName(RIGHT_FRONT_WHEEL_TURN.to_owned()))
+        .insert(Name::new(RIGHT_FRONT_WHEEL_TURN))
         .id();
 
         // right front wheel
@@ -256,7 +263,7 @@ impl Car {
             .with_axis(KeskoAxis::Y)
         )
         .insert(Mass { val: mass })
-        .insert(RigidBodyName(RIGHT_FRONT_WHEEL.to_owned()))
+        .insert(Name::new(RIGHT_FRONT_WHEEL))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
         // left back wheel
@@ -278,7 +285,7 @@ impl Car {
         )
         .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName(LEFT_REAR_WHEEL.to_owned()));
+        .insert(Name::new(LEFT_REAR_WHEEL));
 
         // right back wheel
         let parent_anchor = Transform::from_translation(Vec3::new(-wbh, 0.0, -half_frame_length))
@@ -300,7 +307,7 @@ impl Car {
         )
         .insert(Mass { val: mass })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName(RIGHT_REAR_WHEEL.to_owned()));
+        .insert(Name::new(RIGHT_REAR_WHEEL));
 
         frame
 
@@ -309,20 +316,20 @@ impl Car {
     fn enable_control_system(
         mut commands: Commands,
         mut selection_event_reader: EventReader<MultibodySelectionEvent>,
-        names: Query<&RigidBodyName>
+        names: Query<&Name>
     ) {
         for event in selection_event_reader.iter() {
             match event {
                 MultibodySelectionEvent::Selected(entity) => {
                     if let Ok(name) = names.get(*entity) {
-                        if name.0 == NAME {
+                        if name.as_str() == NAME {
                             commands.entity(*entity).insert(CarController::default());
                         }
                     }
                 },
                 MultibodySelectionEvent::Deselected(entity) => {
                     if let Ok(name) = names.get(*entity) {
-                        if name.0 == NAME {
+                        if name.as_str() == NAME {
                             commands.entity(*entity).remove::<CarController>();
                         }
                     }

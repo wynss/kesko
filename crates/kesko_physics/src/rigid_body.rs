@@ -24,10 +24,6 @@ pub enum RigidBody {
 #[derive(Component)]
 pub struct CanSleep(pub bool);
 
-// Name of a rigid body
-#[derive(Component, Debug)]
-pub struct RigidBodyName(pub String);
-
 #[derive(Component)]
 pub struct RigidBodyHandle(pub rapier::RigidBodyHandle);
 

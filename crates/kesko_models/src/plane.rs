@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use kesko_physics::{rigid_body::{RigidBody, RigidBodyName}, mass::Mass};
+use kesko_physics::{rigid_body::RigidBody, mass::Mass};
 use kesko_core::{
     bundle::MeshPhysicBodyBundle,
     shape::Shape,
@@ -26,5 +26,5 @@ pub fn spawn(
     ))
     .insert(RayVisible::<GroupStatic>::default())
     .insert(Mass {val: 1000.0})
-    .insert(RigidBodyName(NAME.to_owned()));
+    .insert(Name::new(NAME));
 }
