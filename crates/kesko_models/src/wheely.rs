@@ -3,9 +3,7 @@ use std::f32::consts::{FRAC_PI_2, PI};
 use bevy::prelude::*;
 
 use kesko_physics::{
-    rigid_body::{
-        RigidBody, RigidBodyName
-    }, 
+    rigid_body::RigidBody,
     joint::{
         JointMotorEvent,
         MotorCommand,
@@ -32,13 +30,19 @@ use kesko_core::{
 
 use super::ControlDescription;
 
-
+// entity names
 const NAME: &str = "wheely";
+
 const LEFT_WHEEL: &str = "left_wheel";
 const RIGHT_WHEEL: &str = "right_wheel";
+const REAR_WHEEL_TURN: &str = "rear wheel turn";
+const REAR_WHEEL: &str = "rear wheel x";
+
+const ARM_BASE: &str = "arm_base";
 const ARM_LINK_1: &str = "arm_joint_1";
 const ARM_LINK_2: &str = "arm_joint_2";
 
+// dimensions
 const BODY_RADIUS: f32 = 0.3;
 const BODY_HEIGHT: f32 = 0.3;
 const WHEEL_RADIUS: f32 = 0.20;
@@ -120,7 +124,7 @@ impl Wheely {
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Mass { val: 0.5 })
-        .insert(RigidBodyName(NAME.to_owned()))
+        .insert(Name::new(NAME))
         .insert(ControlDescription("Use following keys\nRight wheel: E-D\tLeft wheel: Q-A\tArm joint 1: R-F\tArm joint 2: T-G".to_owned()))
         .id();
 
@@ -144,7 +148,7 @@ impl Wheely {
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Mass { val: 1.5 })
-        .insert(RigidBodyName(LEFT_WHEEL.to_owned()));
+        .insert(Name::new(LEFT_WHEEL));
 
         // right wheel
         let parent_anchor = Transform::from_translation(Vec3::new(-rh, -hh + wheel_offset, 0.15))
@@ -166,7 +170,7 @@ impl Wheely {
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Mass { val: 1.5 })
-        .insert(RigidBodyName(RIGHT_WHEEL.to_owned()));
+        .insert(Name::new(RIGHT_WHEEL));
         
         // back wheel turn link
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -hh, -rh));
@@ -185,7 +189,7 @@ impl Wheely {
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Mass { val: 0.5 })
-        .insert(RigidBodyName("back_wheel_turn".to_owned()))
+        .insert(Name::new(REAR_WHEEL_TURN))
         .id();
         
         // back wheel
@@ -207,7 +211,7 @@ impl Wheely {
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Mass{ val: 0.2 })
-        .insert(RigidBodyName("back_wheel".to_owned()));
+        .insert(Name::new(REAR_WHEEL));
 
         Self::build_arm(body, commands, material, transform, meshes);
 
@@ -238,7 +242,7 @@ impl Wheely {
         )
         .insert(Mass { val: 0.1 })
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(RigidBodyName("arm_base".to_owned())).id();
+        .insert(Name::new(ARM_BASE)).id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.25, -0.015));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.25, 0.015));
@@ -260,7 +264,7 @@ impl Wheely {
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Mass { val: 0.1 })
-        .insert(RigidBodyName(ARM_LINK_1.to_owned()))
+        .insert(Name::new(ARM_LINK_1))
         .id();
         
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.25, -0.015));
@@ -283,27 +287,27 @@ impl Wheely {
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Mass { val: 0.1 })
-        .insert(RigidBodyName(ARM_LINK_2.to_owned()));
+        .insert(Name::new(ARM_LINK_2));
 
     }
 
     fn enable_control_system(
         mut commands: Commands,
         mut selection_event_reader: EventReader<MultibodySelectionEvent>,
-        names: Query<&RigidBodyName>
+        names: Query<&Name>
     ) {
         for event in selection_event_reader.iter() {
             match event {
                 MultibodySelectionEvent::Selected(entity) => {
                     if let Ok(name) = names.get(*entity) {
-                        if name.0 == NAME {
+                        if name.as_str() == NAME {
                             commands.entity(*entity).insert(WheelyController::default());
                         }
                     }
                 },
                 MultibodySelectionEvent::Deselected(entity) => {
                     if let Ok(name) = names.get(*entity) {
-                        if name.0 == NAME {
+                        if name.as_str() == NAME {
                             commands.entity(*entity).remove::<WheelyController>();
                         }
                     }

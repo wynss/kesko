@@ -9,8 +9,7 @@ use serde::{
 use crate::{
     rigid_body::{
         RigidBodyHandle, 
-        BodyHandle2Entity, 
-        RigidBodyName, 
+        BodyHandle2Entity,
         Entity2BodyHandle
     }, 
     conversions::IntoBevy,
@@ -65,7 +64,7 @@ pub(crate) fn add_multibodies(
     multibody_joint_set: Res<rapier::MultibodyJointSet>,
     body_2_entity: Res<BodyHandle2Entity>,
     rigid_body_query: Query<
-        (Entity, &RigidBodyHandle, Option<&RigidBodyName>), 
+        (Entity, &RigidBodyHandle, Option<&Name>), 
         (With<RigidBodyHandle>, Without<MultibodyChild>, Without<MultibodyRoot>)
     >
 ) {
@@ -94,7 +93,7 @@ pub(crate) fn add_multibodies(
                     match rigid_body_query.get(*link_entity) {
                         Ok((_, _, name)) => {
                             if let Some(name) = name {
-                                joints.insert(name.0.clone(), *link_entity);
+                                joints.insert(name.to_string(), *link_entity);
                             } else {
                                 joints.insert(link_entity.id().to_string(), *link_entity);
                             }
@@ -104,7 +103,7 @@ pub(crate) fn add_multibodies(
                 }
 
                 let mut name = if let Some(body_name) = body_name {
-                    body_name.0.clone()
+                    body_name.to_string()
                 } else {
                     // if we don't have a name use the entity id
                     entity.id().to_string()
@@ -197,7 +196,7 @@ mod tests {
             .spawn()
             .insert_bundle(TransformBundle::default())
             .insert(rigid_body::RigidBody::Dynamic)
-            .insert(rigid_body::RigidBodyName("Root".to_owned()))
+            .insert(Name::new("Root".to_owned()))
             .id();
 
         // attach a child

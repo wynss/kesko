@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use kesko_physics::{
-    rigid_body::{RigidBody, RigidBodyName},
+    rigid_body::RigidBody,
     joint::{
         spherical::SphericalJoint
     }, mass::Mass
@@ -38,7 +38,7 @@ impl Snake {
         ))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Mass{ val: 0.2 })
-        .insert(RigidBodyName("snake".to_owned()))
+        .insert(Name::new("snake"))
         .id();
 
         for i in 1..4 {
@@ -61,7 +61,7 @@ impl Snake {
             )
             .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
             .insert(Mass{ val: 0.2 })
-            .insert(RigidBodyName(format!("joint {i}")))
+            .insert(Name::new(format!("joint {i}")))
             .id();
             
             root = child;

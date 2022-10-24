@@ -3,10 +3,7 @@ use std::f32::consts::FRAC_PI_4;
 use bevy::prelude::*;
 
 use kesko_physics::{
-    rigid_body::{
-        RigidBody, 
-        RigidBodyName
-    },
+    rigid_body::RigidBody, 
     joint::{
         KeskoAxis,
         revolute::RevoluteJoint
@@ -21,6 +18,20 @@ use kesko_core::{
     transform::world_transform_from_joint_anchors,
     interaction::groups::GroupDynamic
 };
+
+
+// entity names
+const NAME: &str = "spider";
+
+const LEFT_FRONT_X: &str = "left front leg x";
+const LEFT_FRONT_Z: &str = "left front leg z";
+const RIGHT_FRONT_X: &str = "right front leg x";
+const RIGHT_FRONT_Z: &str = "right front leg z";
+const LEFT_REAR_X: &str = "left rear leg x";
+const LEFT_REAR_Z: &str = "left rear leg z";
+const RIGHT_REAR_X: &str = "right rear leg x";
+const RIGHT_REAR_Z: &str = "right rear leg z";
+
 
 pub fn spawn(
     commands: &mut Commands,
@@ -56,7 +67,7 @@ pub fn spawn(
     ))
     .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
     .insert(Mass{ val: mass_body})
-    .insert(RigidBodyName("spider".to_owned()))
+    .insert(Name::new(NAME))
     .insert(GenerateCollisionEvents)
     .id();
 
@@ -81,7 +92,7 @@ pub fn spawn(
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
     )
     .insert(Mass{ val: mass_leg})
-    .insert(RigidBodyName("left_front_x".to_owned()))
+    .insert(Name::new(LEFT_FRONT_X))
     .id();
 
     // left front leg z
@@ -103,7 +114,7 @@ pub fn spawn(
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
     )
     .insert(Mass{ val: mass_leg})
-    .insert(RigidBodyName("left_front_z".to_owned()));
+    .insert(Name::new(LEFT_FRONT_Z));
 
     // right front leg x
     let parent_anchor = Transform::from_translation((dist_x) * Vec3::new(-1.0, 0.0, 1.0).normalize())
@@ -126,7 +137,7 @@ pub fn spawn(
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
     )
     .insert(Mass{ val: mass_leg})
-    .insert(RigidBodyName("right_front_x".to_owned()))
+    .insert(Name::new(RIGHT_FRONT_X))
     .id();
 
     // right front leg z
@@ -148,7 +159,7 @@ pub fn spawn(
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
     )
     .insert(Mass{ val: mass_leg})
-    .insert(RigidBodyName("right_front_z".to_owned()));
+    .insert(Name::new(RIGHT_FRONT_Z));
 
     // left rear leg x
     let parent_anchor = Transform::from_translation((dist_x) * Vec3::new(1.0, 0.0, -1.0).normalize())
@@ -171,7 +182,7 @@ pub fn spawn(
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
     )
     .insert(Mass{ val: mass_leg})
-    .insert(RigidBodyName("left_rear_x".to_owned()))
+    .insert(Name::new(LEFT_REAR_X))
     .id();
 
     // left rear leg z
@@ -193,7 +204,7 @@ pub fn spawn(
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
     )
     .insert(Mass{ val: mass_leg})
-    .insert(RigidBodyName("left_rear_z".to_owned()));
+    .insert(Name::new(LEFT_REAR_Z));
 
     // right rear leg x
     let parent_anchor = Transform::from_translation((dist_x) * Vec3::new(-1.0, 0.0, -1.0).normalize())
@@ -216,7 +227,7 @@ pub fn spawn(
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
     )
     .insert(Mass{ val: mass_leg})
-    .insert(RigidBodyName("right_rear_x".to_owned()))
+    .insert(Name::new(RIGHT_REAR_X))
     .id();
 
     // right rear leg z
@@ -238,5 +249,5 @@ pub fn spawn(
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
     )
     .insert(Mass{ val: mass_leg})
-    .insert(RigidBodyName("right_rear_z".to_owned()));
+    .insert(Name::new(RIGHT_REAR_Z));
 }

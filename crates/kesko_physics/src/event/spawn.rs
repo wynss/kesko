@@ -3,13 +3,13 @@ use bevy::prelude::*;
 use crate::{
     event::PhysicResponseEvent,
     multibody::MultibodyRoot, 
-    rigid_body::{RigidBody, RigidBodyName}
+    rigid_body::RigidBody
 };
 
 
 pub(crate) fn send_spawned_events(
     mut event_writer: EventWriter<PhysicResponseEvent>,
-    bodies: Query<(Entity, &RigidBodyName, Option<&MultibodyRoot>), Added<RigidBody>>
+    bodies: Query<(Entity, &Name, Option<&MultibodyRoot>), Added<RigidBody>>
 ) {
 
     for (entity, name, root) in bodies.iter() {
@@ -24,7 +24,7 @@ pub(crate) fn send_spawned_events(
         } else {
             event_writer.send(PhysicResponseEvent::RigidBodySpawned{ 
                 id: entity,
-                name: name.0.clone() 
+                name: name.to_string()
             })
         }
     }
