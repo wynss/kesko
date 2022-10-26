@@ -1,12 +1,13 @@
 import logging
+from enum import Enum, auto
 import subprocess
-from typing import Any, Optional
+from typing import Any, Optional, Union
 import json
 
 import numpy as np
 import torch
 
-from .config import KESKO_BIN_PATH, URL
+from .config import KESKO_HEADLESS_BIN_PATH, URL, KESKO_BIN_PATH
 from .protocol.request import KeskoRequest
 from .protocol.communicator import Communicator
 from .protocol.commands import ApplyControl, Despawn, DespawnAll, GetState, Shutdown
@@ -23,12 +24,9 @@ logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s", level=loggi
 logger = logging.getLogger(__name__)
 
 
-class Multibody:
-    def __init__(self, id: int, name: str, joints: list[str]):
-        self.id = id
-        self.name = name
-        self.joints = joints
-
+class KeskoMode(Enum):
+    HEADLESS = auto()
+    RENDER = auto()
 
 class Kesko:
     def __init__(self) -> None:
@@ -37,8 +35,12 @@ class Kesko:
         # holds the bodies and there joints
         self.bodies: dict[str, MultibodySpawned] = {}
 
-    def initialize(self):
-        subprocess.Popen(KESKO_BIN_PATH)
+    def initialize(self, mode: KeskoMode):
+
+        if mode == KeskoMode.HEADLESS:
+            subprocess.Popen(KESKO_HEADLESS_BIN_PATH)
+        elif mode == KeskoMode.RENDER:
+            subprocess.Popen(KESKO_BIN_PATH)
 
     def send(self, actions: Any) -> KeskoResponse:
 
@@ -61,7 +63,7 @@ class Kesko:
         response_objects = self._parse_response(json_response)
         return response_objects
 
-    def step(self, actions: Optional[list] = None) -> KeskoResponse:
+    def step(self, actions: Optional[Union[list, Any]] = None) -> KeskoResponse:
 
         if actions is not None:
             if not isinstance(actions, list):

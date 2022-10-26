@@ -15,15 +15,13 @@ use kesko_diagnostic::event::log_collision_events;
 
 
 fn main() {
-
     App::new()
-    .add_plugins(HeadlessRenderPlugins)
+    .add_plugins(HeadlessRenderPlugins::default())
     .add_plugin(LogDiagnosticsPlugin::default())
     .add_plugin(FrameTimeDiagnosticsPlugin::default())
     .add_startup_system(setup)
     .add_system(log_collision_events)
     .run();
-
 }
 
 

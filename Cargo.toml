@@ -25,6 +25,9 @@ src = "src/main.rs"
 name = "kesko_tcp"
 
 [[bin]]
+name = "kesko_tcp_headless"
+
+[[bin]]
 name = "kesko_demo"
 
 # Enable a small amount of optimization in debug mode
