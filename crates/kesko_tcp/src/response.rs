@@ -1,4 +1,4 @@
-use std::net::TcpStream;
+use std::net::{TcpStream, Shutdown, TcpListener};
 use std::io::Write;
 
 use bevy::prelude::*;
@@ -11,12 +11,14 @@ use kesko_physics::event::{
 
 
 pub(crate) fn handle_responses(
+    mut commands: Commands,
     mut tcp_stream: ResMut<TcpStream>,
     mut response_events:  EventReader<SystemResponseEvent>,
     mut physic_events:  EventReader<PhysicResponseEvent>,
     mut collision_events:  EventReader<CollisionEvent>
 ) {
 
+    let mut should_shutdown = false;
     let mut responses: Vec<serde_traitobject::Box<dyn serde_traitobject::Any>> = Vec::new();
 
     for event in physic_events.iter() {
@@ -28,6 +30,10 @@ pub(crate) fn handle_responses(
     }
 
     for event in response_events.iter() {
+        match event {
+            SystemResponseEvent::WillExitApp => should_shutdown = true,
+            _ => ()
+        }
         responses.push(serde_traitobject::Box::new(event.clone()));
     }
 
@@ -47,5 +53,11 @@ pub(crate) fn handle_responses(
             },
             Err(e) => error!("{:?}", e)
         }
+    }
+
+    if should_shutdown {
+        info!("Shuting down TCP");
+        tcp_stream.shutdown(Shutdown::Both).expect("tcp stream shutdown failed");
+        commands.remove_resource::<TcpListener>();
     }
 }
