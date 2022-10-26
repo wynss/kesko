@@ -4,7 +4,7 @@ import torch
 import gym
 import numpy as np
 
-from ..kesko import Kesko
+from ..kesko import Kesko, KeskoMode
 from ..protocol.commands import (
     DespawnAll,
     GetState,
@@ -19,19 +19,26 @@ from ..model import KeskoModel
 
 
 class SpiderEnv(gym.Env):
+    metadata = {"render_modes": ["human", "rgb_array"]}
+
     def __init__(
         self,
         max_steps: Optional[int] = None,
         device: Optional[Union[str, torch.device]] = None,
+        render_mode: Optional[str] = None
     ):
 
         self.device = device if device is not None else torch.device("cpu")
         self.max_steps = max_steps
+        
+        assert render_mode is None or render_mode in self.metadata["render_modes"]
+        self.render_mode = render_mode
+
         self.step_count = 0
         self.prev_position: Optional[torch.Tensor] = None
 
         self._kesko = Kesko()
-        self._kesko.initialize()
+        self._kesko.initialize(mode=KeskoMode.RENDER if self.render_mode == "human" else KeskoMode.HEADLESS)
 
     def _setup(self):
 

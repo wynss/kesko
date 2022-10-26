@@ -24,7 +24,7 @@ use bevy::{
 };
 use crate::{
     interaction::{
-        groups::GroupStatic,
+        groups::{GroupDynamic, GroupStatic},
         vertical_marker::{
             update_vertical_marker_pos_system,
             handle_vertical_marker_spawning
@@ -33,13 +33,13 @@ use crate::{
             multibody_selection_system, 
             MultibodySelectionEvent
         }
-    }
+    },
+    cursor_tracking::GrabablePlugin
 };
 
 
 #[derive(Default)]
 pub struct CorePlugin;
-
 impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
@@ -57,6 +57,8 @@ impl Plugin for CorePlugin {
             .insert_resource(LogSettings { level: Level::INFO, ..default()})
             
             .add_plugins(DefaultPlugins)
+            
+            .add_plugin(GrabablePlugin::<GroupDynamic>::default())
 
             // vertical marker systems
             .add_system(handle_vertical_marker_spawning::<GroupStatic>)
@@ -82,6 +84,29 @@ impl Plugin for CorePlugin {
     }
 }
 
+pub struct CoreHeadlessPlugin;
+impl Plugin for CoreHeadlessPlugin {
+    fn build(&self, app: &mut App) {
+        app.insert_resource(LogSettings { level: Level::INFO, ..default()})
+
+            // bevy plugins
+            .add_plugins_with(DefaultPlugins, |group| group.disable::<bevy::winit::WinitPlugin>())
+
+            .set_runner(headless_runner)
+
+            // simulator system events
+            .add_event::<event::SystemRequestEvent>()
+            .add_event::<event::SystemResponseEvent>()
+            .add_system_set_to_stage(
+                CoreStage::Last,
+                SystemSet::new()
+                    .with_system(event::handle_system_events)
+                    .with_system(event::handle_serializable_state_request)
+                    .with_system(event::handle_motor_command_requests)
+            );
+    }
+}
+
 pub fn change_physic_state_on_space(
     mut keys: ResMut<Input<KeyCode>>,
     mut event_writer: EventWriter<PhysicRequestEvent>
@@ -89,5 +114,11 @@ pub fn change_physic_state_on_space(
     if keys.just_pressed(KeyCode::Space) {
         event_writer.send(PhysicRequestEvent::TogglePhysics);
         keys.reset(KeyCode::Space);
+    }
+}
+
+fn headless_runner(mut app: App) {
+    loop {
+        app.update();
     }
 }

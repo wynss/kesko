@@ -20,7 +20,7 @@ use gravity::Gravity;
 
 
 /// State to control the physics system
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum PhysicState {
     Running,
     Stopped

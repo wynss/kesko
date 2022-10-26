@@ -1,6 +1,7 @@
 from typing import Union
 
 import torch
+import numpy as np
 
 from ..model import KeskoModel
 from ..color import Rgba, Color
@@ -81,7 +82,7 @@ class GetState:
 
 
 class ApplyControl:
-    def __init__(self, name: str, values: Union[dict[str, float], torch.Tensor]):
+    def __init__(self, name: str, values: Union[dict[str, float], torch.Tensor, np.ndarray]):
         self.name = name
         self.values = values
 

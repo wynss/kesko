@@ -34,7 +34,7 @@ where T: Component + Default
 }
 
 /// Component that will keep track of quantities of object cursor tracking. The object tracking the cursor
-/// will move on the plane perpendiculuar to the camera direction
+/// will move on the plane perpendicular to the camera direction
 #[derive(Component)]
 pub(crate) struct CursorTrack {
     /// Point on the plane where the object will move

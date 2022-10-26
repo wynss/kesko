@@ -7,9 +7,6 @@ pub(crate) mod about;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext, EguiPlugin};
 
-use kesko_models::SpawnEvent;
-
-
 #[derive(SystemLabel, Debug, PartialEq, Eq, Clone, Hash)]
 enum UISystems {
    MainMenu 
@@ -33,8 +30,7 @@ impl Plugin for UIPlugin {
             .add_event::<about::AboutEvent>()
             .add_system(about::AboutComponent::update_system)
 
-            // spawn component
-            .add_event::<SpawnEvent>()
+            // spawn model component
             .add_system(spawn_component::SpawnComponent::update_system.after(UISystems::MainMenu))
             .add_system(spawn_component::SpawnComponent::show_and_send_system)
 
