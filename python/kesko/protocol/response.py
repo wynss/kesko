@@ -30,6 +30,7 @@ class JointState(BaseModel):
     type: str
     axis: str
     angle: float
+    angular_velocity: float
 
 
 class MultibodyStates(BaseModel):
