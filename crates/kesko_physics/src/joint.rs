@@ -70,10 +70,12 @@ pub enum JointState {
     Revolute { 
         axis: KeskoAxis,
         angle: rapier::Real,
+        angular_velocity: rapier::Real
     },
     Prismatic {
         axis: KeskoAxis,
-        position: rapier::Real
+        position: rapier::Real,
+        velocity: rapier::Real
     }
 }
 
@@ -151,9 +153,8 @@ pub(crate) fn add_multibody_joints(
 }
 
 /// System that updates the joints positions and velocities
-/// 
-/// TODO: Add velocity
 pub(crate) fn update_joint_pos_system(
+    physics_params: Res<rapier::IntegrationParameters>,
     multibody_joint_set: Res<rapier::MultibodyJointSet>,
     mut revolute_joints: Query<(&mut RevoluteJoint, &MultibodyJointHandle), (With<MultibodyJointHandle>, With<RevoluteJoint>)>,
     mut prismatic_joints: Query<(&mut PrismaticJoint, &MultibodyJointHandle), (With<MultibodyJointHandle>, With<PrismaticJoint>)>,
@@ -163,7 +164,7 @@ pub(crate) fn update_joint_pos_system(
             if let Some(link) = mb.link(link_index) {
                 // we have the joint transformation in the parent frame
                 let (_, rot) = link.joint().body_to_parent().into_bevy();
-                joint.update_rotation(rot);
+                joint.update_rotation_angvel(rot, physics_params.dt);
             }
         }
     }
@@ -172,7 +173,7 @@ pub(crate) fn update_joint_pos_system(
             if let Some(link) = mb.link(link_index) {
                 // we have the joint transformation in the parent frame
                 let (translation, _) = link.joint().body_to_parent().into_bevy();
-                joint.update_position(translation);
+                joint.update_position_vel(translation, physics_params.dt);
             }
         }
     }

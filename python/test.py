@@ -3,7 +3,7 @@ import gym
 
 if __name__ == "__main__":
 
-    env = gym.make("kesko:kesko/Spider-v0", max_steps=1000)
+    env = gym.make("kesko:kesko/Spider-v0", max_steps=1000, render_mode="human")
     env.reset()
     for i in range(1_000):
         observation, reward, done, info = env.step(action=env.action_space.sample())

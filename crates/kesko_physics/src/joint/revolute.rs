@@ -17,7 +17,8 @@ pub struct RevoluteJoint {
     pub stiffness: rapier::Real,
     pub max_motor_force: rapier::Real,
 
-    rotation: rapier::Real
+    rotation: rapier::Real,
+    angvel: rapier::Real
 }
 
 impl RevoluteJoint {
@@ -31,7 +32,8 @@ impl RevoluteJoint {
             damping: 0.0,
             stiffness: 0.0,
             max_motor_force: rapier::Real::MAX,
-            rotation: 0.0
+            rotation: 0.0,
+            angvel: 0.0
         }
     }
 
@@ -66,7 +68,8 @@ impl RevoluteJoint {
         self
     }
 
-    pub fn update_rotation(&mut self, rot: Quat) {
+    pub fn update_rotation_angvel(&mut self, rot: Quat, dt: rapier::Real) {
+        let prev_rot = self.rotation;
         // convert to local orientation by multiplying by the inverse of anchor's rotation
         let rotation = (self.parent_anchor.rotation.inverse() * self.child_anchor.rotation.inverse() * rot).to_euler(EulerRot::XYZ);
         match self.axis {
@@ -78,6 +81,8 @@ impl RevoluteJoint {
             KeskoAxis::NegZ => self.rotation = -rotation.2 as rapier::Real,
             _ => error!("Revolute joint does not have a valid axis")
         }
+
+        self.angvel = (self.rotation - prev_rot) / dt;
     }
 
     pub fn rotation(&self) -> rapier::Real {
@@ -87,7 +92,8 @@ impl RevoluteJoint {
     pub fn state(&self) -> JointState {
         JointState::Revolute {
             axis: self.axis,
-            angle: self.rotation
+            angle: self.rotation,
+            angular_velocity: self.angvel
         }
     }
 }

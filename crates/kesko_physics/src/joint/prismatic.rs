@@ -16,7 +16,8 @@ pub struct PrismaticJoint {
     pub damping: rapier::Real,
     pub max_motor_force: rapier::Real,
 
-    position: rapier::Real
+    position: rapier::Real,
+    velocity: rapier::Real
 }
 
 impl PrismaticJoint {
@@ -31,7 +32,8 @@ impl PrismaticJoint {
             stiffness: 0.0,
             max_motor_force: rapier::Real::MAX,
 
-            position: 0.0
+            position: 0.0,
+            velocity: 0.0
         }
     }
 
@@ -66,7 +68,10 @@ impl PrismaticJoint {
         self
     }
 
-    pub fn update_position(&mut self, translation: Vec3) {
+    pub fn update_position_vel(&mut self, translation: Vec3, dt: rapier::Real) {
+
+        let prev_pos = self.position;
+
         match self.axis {
             KeskoAxis::X => self.position = translation.x as rapier::Real,
             KeskoAxis::NegX => self.position = -translation.x as rapier::Real,
@@ -76,6 +81,8 @@ impl PrismaticJoint {
             KeskoAxis::NegZ => self.position = -translation.z as rapier::Real,
             _ => error!("Prismatic joint does not have a valid axis")
         }
+
+        self.velocity = (self.position - prev_pos) / dt;
     }
 
     pub fn position(&self) -> rapier::Real {
@@ -83,7 +90,11 @@ impl PrismaticJoint {
     }
 
     pub fn state(&self) -> JointState {
-        JointState::Prismatic { axis: self.axis, position: self.position }
+        JointState::Prismatic { 
+            axis: self.axis, 
+            position: self.position,
+            velocity: self.velocity
+        }
     }
 }
 
