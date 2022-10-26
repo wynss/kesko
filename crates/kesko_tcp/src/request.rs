@@ -117,7 +117,10 @@ pub(crate) fn handle_requests(
                             }
                         }
                     }
-                    Err(e) => error!("{}", e)
+                    Err(_) => {
+                        got_msg = false;
+                        // error!("{}", e)
+                    }
                 }
             },
             Err(e) => {

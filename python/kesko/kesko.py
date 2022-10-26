@@ -127,6 +127,9 @@ class Kesko:
     def close(self):
         # send close command to Nora
         try:
-            return self.send(Shutdown)
+            resp = self.send(Shutdown)
+            self.com.sess.close()
+            logger.info("Closing down...")
+            return resp
         except Exception as e:
             logging.error(e)
