@@ -43,11 +43,11 @@ bevy = { version = "0.8.1", default-features = false, features = ["render", "bev
 
 [dependencies]
 bevy = { version = "0.8.1", default-features = false, features = ["render", "bevy_winit", "bevy_scene", "x11"] }
-kesko_physics = { version = "0.1.0", path = "crates/kesko_physics", features = ["f32"]}
+kesko_physics = { version = "0.1.0", path = "crates/kesko_physics", features = ["f32"] }
 kesko_core = { version = "0.1.0", path = "crates/kesko_core" }
-kesko_object_interaction = { version = "0.1.0", path = "crates/kesko_object_interaction"}
-kesko_raycast = { version = "0.1.0", path = "crates/kesko_raycast"}
-kesko_models = { version = "0.1.0", path = "crates/kesko_models"}
-kesko_plugins = { version = "0.1.0", path="crates/kesko_plugins"}
-kesko_diagnostic = { version = "0.1.0", path="crates/kesko_diagnostic"}
-kesko_tcp = { version = "0.1.0", path = "crates/kesko_tcp"}
+kesko_object_interaction = { version = "0.1.0", path = "crates/kesko_object_interaction" }
+kesko_raycast = { version = "0.1.0", path = "crates/kesko_raycast" }
+kesko_models = { version = "0.1.0", path = "crates/kesko_models" }
+kesko_plugins = { version = "0.1.0", path="crates/kesko_plugins" }
+kesko_diagnostic = { version = "0.1.0", path="crates/kesko_diagnostic" }
+kesko_tcp = { version = "0.1.0", path = "crates/kesko_tcp" }
