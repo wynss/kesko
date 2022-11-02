@@ -6,8 +6,7 @@ use kesko_physics::{
     rigid_body::RigidBody,
     joint::{
         KeskoAxis,
-        revolute::RevoluteJoint, 
-        fixed::FixedJoint
+        revolute::RevoluteJoint
     }, 
     mass::Mass,
     rapier_extern::rapier::prelude as rapier
@@ -29,8 +28,9 @@ use super::Model;
 // no gravity, seems like a bug in Rapier. For now use the same mass for all bodies
 const MASS: rapier::Real = 0.1;
 
-const STIFFNESS: rapier::Real = 2.0;
-const DAMPING: rapier::Real = 0.3;
+const STIFFNESS: rapier::Real = 1.0;
+const DAMPING: rapier::Real = 0.2;
+const MAX_MOTOR_FORCE: rapier::Real = 20.0;
 
 const HEAD_RADIUS: f32 = 0.13;
 const NECK_LENGTH: f32 = 0.13;
@@ -125,6 +125,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::X)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -147,6 +148,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::Y)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -171,6 +173,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::Z)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_6, FRAC_PI_6))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -203,9 +206,13 @@ impl Humanoid {
             meshes
         ))
         .insert(
-            FixedJoint::attach_to(shoulder)
+            RevoluteJoint::attach_to(shoulder)
                 .with_parent_anchor(parent_anchor)
                 .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::Y)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
+                .with_limits(Vec2::new(-FRAC_PI_6, FRAC_PI_6))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Name::new(TORSO_1))
@@ -223,9 +230,13 @@ impl Humanoid {
             meshes
         ))
         .insert(
-            FixedJoint::attach_to(body_1)
+            RevoluteJoint::attach_to(body_1)
                 .with_parent_anchor(parent_anchor)
                 .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::Y)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
+                .with_limits(Vec2::new(-FRAC_PI_6, FRAC_PI_6))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Name::new(TORSO_2))
@@ -243,9 +254,13 @@ impl Humanoid {
             meshes
         ))
         .insert(
-            FixedJoint::attach_to(body_2)
+            RevoluteJoint::attach_to(body_2)
                 .with_parent_anchor(parent_anchor)
                 .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::Y)
+                .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
+                .with_limits(Vec2::new(-FRAC_PI_6, FRAC_PI_6))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
         .insert(Name::new(TORSO_3))
@@ -284,6 +299,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::Z)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_6, PI))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -307,6 +323,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::X)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -330,6 +347,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::X)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_2, 0.0))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -353,6 +371,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::Z)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-PI, FRAC_PI_6))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -376,6 +395,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::X)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -399,6 +419,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::X)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_2, 0.0))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -435,6 +456,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::Z)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -458,6 +480,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::X)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -481,6 +504,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::X)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(0.0, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -504,6 +528,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::X)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(0.0, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -527,6 +552,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::Z)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -550,6 +576,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::X)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_2, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -573,6 +600,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::X)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(-FRAC_PI_2, 0.0))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
@@ -596,6 +624,7 @@ impl Humanoid {
                 .with_child_anchor(child_anchor)
                 .with_axis(KeskoAxis::X)
                 .with_motor_params(STIFFNESS, DAMPING)
+                .with_max_motor_force(MAX_MOTOR_FORCE)
                 .with_limits(Vec2::new(0.0, FRAC_PI_2))
         )
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
