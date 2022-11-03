@@ -15,22 +15,32 @@ class CollisionStopped(BaseModel):
     flag: dict[str, int]
 
 
-class MultibodySpawned(BaseModel):
-    id: int
+class JointInfo(BaseModel):
     name: str
-    links: dict[str, int]
-
-
-class RigidBodySpawned(BaseModel):
-    id: int
-    name: str
-
+    type: str
+    axis: str
+    limits: list
+    damping: float
+    stiffness: float
+    max_motor_force: float
+    
 
 class JointState(BaseModel):
     type: str
     axis: str
     angle: float
     angular_velocity: float
+
+
+class MultibodySpawned(BaseModel):
+    id: int
+    name: str
+    joints: dict[int, JointInfo]
+
+
+class RigidBodySpawned(BaseModel):
+    id: int
+    name: str
 
 
 class MultibodyStates(BaseModel):

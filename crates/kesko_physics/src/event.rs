@@ -15,7 +15,8 @@ use crate::{
         Entity2BodyHandle, 
         RigidBodyHandle
     },
-    multibody::MultibodyRoot
+    multibody::MultibodyRoot,
+    joint::JointInfo
 };
 
 
@@ -34,9 +35,10 @@ pub enum PhysicResponseEvent {
     DespawnedBody(u64),
     DespawnedAllBodies,
     MultibodySpawned {
-        id: Entity,
+        id: u64,
+        entity: Entity,
         name: String,
-        links: BTreeMap<String, Entity>
+        joints: BTreeMap<u64, JointInfo>
     },
     RigidBodySpawned {
         id: Entity,
