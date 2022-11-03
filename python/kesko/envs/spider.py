@@ -16,6 +16,7 @@ from ..protocol.commands import (
 from ..protocol.response import KeskoResponse, MultibodyStates
 from ..color import Color
 from ..model import KeskoModel
+from ..utils import action_space_from_limits
 
 
 class SpiderEnv(gym.Env):
@@ -39,6 +40,7 @@ class SpiderEnv(gym.Env):
 
         self._kesko = Kesko()
         self._kesko.initialize(mode=KeskoMode.RENDER if self.render_mode == "human" else KeskoMode.HEADLESS)
+        self._setup()
 
     def _setup(self):
 
@@ -70,16 +72,8 @@ class SpiderEnv(gym.Env):
         # start physics
         self._kesko.send(RunPhysics)
 
-        # TODO: Send the limits from Kesko
-        low = -np.pi / 6.0
-        high = np.pi / 6.0
-
         # Define spaces
-        dim_actions_space = len(self.spider_body.links)
-        self.action_space = gym.spaces.Box(
-            low=low * np.ones((dim_actions_space,)),
-            high=high * np.zeros((dim_actions_space,)),
-        )
+        self.action_space = action_space_from_limits([joint.limits for joint in self.spider_body.joints.values()])
         self.observation_space = gym.spaces.Space(tensor_state.shape)
 
         return tensor_state

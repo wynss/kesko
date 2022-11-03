@@ -18,7 +18,6 @@ use self::revolute::RevoluteJoint;
 pub type Entity2JointHandle = FnvHashMap<Entity, rapier::MultibodyJointHandle>;
 
 
-
 /// trait for converting an axis into a unit vector
 pub(crate) trait AxisIntoVec {
     fn into_unitvec(self) -> rapier::UnitVector<rapier::Real>;
@@ -61,6 +60,29 @@ pub enum KeskoAxis {
     AngX,
     AngY,
     AngZ
+}
+
+/// used to send joint info outside Kesko
+/// TODO: This is a bit redundant when spherical joints is not available
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "lowercase", tag = "type")]
+pub enum JointInfo {
+    Revolute { 
+        name: String,
+        axis: KeskoAxis,
+        limits: Option<Vec2>,
+        damping: rapier::Real,
+        stiffness: rapier::Real,
+        max_motor_force: rapier::Real
+    },
+    Prismatic {
+        name: String,
+        axis: KeskoAxis,
+        limits: Option<Vec2>,
+        damping: rapier::Real,
+        stiffness: rapier::Real,
+        max_motor_force: rapier::Real
+    }
 }
 
 /// used to send joint state outside Kesko

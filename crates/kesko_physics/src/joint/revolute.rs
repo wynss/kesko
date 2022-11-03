@@ -1,8 +1,7 @@
 use bevy::prelude::*;
+
 use crate::rapier_extern::rapier::prelude as rapier;
-
 use crate::conversions::IntoRapier;
-
 use super::{AxisIntoVec, KeskoAxis, JointState};
 
 
