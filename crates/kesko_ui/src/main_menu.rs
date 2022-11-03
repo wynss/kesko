@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
+use kesko_physics::event::PhysicRequestEvent;
 
 use super::{
     fps_component::FPSComponentEvent,
@@ -28,6 +29,7 @@ impl MainMenuComponent {
         mut egui_context: ResMut<EguiContext>,
         mut about_event_writer: EventWriter<AboutEvent>,
         mut spawn_event_writer: EventWriter<SpawnEvent>,
+        mut physics_event_writer: EventWriter<PhysicRequestEvent>,
         mut fps_event_writer: EventWriter<FPSComponentEvent>,
         mut comp: Query<&mut Self>
     ) {
@@ -35,6 +37,7 @@ impl MainMenuComponent {
             egui_context.ctx_mut(), 
             &mut about_event_writer,
             &mut spawn_event_writer, 
+            &mut physics_event_writer,
             &mut fps_event_writer
         );
     }
@@ -42,7 +45,8 @@ impl MainMenuComponent {
     fn show_and_send_system(&mut self, 
         ctx: &egui::Context, 
         about_event_writer: &mut EventWriter<AboutEvent>,
-        spawn_event_writer:&mut EventWriter<SpawnEvent>, 
+        spawn_event_writer: &mut EventWriter<SpawnEvent>, 
+        physics_event_writer: &mut EventWriter<PhysicRequestEvent>,
         fps_event_writer: &mut EventWriter<FPSComponentEvent>
     ) {
 
@@ -70,6 +74,10 @@ impl MainMenuComponent {
                         if ui.button("Model").clicked() {
                             spawn_event_writer.send(SpawnEvent::OpenWindow);
                             ui.close_menu();
+                        };
+                        ui.separator();
+                        if ui.button("Despawn All").clicked() {
+                            physics_event_writer.send(PhysicRequestEvent::DespawnAll);
                         };
                     });
 
