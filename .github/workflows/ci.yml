@@ -24,7 +24,7 @@ jobs:
     - name: Install latest Rust nightly
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: nightly
+        toolchain: nightly-2022-11-05
         override: true
         components: rustfmt, clippy
     - name: Build
