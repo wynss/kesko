@@ -1,4 +1,3 @@
-from multiprocessing import cpu_count
 from datetime import datetime
 
 import gym
@@ -8,7 +7,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.utils import set_random_seed
 
-ENV = "Humanoid-v0"
+ENV = "Spider-v0"
 FULL_ENV = f"kesko:kesko/{ENV}"
 MODEL_CLASS = PPO
 MODEL_NAME = f"{ENV}_{MODEL_CLASS.__name__}"
@@ -52,7 +51,7 @@ if __name__ == "__main__":
 
     checkpoint_callback = CheckpointCallback(
         save_freq=max(100_000 // num_envs, 1),
-        save_path=f"./model_checkpoints/{MODEL_NAME}_{datetime.now()}",
+        save_path=f"./ml/model_checkpoints/{MODEL_NAME}_{datetime.now()}",
         name_prefix=MODEL_NAME,
     )
 
@@ -63,7 +62,7 @@ if __name__ == "__main__":
     model = PPO(
         "MlpPolicy",
         env,
-        tensorboard_log=f"./tb_logs/{MODEL_NAME}_tb/",
+        tensorboard_log=f"./ml/tb_logs/{MODEL_NAME}_tb/",
         n_steps=N_STEPS,
         n_epochs=N_EPOCHS,
         batch_size=BATCH_SIZE,
@@ -72,3 +71,4 @@ if __name__ == "__main__":
         total_timesteps=TIME_STEPS, callback=checkpoint_callback, progress_bar=True
     )
     env.close()
+

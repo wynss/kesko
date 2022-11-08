@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-import gymnasium as gym
+import gym
 
 
 def to_tensor(arr: np.ndarray):

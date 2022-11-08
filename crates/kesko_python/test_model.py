@@ -3,7 +3,7 @@ import gym
 from stable_baselines3 import PPO
 
 
-ENV = "Humanoid-v0"
+ENV = "Spider-v0"
 FULL_ENV = f"kesko:kesko/{ENV}"
 MODEL_CLASS = PPO
 MODEL_PATH = "model_checkpoints/Humanoid-v0_PPO_2022-11-02 18:33:50.860142/Humanoid-v0_PPO_300000_steps.zip"

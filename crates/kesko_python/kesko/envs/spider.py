@@ -2,7 +2,7 @@ from typing import Optional
 from queue import Queue
 
 import torch
-import gymnasium as gym
+import gym
 import numpy as np
 
 from ..backend import BackendType, RenderMode
@@ -107,16 +107,16 @@ class SpiderEnv(gym.Env):
             [joint.limits for joint in self.spider_body.joints.values()],
             normalized=False,
         )
-        self.observation_space = gym.spaces.Space(initial_state.shape)
+        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=initial_state.shape)
 
         return initial_state, {}
 
     def _to_numpy(self, state: MultibodyStates, dtype=np.float32) -> np.ndarray:
 
-        position = state.global_position
-        orientation = state.global_orientation
-        linear_velocity = state.global_velocity
-        angular_velocity = state.global_angular_velocity
+        position = state.position
+        orientation = state.orientation
+        linear_velocity = state.velocity
+        angular_velocity = state.angular_velocity
         joint_angles = [
             joint_state.angle for joint_state in state.joint_states.values()
         ]
@@ -159,15 +159,15 @@ class SpiderEnv(gym.Env):
         self, state: MultibodyStates, collision: Optional[CollisionStarted]
     ):
 
-        position = torch.Tensor(state.global_position)
+        position = torch.Tensor(state.position)
         if self.past_states_queue.full():
 
             past_state = self.past_states_queue.get()
             self.past_states_queue.put(state)
 
             # reward that encourage movement in the positive x direction
-            position = np.array(state.global_position)
-            past_position = np.array(past_state.global_position)
+            position = np.array(state.position)
+            past_position = np.array(past_state.position)
             # TODO: Send the dt from Kesko and use here instead of a hardcoded value
             reward = (position[0] - past_position[0]) * 60 / self.reward_step_length
             # limit reward

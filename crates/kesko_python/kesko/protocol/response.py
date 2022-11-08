@@ -47,10 +47,10 @@ class RigidBodySpawned(BaseModel):
 class MultibodyStates(BaseModel):
     name: str
     id: int
-    global_position: list
-    global_orientation: list
-    global_velocity: list
-    global_angular_velocity: list
+    position: list
+    orientation: list
+    velocity: list
+    angular_velocity: list
     relative_positions: dict[str, list[float]]
     joint_states: dict[str, Optional[JointState]]
 
