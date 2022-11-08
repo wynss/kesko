@@ -54,9 +54,9 @@ pub fn spawn(
     let mass_body = 1.0;
     let mass_leg = 0.2;
 
-
     let leg_stiffness = 1.0;
-    let leg_damping = 0.1;
+    let leg_damping = 0.2;
+    let max_motor_force = 50.0;
 
     // Frame
     let body = commands.spawn_bundle(MeshPhysicBodyBundle::from(RigidBody::Dynamic,
@@ -90,6 +90,7 @@ pub fn spawn(
             .with_axis(KeskoAxis::X)
             .with_motor_params(leg_stiffness, leg_damping)
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+            .with_max_motor_force(max_motor_force)
     )
     .insert(Mass{ val: mass_leg})
     .insert(Name::new(LEFT_FRONT_X))
@@ -112,6 +113,7 @@ pub fn spawn(
             .with_axis(KeskoAxis::Z)
             .with_motor_params(leg_stiffness, leg_damping)
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+            .with_max_motor_force(max_motor_force)
     )
     .insert(Mass{ val: mass_leg})
     .insert(Name::new(LEFT_FRONT_Z));
@@ -135,6 +137,7 @@ pub fn spawn(
             .with_axis(KeskoAxis::X)
             .with_motor_params(leg_stiffness, leg_damping)
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+            .with_max_motor_force(max_motor_force)
     )
     .insert(Mass{ val: mass_leg})
     .insert(Name::new(RIGHT_FRONT_X))
@@ -157,6 +160,7 @@ pub fn spawn(
             .with_axis(KeskoAxis::Z)
             .with_motor_params(leg_stiffness, leg_damping)
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+            .with_max_motor_force(max_motor_force)
     )
     .insert(Mass{ val: mass_leg})
     .insert(Name::new(RIGHT_FRONT_Z));
@@ -180,6 +184,7 @@ pub fn spawn(
             .with_axis(KeskoAxis::X)
             .with_motor_params(leg_stiffness, leg_damping)
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+            .with_max_motor_force(max_motor_force)
     )
     .insert(Mass{ val: mass_leg})
     .insert(Name::new(LEFT_REAR_X))
@@ -202,6 +207,7 @@ pub fn spawn(
             .with_axis(KeskoAxis::Z)
             .with_motor_params(leg_stiffness, leg_damping)
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+            .with_max_motor_force(max_motor_force)
     )
     .insert(Mass{ val: mass_leg})
     .insert(Name::new(LEFT_REAR_Z));
@@ -225,6 +231,7 @@ pub fn spawn(
             .with_axis(KeskoAxis::X)
             .with_motor_params(leg_stiffness, leg_damping)
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+            .with_max_motor_force(max_motor_force)
     )
     .insert(Mass{ val: mass_leg})
     .insert(Name::new(RIGHT_REAR_X))
@@ -247,6 +254,7 @@ pub fn spawn(
             .with_axis(KeskoAxis::Z)
             .with_motor_params(leg_stiffness, leg_damping)
             .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+            .with_max_motor_force(max_motor_force)
     )
     .insert(Mass{ val: mass_leg})
     .insert(Name::new(RIGHT_REAR_Z));

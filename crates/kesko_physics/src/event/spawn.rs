@@ -56,13 +56,13 @@ pub(crate) fn send_spawned_events(
 
             event_writer.send(PhysicResponseEvent::MultibodySpawned{ 
                 id: entity.to_bits(),
-                entity: entity,
+                entity,
                 name: root.name.clone(),
                 joints: joint_info_map
             });
         } else {
             event_writer.send(PhysicResponseEvent::RigidBodySpawned{ 
-                id: entity,
+                id: entity.to_bits(),
                 name: name.to_string()
             })
         }

@@ -8,6 +8,7 @@ pub mod humanoid;
 pub mod plane;
 
 use bevy::prelude::*;
+use pyo3::pyclass;
 use serde::{Serialize, Deserialize};
 
 
@@ -35,6 +36,7 @@ pub struct ControlDescription(pub String);
 
 
 // Enum to represent each default model
+#[pyclass]
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Model {
     Car,

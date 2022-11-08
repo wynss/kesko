@@ -15,7 +15,7 @@ use crate::controller::{PID, Controller};
 
 
 /// constants for the PID-controller
-const P: f32 = 10.0;
+const P: f32 = 4.0;
 const I: f32 = 0.1;
 const D: f32 = 5.0;
 

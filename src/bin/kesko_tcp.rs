@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    prelude::*, 
+    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}
+};
 
 use kesko_plugins::{
     main_camera::MainCameraPlugin,
@@ -11,7 +14,6 @@ use kesko_core::{
     cursor_tracking::GrabablePlugin,
     interaction::groups::{GroupDynamic, GroupStatic}
 };
-use kesko_diagnostic::DiagnosticsPlugins;
 use kesko_tcp::TcpPlugin;
 use kesko_models::ModelPlugin;
 
@@ -30,7 +32,8 @@ fn main() {
         .add_plugin(InteractionPlugin::<GroupDynamic>::default())
         .add_plugin(InteractionPlugin::<GroupStatic>::default())
 
-        .add_plugins(DiagnosticsPlugins)
+        .add_plugin(FrameTimeDiagnosticsPlugin)
+        .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(TcpPlugin)
         .add_startup_system(setup)
         .run();

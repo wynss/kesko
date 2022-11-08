@@ -41,7 +41,7 @@ pub enum PhysicResponseEvent {
         joints: BTreeMap<u64, JointInfo>
     },
     RigidBodySpawned {
-        id: Entity,
+        id: u64,
         name: String
     }
 }
@@ -82,7 +82,7 @@ pub(crate) fn handle_events(
                 }
             },
             PhysicRequestEvent::DespawnBody(id) => {
-                info!("Despawning body with id {:?}", id);
+                debug!("Despawning body with id {:?}", id);
                 let entity = Entity::from_bits(*id);
 
                 match query.get(entity) {
@@ -95,7 +95,7 @@ pub(crate) fn handle_events(
 
                         for entity in entities_to_remove.iter() {
 
-                            info!("Despawning entity {:?}", entity);
+                            debug!("Despawning entity {:?}", entity);
                             commands.entity(*entity).despawn_recursive();
 
                             if let Some(body_handle) = entity_2_body_handle.get(entity) {

@@ -134,7 +134,7 @@ impl Wheely {
         let child_anchor = Transform::default();
         commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Cylinder { radius: WHEEL_RADIUS, length: WHEEL_WIDTH, resolution: 21},
+            Shape::Cylinder { radius: WHEEL_RADIUS, length: WHEEL_WIDTH, resolution: 42},
             wheel_material.clone(),
             world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
@@ -156,7 +156,7 @@ impl Wheely {
         let child_anchor = Transform::default();
         commands.spawn_bundle(MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Cylinder { radius: WHEEL_RADIUS, length: WHEEL_WIDTH, resolution: 21},
+            Shape::Cylinder { radius: WHEEL_RADIUS, length: WHEEL_WIDTH, resolution: 42},
             wheel_material.clone(),
             world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
@@ -369,62 +369,62 @@ impl Wheely {
                     WheelyControlEvent::LeftWheelForward => {
                         let entity = root.child_map.get(LEFT_WHEEL).expect("");
                         let action = MotorCommand::VelocityRevolute { velocity: controller.wheel_velocity, damping: None };
-                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, command: action });
                     },
                     WheelyControlEvent::LeftWheelBackward => {
                         let entity = root.child_map.get(LEFT_WHEEL).expect("");
                         let action = MotorCommand::VelocityRevolute { velocity: -controller.wheel_velocity, damping: None };
-                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, command: action });
                     },
                     WheelyControlEvent::LeftWheelStop => {
                         let entity = root.child_map.get(LEFT_WHEEL).expect("");
                         let action = MotorCommand::VelocityRevolute { velocity: 0.0, damping: None };
-                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, command: action });
                     },
                     WheelyControlEvent::RightWheelForward => {
                         let entity = root.child_map.get(RIGHT_WHEEL).expect("");
                         let action = MotorCommand::VelocityRevolute { velocity: controller.wheel_velocity, damping: None };
-                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, command: action });
                     },
                     WheelyControlEvent::RightWheelBackward => {
                         let entity = root.child_map.get(RIGHT_WHEEL).expect("");
                         let action = MotorCommand::VelocityRevolute { velocity: -controller.wheel_velocity, damping: None };
-                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, command: action });
                     },
                     WheelyControlEvent::RightWheelStop => {
                         let entity = root.child_map.get(RIGHT_WHEEL).expect("");
                         let action = MotorCommand::VelocityRevolute { velocity: 0.0, damping: None };
-                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, command: action });
                     },
                     WheelyControlEvent::ArmLink1Pos => {
                         let entity = root.child_map.get(ARM_LINK_1).expect("");
                         let action = MotorCommand::VelocityRevolute { velocity: controller.arm_link1_velocity, damping: None };
-                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, command: action });
                     },
                     WheelyControlEvent::ArmLink1Neg => {
                         let entity = root.child_map.get(ARM_LINK_1).expect("");
                         let action = MotorCommand::VelocityRevolute { velocity: -controller.arm_link1_velocity, damping: None };
-                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, command: action });
                     },
                     WheelyControlEvent::ArmLink1Stop => {
                         let entity = root.child_map.get(ARM_LINK_1).expect("");
                         let action = MotorCommand::HoldPosition { stiffness: Some(1.0) };
-                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, command: action });
                     },
                     WheelyControlEvent::ArmLink2Pos => {
                         let entity = root.child_map.get(ARM_LINK_2).expect("");
                         let action = MotorCommand::VelocityPrismatic { velocity: controller.arm_link2_velocity, damping: None };
-                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, command: action });
                     },
                     WheelyControlEvent::ArmLink2Neg => {
                         let entity = root.child_map.get(ARM_LINK_2).expect("");
                         let action = MotorCommand::VelocityPrismatic { velocity: -controller.arm_link2_velocity, damping: None };
-                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, command: action });
                     },
                     WheelyControlEvent::ArmLink2Stop => {
                         let entity = root.child_map.get(ARM_LINK_2).expect("");
                         let action = MotorCommand::HoldPosition { stiffness: Some(1.0) };
-                        joint_event_writer.send(JointMotorEvent { entity: *entity, action });
+                        joint_event_writer.send(JointMotorEvent { entity: *entity, command: action });
                     },
                 }
             }

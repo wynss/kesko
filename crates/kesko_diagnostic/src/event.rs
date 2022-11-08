@@ -24,7 +24,7 @@ pub fn log_multibody_selection_event(
     mut multibody_selection_event_reader: EventReader<MultibodySelectionEvent>
 ) {
     for multibody_selection_event in multibody_selection_event_reader.iter() {
-        info!("Multibody Selection event {:?}", multibody_selection_event);
+        debug!("Multibody Selection event {:?}", multibody_selection_event);
     }
 }
 
@@ -32,7 +32,7 @@ pub fn log_joint_events(
     mut joint_event_reader: EventReader<JointMotorEvent>,
 ) {
     for joint_event in joint_event_reader.iter() {
-        info!("Joint event {:?}", joint_event);
+        debug!("Joint event {:?}", joint_event);
     }
 }
 
@@ -40,7 +40,7 @@ pub fn log_select_events(
     mut select_event_reader: EventReader<SelectEvent>,
 ) {
     for select_event in select_event_reader.iter() {
-        info!("Select event {:?}", select_event);
+        debug!("Select event {:?}", select_event);
     }
 }
 
@@ -48,7 +48,7 @@ pub fn log_interaction_events(
     mut interaction_event_reader: EventReader<InteractionEvent>,
 ) {
     for interaction_event in interaction_event_reader.iter() {
-        info!("Interaction event {:?}", interaction_event);
+        debug!("Interaction event {:?}", interaction_event);
     }
 }
 
@@ -56,6 +56,6 @@ pub fn log_collision_events(
     mut collision_event_reader: EventReader<CollisionEvent>,
 ) {
     for collision_event in collision_event_reader.iter() {
-        info!("Collision event {:?}", collision_event);
+        debug!("Collision event {:?}", collision_event);
     }
 }

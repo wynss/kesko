@@ -23,9 +23,11 @@ pub struct MultiBodyStates(pub Vec<MultiBodyState>);
 #[derive(Serialize, Deserialize, Clone)]
 pub struct MultiBodyState {
     pub name: String,
-    pub global_position: Vec3,
-    pub global_orientation: Vec3,
-    pub global_angular_velocity: Vec3,
+    pub id: u64,
+    pub position: Vec3,
+    pub orientation: Quat,
+    pub velocity: Vec3,
+    pub angular_velocity: Vec3,
     pub relative_positions: Option<BTreeMap<String, Vec3>>,
     pub joint_states: Option<BTreeMap<String, Option<JointState>>>
 }

@@ -72,8 +72,8 @@ impl Plugin for CorePlugin {
             .add_event::<MultibodySelectionEvent>()
 
             // simulator system events
-            .add_event::<event::SystemRequestEvent>()
-            .add_event::<event::SystemResponseEvent>()
+            .add_event::<event::SimulatorRequestEvent>()
+            .add_event::<event::SimulatorResponseEvent>()
             .add_system_set_to_stage(
                 CoreStage::Last,
                 SystemSet::new()
@@ -95,8 +95,8 @@ impl Plugin for CoreHeadlessPlugin {
             .set_runner(headless_runner)
 
             // simulator system events
-            .add_event::<event::SystemRequestEvent>()
-            .add_event::<event::SystemResponseEvent>()
+            .add_event::<event::SimulatorRequestEvent>()
+            .add_event::<event::SimulatorResponseEvent>()
             .add_system_set_to_stage(
                 CoreStage::Last,
                 SystemSet::new()

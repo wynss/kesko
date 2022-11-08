@@ -205,7 +205,7 @@ pub(crate) fn update_joint_pos_system(
 #[derive(Debug)]
 pub struct JointMotorEvent {
     pub entity: Entity,
-    pub action: MotorCommand
+    pub command: MotorCommand
 }
 
 #[derive(Debug)]
@@ -264,7 +264,7 @@ pub(crate) fn update_joint_motors_system(
                     None => { error!("Could not get multi joint link from multibody"); },
                     Some(joint_link) => {
 
-                        match event.action {
+                        match event.command {
                             MotorCommand::PositionRevolute { position, stiffness, damping } => {
                                 match joint_link.joint.data.as_revolute_mut() {
                                     Some(rev_joint) => {
@@ -505,7 +505,7 @@ mod tests {
 
         // Setup and send test event for setting the velocity
         let mut events = Events::<JointMotorEvent>::default();
-        events.send(JointMotorEvent { entity: entity, action: MotorCommand::VelocityRevolute { velocity: expected_vel, damping: None}});
+        events.send(JointMotorEvent { entity: entity, command: MotorCommand::VelocityRevolute { velocity: expected_vel, damping: None}});
         world.insert_resource(events);
 
         // Run stage
@@ -543,7 +543,7 @@ mod tests {
 
         events.send(JointMotorEvent { 
             entity, 
-            action: MotorCommand::PositionRevolute { 
+            command: MotorCommand::PositionRevolute { 
                 position: expected_pos,
                 stiffness: None,
                 damping: None
@@ -586,7 +586,7 @@ mod tests {
         let mut events = Events::<JointMotorEvent>::default();
         events.send(JointMotorEvent { 
             entity: entity, 
-            action: MotorCommand::VelocitySpherical {
+            command: MotorCommand::VelocitySpherical {
                 velocity: expected_vel, 
                 axis: test_axis
             }
@@ -629,7 +629,7 @@ mod tests {
         let mut events = Events::<JointMotorEvent>::default();
         events.send(JointMotorEvent { 
             entity, 
-            action: MotorCommand::PositionSpherical {
+            command: MotorCommand::PositionSpherical {
                 position: expected_pos, 
                 axis: test_axis
             }

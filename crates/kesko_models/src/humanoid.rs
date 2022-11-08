@@ -14,6 +14,7 @@ use kesko_physics::{
     mass::Mass,
     rapier_extern::rapier::prelude as rapier,
     rigid_body::RigidBody,
+    event::collision::GenerateCollisionEvents
 };
 
 use super::Model;
@@ -94,10 +95,12 @@ impl Humanoid {
             .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
             .insert(Name::new(Model::Humanoid.name().to_owned()))
             .insert(Mass { val: HEAD_MASS })
+            .insert(GenerateCollisionEvents)
             .id();
 
         let (shoulder, shoulder_transform) =
             Self::build_neck(head, commands, material.clone(), transform, meshes);
+
         let (hip, hip_transform) = Self::build_upper_body(
             shoulder,
             commands,
@@ -113,6 +116,7 @@ impl Humanoid {
             shoulder_transform,
             meshes,
         );
+
         Self::build_legs(hip, commands, material.clone(), hip_transform, meshes);
     }
 
