@@ -3,7 +3,7 @@ use std::io::Write;
 
 use bevy::prelude::*;
 
-use kesko_core::event::SystemResponseEvent;
+use kesko_core::event::SimulatorResponseEvent;
 use kesko_physics::event::{
     PhysicResponseEvent,
     collision::CollisionEvent
@@ -13,7 +13,7 @@ use kesko_physics::event::{
 pub(crate) fn handle_responses(
     mut commands: Commands,
     mut tcp_stream: ResMut<TcpStream>,
-    mut response_events:  EventReader<SystemResponseEvent>,
+    mut response_events:  EventReader<SimulatorResponseEvent>,
     mut physic_events:  EventReader<PhysicResponseEvent>,
     mut collision_events:  EventReader<CollisionEvent>
 ) {
@@ -31,7 +31,7 @@ pub(crate) fn handle_responses(
 
     for event in response_events.iter() {
         match event {
-            SystemResponseEvent::WillExitApp => should_shutdown = true,
+            SimulatorResponseEvent::WillExitApp => should_shutdown = true,
             _ => ()
         }
         responses.push(serde_traitobject::Box::new(event.clone()));

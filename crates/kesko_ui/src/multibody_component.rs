@@ -304,7 +304,7 @@ impl MultibodyUIComponent {
             // send motor action if the value has changed
             joint_motor_event_writer.send(JointMotorEvent {
                 entity: *joint_entity,
-                action: MotorCommand::PositionRevolute { position: joint_data.val_axis_1.to_radians(), stiffness: None, damping: None}
+                command: MotorCommand::PositionRevolute { position: joint_data.val_axis_1.to_radians(), stiffness: None, damping: None}
             });
         }
     }
@@ -314,7 +314,7 @@ impl MultibodyUIComponent {
             // send motor action if the value has changed
             joint_motor_event_writer.send(JointMotorEvent {
                 entity: *joint_entity,
-                action: MotorCommand::PositionPrismatic { position: joint_data.val_axis_1, stiffness: None, damping: None}
+                command: MotorCommand::PositionPrismatic { position: joint_data.val_axis_1, stiffness: None, damping: None}
             });
         }
     }
@@ -326,7 +326,7 @@ impl MultibodyUIComponent {
             if ui.add(egui::Slider::new(&mut joint_data.val_axis_1, Self::get_slider_range(joint_data.limits, &joint_data.joint_type)).suffix("°").text("X")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
                     entity: *joint_entity,
-                    action: MotorCommand::PositionSpherical { 
+                    command: MotorCommand::PositionSpherical { 
                         position: joint_data.val_axis_1.to_radians(),
                         axis: KeskoAxis::AngX
                     }
@@ -336,7 +336,7 @@ impl MultibodyUIComponent {
             if ui.add(egui::Slider::new(&mut joint_data.val_axis_2, Self::get_slider_range(joint_data.limits, &joint_data.joint_type)).suffix("°").text("Y")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
                     entity: *joint_entity,
-                    action: MotorCommand::PositionSpherical { 
+                    command: MotorCommand::PositionSpherical { 
                         position: joint_data.val_axis_2.to_radians(),
                         axis: KeskoAxis::AngY
                     }
@@ -346,7 +346,7 @@ impl MultibodyUIComponent {
             if ui.add(egui::Slider::new(&mut joint_data.val_axis_3, Self::get_slider_range(joint_data.limits, &joint_data.joint_type)).suffix("°").text("Z")).changed() {
                 joint_motor_event_writer.send(JointMotorEvent {
                     entity: *joint_entity,
-                    action: MotorCommand::PositionSpherical { 
+                    command: MotorCommand::PositionSpherical { 
                         position: joint_data.val_axis_3.to_radians(),
                         axis: KeskoAxis::AngZ
                     }

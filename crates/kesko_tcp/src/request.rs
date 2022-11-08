@@ -8,9 +8,7 @@ use bevy::{
 use iyes_loopless::prelude::*;
 use serde::{Serialize, Deserialize};
 
-use kesko_core::event::{
-    SystemRequestEvent,
-};
+use kesko_core::event::SimulatorRequestEvent;
 use kesko_physics::event::PhysicRequestEvent;
 use kesko_models::{
     Model, SpawnEvent
@@ -38,8 +36,8 @@ pub(crate) enum TcpCommand {
     DespawnAll,
 
     ApplyMotorCommand {
-        name: String,
-        command: HashMap<String, f32>
+        id: u64,
+        command: HashMap<u64, f32>
     },
     PausePhysics,
     RunPhysics,
@@ -78,7 +76,7 @@ pub(crate) fn handle_requests(
     mut commands: Commands,
     mut tcp_stream: ResMut<TcpStream>,
     mut tcp_buffer: ResMut<TcpBuffer>,
-    mut system_event_writer: EventWriter<SystemRequestEvent>,
+    mut system_event_writer: EventWriter<SimulatorRequestEvent>,
     mut spawn_event_writer: EventWriter<SpawnEvent>,
     mut physic_event_writer: EventWriter<PhysicRequestEvent>
 ) {
@@ -101,25 +99,25 @@ pub(crate) fn handle_requests(
 
                         for command in request.commands.drain(..) {
                             match command {
-                                TcpCommand::Close => system_event_writer.send(SystemRequestEvent::ExitApp),
+                                TcpCommand::Close => system_event_writer.send(SimulatorRequestEvent::ExitApp),
                                 TcpCommand::SpawnModel { model, position, color } => {
                                     spawn_event_writer.send(SpawnEvent::Spawn { model, transform: Transform::from_translation(position), color });
                                 },
-                                TcpCommand::GetState => system_event_writer.send(SystemRequestEvent::GetState),
+                                TcpCommand::GetState => system_event_writer.send(SimulatorRequestEvent::GetState),
                                 TcpCommand::PausePhysics => physic_event_writer.send(PhysicRequestEvent::PausePhysics),
                                 TcpCommand::RunPhysics => physic_event_writer.send(PhysicRequestEvent::RunPhysics),
-                                TcpCommand::IsAlive => system_event_writer.send(SystemRequestEvent::IsAlive),
-                                TcpCommand::ApplyMotorCommand { name, command } => {
-                                    system_event_writer.send( SystemRequestEvent::ApplyMotorCommand { name, command })
+                                TcpCommand::IsAlive => system_event_writer.send(SimulatorRequestEvent::IsAlive),
+                                TcpCommand::ApplyMotorCommand { id, command } => {
+                                    system_event_writer.send( SimulatorRequestEvent::ApplyMotorCommand { entity: Entity::from_bits(id), command })
                                 },
                                 TcpCommand::Despawn { id } => physic_event_writer.send(PhysicRequestEvent::DespawnBody(id)),
                                 TcpCommand::DespawnAll => physic_event_writer.send(PhysicRequestEvent::DespawnAll)
                             }
                         }
                     }
-                    Err(_) => {
+                    Err(e) => {
                         got_msg = false;
-                        // error!("{}", e)
+                        error!("{}", e)
                     }
                 }
             },

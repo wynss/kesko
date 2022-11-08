@@ -23,3 +23,6 @@ trace-*.json
 
 # spelling
 .cspell/
+
+# training related
+ml/*

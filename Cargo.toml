@@ -10,6 +10,7 @@ members = [
     "crates/kesko_ui",
     "crates/kesko_diagnostic",
     "crates/kesko_tcp",
+    "crates/kesko_python",
 ]
 
 [package]
@@ -30,6 +31,10 @@ name = "kesko_tcp_headless"
 [[bin]]
 name = "kesko_demo"
 
+[lib]
+name = "pykesko"
+crate-type = ["cdylib"]
+
 # Enable a small amount of optimization in debug mode
 [profile.dev]
 opt-level = 1
@@ -46,6 +51,9 @@ bevy = { version = "0.8.1", default-features = false, features = ["render", "bev
 
 [dependencies]
 bevy = { version = "0.8.1", default-features = false, features = ["render", "bevy_winit", "bevy_scene", "x11"] }
+
+pyo3 = { version = "0.17.2", features = ["extension-module"] }
+
 kesko_physics = { version = "0.1.0", path = "crates/kesko_physics", features = ["f32"] }
 kesko_core = { version = "0.1.0", path = "crates/kesko_core" }
 kesko_object_interaction = { version = "0.1.0", path = "crates/kesko_object_interaction" }
@@ -54,3 +62,4 @@ kesko_models = { version = "0.1.0", path = "crates/kesko_models" }
 kesko_plugins = { version = "0.1.0", path="crates/kesko_plugins" }
 kesko_diagnostic = { version = "0.1.0", path="crates/kesko_diagnostic" }
 kesko_tcp = { version = "0.1.0", path = "crates/kesko_tcp" }
+kesko_python = { version = "0.1.0", path = "crates/kesko_python" }

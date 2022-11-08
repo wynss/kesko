@@ -18,12 +18,16 @@ class Rgba:
             }
         }
 
+    def to_list(self):
+        return [self.red, self.green, self.blue, self.alpha]
+
 
 class Color(Enum):
     WHITE = Rgba(1.0, 1.0, 1.0)
     RED = Rgba(1.0, 0.0, 0.0)
     GREEN = Rgba(0.0, 1.0, 0.0, 1.0)
     BLUE = Rgba(0.0, 0.0, 1.0, 1.0)
+    DEEP_ORANGE = Rgba(1.0, 0.34, 0.13, 1.0)
 
     def to_json(self):
         return self.value.to_json()

@@ -207,7 +207,7 @@ impl Car {
         let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
         commands.spawn_bundle( MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},
+            Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 42},
             material_wheel.clone(),
             world_transform,
             meshes
@@ -219,7 +219,7 @@ impl Car {
             .with_axis(KeskoAxis::Y)
         )
         .insert(Mass { val: mass })
-        .insert(Name::new(LEFT_FRONT_WHEEL.to_owned()))
+        .insert(Name::new(LEFT_FRONT_WHEEL))
         .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
 
         // right front link
@@ -251,7 +251,7 @@ impl Car {
         let world_transform = world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
         commands.spawn_bundle( MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},
+            Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 42},
             material_wheel.clone(),
             world_transform,
             meshes
@@ -272,7 +272,7 @@ impl Car {
         let child_anchor = Transform::default();
         commands.spawn_bundle( MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},        material_wheel.clone(),
+            Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 42},        material_wheel.clone(),
             world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
         ))
@@ -293,7 +293,7 @@ impl Car {
         let child_anchor = Transform::default();
         commands.spawn_bundle( MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
-            Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 21},
+            Shape::Cylinder { radius: wheel_radius, length: wheel_width, resolution: 42},
             material_wheel,
             world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
             meshes
@@ -383,13 +383,13 @@ impl Car {
                         if let Some(entity) = car_body.child_map.get(RIGHT_REAR_WHEEL) {
                             joint_event_writer.send(JointMotorEvent {
                                 entity: *entity,
-                                action: MotorCommand::VelocityRevolute { velocity: -velocity, damping: None }
+                                command: MotorCommand::VelocityRevolute { velocity: -velocity, damping: None }
                             });
                         }
                         if let Some(entity) = car_body.child_map.get(LEFT_REAR_WHEEL) {
                             joint_event_writer.send(JointMotorEvent {
                                 entity: *entity,
-                                action: MotorCommand::VelocityRevolute { velocity, damping: None }
+                                command: MotorCommand::VelocityRevolute { velocity, damping: None }
                             });
                         }
                     },
@@ -404,7 +404,7 @@ impl Car {
                         if let Some(entity) = car_body.child_map.get(LEFT_FRONT_WHEEL_TURN) {
                             joint_event_writer.send(JointMotorEvent { 
                                 entity: *entity,
-                                action: MotorCommand::PositionRevolute { position: -position, stiffness: None, damping: None } 
+                                command: MotorCommand::PositionRevolute { position: -position, stiffness: None, damping: None } 
                             })
                         } else {
                             error!("Could not get {}", LEFT_FRONT_WHEEL_TURN);
@@ -413,7 +413,7 @@ impl Car {
                         if let Some(entity) = car_body.child_map.get(RIGHT_FRONT_WHEEL_TURN) {
                             joint_event_writer.send(JointMotorEvent { 
                                 entity: *entity,
-                                action: MotorCommand::PositionRevolute { position, stiffness: None, damping: None }
+                                command: MotorCommand::PositionRevolute { position, stiffness: None, damping: None }
                             })
                         } else {
                             error!("Could not get {}", RIGHT_FRONT_WHEEL_TURN);

@@ -31,10 +31,10 @@ fn test_scene(
     kesko_models::plane::spawn(
         &mut commands,
         materials.add(StandardMaterial {
-            base_color: Color::rgba(1.0, 1.0, 1.0, 1.0),
+            base_color: Color::WHITE,
             ..default()
         }), 
-        &mut meshes,
+        &mut meshes, 
     );
     
     // Light

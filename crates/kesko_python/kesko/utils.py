@@ -21,7 +21,7 @@ def action_space_from_limits(limits: list, normalized: bool = True):
         if normalized:
             high_limit = high_limit / abs(high_limit) if high_limit != 0.0 else 0.0
             low_limit = low_limit / abs(low_limit) if low_limit != 0.0 else 0.0
-        
+
         highs.append(high_limit)
         lows.append(low_limit)
 
