@@ -1,0 +1,29 @@
+[project]
+name = "pykesko"
+version = "0.1.0"
+description = "Robotics Simulator written in Rust"
+authors = [{ name = "Toni Axelsson", email = "toniaxelsson@gmail.com" }]
+licence = { file = "../../LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+requires-python = ">=3.8"
+keywords = ["Robotics", "machine learning", "reinforcement learning"]
+dependencies = [
+    
+]
+
+[project.optional-dependencies]
+dev = ["flake8", "pytest", "black", "bumpver", "build", "twine"]
+
+[build-system]
+requires = ["maturin==0.13.7"]
+build-backend = "maturin"
+
+[tool.black]
+line-length = 127

@@ -1,8 +1,0 @@
-[package]
-name = "kesko_raycast"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-bevy = { workspace = true }
-num_cpus = "1.13.1"

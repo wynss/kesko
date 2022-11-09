@@ -1,0 +1,11 @@
+[package]
+name = "kesko_diagnostic"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { workspace = true }
+kesko_physics = { path = "../kesko_physics" }
+kesko_object_interaction = { path = "../kesko_object_interaction"}
+kesko_core = { path = "../kesko_core"}
+kesko_ui = { path = "../kesko_ui" }

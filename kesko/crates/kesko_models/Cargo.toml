@@ -1,0 +1,14 @@
+[package]
+name = "kesko_models"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { workspace = true }
+pyo3 = { version = "0.17.2", features = ["extension-module"] }
+serde = "1.0.137"
+serde_json = "1.0.81"
+kesko_physics = { path = "../kesko_physics" }
+kesko_object_interaction = { path = "../kesko_object_interaction"}
+kesko_raycast = { path = "../kesko_raycast"}
+kesko_core = { path = "../kesko_core"}

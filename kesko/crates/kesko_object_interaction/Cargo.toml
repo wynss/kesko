@@ -1,0 +1,8 @@
+[package]
+name = "kesko_object_interaction"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { workspace = true }
+kesko_raycast = {version="0.1.0", path="../kesko_raycast"}
