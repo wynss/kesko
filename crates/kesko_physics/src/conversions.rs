@@ -1,13 +1,8 @@
-use bevy::math::{Vec3, Quat};
+use bevy::math::{Quat, Vec3};
 use bevy::prelude::Transform;
-use nalgebra::{UnitQuaternion, Vector3, Quaternion, Point3, UnitVector3};
+use nalgebra::{Point3, Quaternion, UnitQuaternion, UnitVector3, Vector3};
 
-use crate::rapier_extern::rapier::{
-    math::{
-        Translation, Isometry, Vector, Real, UnitVector
-    }
-};
-
+use crate::rapier_extern::rapier::math::{Isometry, Real, Translation, UnitVector, Vector};
 
 pub trait IntoBevy<T> {
     #[must_use]
@@ -20,10 +15,9 @@ impl IntoBevy<Vec3> for Vector3<Real> {
     }
 }
 
-
 impl IntoBevy<Vec3> for Translation<Real> {
     fn into_bevy(self) -> Vec3 {
-       self.vector.into_bevy()
+        self.vector.into_bevy()
     }
 }
 
@@ -76,7 +70,12 @@ impl IntoRapier<Translation<Real>> for Vec3 {
 
 impl IntoRapier<UnitQuaternion<Real>> for Quat {
     fn into_rapier(self) -> UnitQuaternion<Real> {
-        UnitQuaternion::new_normalize(Quaternion::new(self.w as Real, self.x as Real, self.y as Real, self.z as Real))
+        UnitQuaternion::new_normalize(Quaternion::new(
+            self.w as Real,
+            self.x as Real,
+            self.y as Real,
+            self.z as Real,
+        ))
     }
 }
 

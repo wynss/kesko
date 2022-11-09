@@ -1,13 +1,8 @@
-use bevy::prelude::*;
 use crate::rapier_extern::rapier::prelude as rapier;
+use bevy::prelude::*;
 use fnv::FnvHashMap;
 
-use crate::{
-    rigid_body::RigidBodyHandle,
-    mass::Mass, 
-    event::collision::GenerateCollisionEvents
-};
-
+use crate::{event::collision::GenerateCollisionEvents, mass::Mass, rigid_body::RigidBodyHandle};
 
 pub type Entity2ColliderHandle = FnvHashMap<Entity, rapier::ColliderHandle>;
 
@@ -16,27 +11,27 @@ pub enum ColliderShape {
     Cuboid {
         x_half: rapier::Real,
         y_half: rapier::Real,
-        z_half: rapier::Real
+        z_half: rapier::Real,
     },
     Sphere {
-        radius: rapier::Real
+        radius: rapier::Real,
     },
     CapsuleX {
         half_length: rapier::Real,
-        radius: rapier::Real
+        radius: rapier::Real,
     },
     CapsuleY {
         half_length: rapier::Real,
-        radius: rapier::Real
+        radius: rapier::Real,
     },
     CapsuleZ {
         half_length: rapier::Real,
-        radius: rapier::Real
+        radius: rapier::Real,
     },
     Cylinder {
         radius: rapier::Real,
-        length: rapier::Real
-    }
+        length: rapier::Real,
+    },
 }
 
 /// Component for setting the physical material properties for a collider
@@ -47,7 +42,7 @@ pub struct ColliderPhysicalProperties {
     /// friction coefficient of the collider
     pub friction: rapier::Real,
     /// restitution coefficient, controls how elastic or bouncy the collider is
-    pub restitution: rapier::Real
+    pub restitution: rapier::Real,
 }
 
 impl Default for ColliderPhysicalProperties {
@@ -55,7 +50,7 @@ impl Default for ColliderPhysicalProperties {
         Self {
             density: 1.0,
             friction: 0.9,
-            restitution: 0.0
+            restitution: 0.0,
         }
     }
 }
@@ -63,53 +58,58 @@ impl Default for ColliderPhysicalProperties {
 #[derive(Component)]
 pub(crate) struct ColliderHandle(rapier::ColliderHandle);
 
-
 #[allow(clippy::type_complexity)]
 pub(crate) fn add_colliders(
     mut commands: Commands,
     mut entity_collider_map: ResMut<Entity2ColliderHandle>,
     mut collider_set: ResMut<rapier::ColliderSet>,
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
-    query: Query<(
-        Entity, 
-        &ColliderShape, 
-        &RigidBodyHandle, 
-        Option<&ColliderPhysicalProperties>, 
-        Option<&GenerateCollisionEvents>), 
-        Without<ColliderHandle>>
+    query: Query<
+        (
+            Entity,
+            &ColliderShape,
+            &RigidBodyHandle,
+            Option<&ColliderPhysicalProperties>,
+            Option<&GenerateCollisionEvents>,
+        ),
+        Without<ColliderHandle>,
+    >,
 ) {
     for (entity, collider_shape, rigid_body_handle, physical_props, gen_events) in query.iter() {
-
         let mut collider_builder = match collider_shape {
-            ColliderShape::Cuboid {x_half, y_half, z_half} => {
-                rapier::ColliderBuilder::cuboid(*x_half, *y_half, *z_half)
-            },
-            ColliderShape::Sphere {radius} => {
-                rapier::ColliderBuilder::ball(*radius)
-            },
-            ColliderShape::CapsuleX { half_length: half_height, radius} => {
-                rapier::ColliderBuilder::capsule_x(*half_height, *radius)
-            },
-            ColliderShape::CapsuleY { half_length: half_height, radius} => {
-                rapier::ColliderBuilder::capsule_y(*half_height, *radius)
-            },
-            ColliderShape::CapsuleZ { half_length: half_height, radius} => {
-                rapier::ColliderBuilder::capsule_z(*half_height, *radius)
-            },
-            ColliderShape::Cylinder {radius, length} => {
+            ColliderShape::Cuboid {
+                x_half,
+                y_half,
+                z_half,
+            } => rapier::ColliderBuilder::cuboid(*x_half, *y_half, *z_half),
+            ColliderShape::Sphere { radius } => rapier::ColliderBuilder::ball(*radius),
+            ColliderShape::CapsuleX {
+                half_length: half_height,
+                radius,
+            } => rapier::ColliderBuilder::capsule_x(*half_height, *radius),
+            ColliderShape::CapsuleY {
+                half_length: half_height,
+                radius,
+            } => rapier::ColliderBuilder::capsule_y(*half_height, *radius),
+            ColliderShape::CapsuleZ {
+                half_length: half_height,
+                radius,
+            } => rapier::ColliderBuilder::capsule_z(*half_height, *radius),
+            ColliderShape::Cylinder { radius, length } => {
                 rapier::ColliderBuilder::cylinder(length / 2.0, *radius)
             }
         };
- 
+
         if let Some(physical_props) = physical_props {
             collider_builder = collider_builder
-            .density(physical_props.density)
-            .friction(physical_props.friction)
-            .restitution(physical_props.restitution);
+                .density(physical_props.density)
+                .friction(physical_props.friction)
+                .restitution(physical_props.restitution);
         }
 
         if gen_events.is_some() {
-            collider_builder = collider_builder.active_events(rapier::ActiveEvents::COLLISION_EVENTS);
+            collider_builder =
+                collider_builder.active_events(rapier::ActiveEvents::COLLISION_EVENTS);
         }
 
         // store entity as user data
@@ -118,30 +118,34 @@ pub(crate) fn add_colliders(
         let collider_handle = collider_set.insert_with_parent(
             collider_builder.build(),
             rigid_body_handle.0,
-            &mut rigid_body_set
+            &mut rigid_body_set,
         );
 
         entity_collider_map.insert(entity, collider_handle);
 
-        commands.entity(entity).insert(ColliderHandle(collider_handle));
+        commands
+            .entity(entity)
+            .insert(ColliderHandle(collider_handle));
 
-        let body = rigid_body_set.get(rigid_body_handle.0).expect("Could not get rigid body");
-        commands.entity(entity).insert(Mass {val: body.mass()});
-
+        let body = rigid_body_set
+            .get(rigid_body_handle.0)
+            .expect("Could not get rigid body");
+        commands.entity(entity).insert(Mass { val: body.mass() });
     }
 }
-
 
 #[cfg(test)]
 mod tests {
 
-    use bevy::prelude::*;
+    use crate::collider::{
+        add_colliders, ColliderHandle, ColliderPhysicalProperties, ColliderShape,
+        Entity2ColliderHandle,
+    };
     use crate::rapier_extern::rapier::prelude as rapier;
-    use crate::collider::{Entity2ColliderHandle, ColliderShape, ColliderPhysicalProperties, add_colliders, ColliderHandle};
-    use crate::rigid_body::{RigidBody, Entity2BodyHandle, add_rigid_bodies, BodyHandle2Entity};
+    use crate::rigid_body::{add_rigid_bodies, BodyHandle2Entity, Entity2BodyHandle, RigidBody};
+    use bevy::prelude::*;
 
     fn setup_world() -> (World, SystemStage) {
-
         let mut world = World::default();
         world.init_resource::<Entity2BodyHandle>();
         world.init_resource::<BodyHandle2Entity>();
@@ -157,18 +161,22 @@ mod tests {
         (world, test_stage)
     }
 
-
     #[test]
     fn add_collider_body() {
-
         let (mut world, mut stage) = setup_world();
 
         let entity = world
             .spawn()
             .insert(RigidBody::Fixed)
-            .insert(ColliderShape::Cuboid {x_half: 1.0, y_half: 1.0, z_half: 1.0})
-            .insert(Transform::from_translation(Vec3::new(0.0, 0.0, 1.0))
-                .with_rotation(Quat::from_xyzw(1.0, 0.0, 0.0, 0.0)))
+            .insert(ColliderShape::Cuboid {
+                x_half: 1.0,
+                y_half: 1.0,
+                z_half: 1.0,
+            })
+            .insert(
+                Transform::from_translation(Vec3::new(0.0, 0.0, 1.0))
+                    .with_rotation(Quat::from_xyzw(1.0, 0.0, 0.0, 0.0)),
+            )
             .id();
 
         // run two times so the collider is added
@@ -196,31 +204,42 @@ mod tests {
 
     #[test]
     fn collider_physic_properties() {
-
         let (mut world, mut stage) = setup_world();
 
         let physical_properties = ColliderPhysicalProperties {
             density: 2.5,
             friction: 0.65,
-            restitution: 0.55
+            restitution: 0.55,
         };
 
         let entity = world
             .spawn()
             .insert(RigidBody::Fixed)
-            .insert(ColliderShape::Cuboid {x_half: 1.0, y_half: 1.0, z_half: 1.0})
+            .insert(ColliderShape::Cuboid {
+                x_half: 1.0,
+                y_half: 1.0,
+                z_half: 1.0,
+            })
             .insert(physical_properties.clone())
-            .insert(Transform::from_translation(Vec3::new(0.0, 0.0, 1.0))
-                .with_rotation(Quat::from_xyzw(1.0, 0.0, 0.0, 0.0)))
+            .insert(
+                Transform::from_translation(Vec3::new(0.0, 0.0, 1.0))
+                    .with_rotation(Quat::from_xyzw(1.0, 0.0, 0.0, 0.0)),
+            )
             .id();
 
         // run two times so the collider is added
         stage.run(&mut world);
         stage.run(&mut world);
 
-        assert!(world.query::<&ColliderPhysicalProperties>().get(&world, entity).is_ok());
+        assert!(world
+            .query::<&ColliderPhysicalProperties>()
+            .get(&world, entity)
+            .is_ok());
 
-        let collider_handle = world.query::<&ColliderHandle>().get(&world, entity).unwrap();
+        let collider_handle = world
+            .query::<&ColliderHandle>()
+            .get(&world, entity)
+            .unwrap();
         let collider_set = world.get_resource::<rapier::ColliderSet>().unwrap();
         let collider = collider_set.get(collider_handle.0).unwrap();
 

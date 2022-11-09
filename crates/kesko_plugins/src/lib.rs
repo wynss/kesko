@@ -2,22 +2,16 @@ pub mod main_camera;
 pub mod physics;
 
 use bevy::{
-    app::{PluginGroup, PluginGroupBuilder}, 
-    utils::default
+    app::{PluginGroup, PluginGroupBuilder},
+    utils::default,
 };
 
-pub use kesko_object_interaction::InteractionPlugin;
-use kesko_core::{
-    interaction::groups::{GroupDynamic, GroupStatic},
-};
-pub use kesko_ui::UIPlugin;
+use self::{main_camera::MainCameraPlugin, physics::DefaultPhysicsPlugin};
+use kesko_core::interaction::groups::{GroupDynamic, GroupStatic};
 use kesko_core::{CoreHeadlessPlugin, CorePlugin};
-use self::{
-    main_camera::MainCameraPlugin,
-    physics::DefaultPhysicsPlugin
-};
 use kesko_models::ModelPlugin;
-
+pub use kesko_object_interaction::InteractionPlugin;
+pub use kesko_ui::UIPlugin;
 
 pub struct CorePlugins;
 impl PluginGroup for CorePlugins {
@@ -34,7 +28,7 @@ impl PluginGroup for CorePlugins {
 
 /// Plugins for running in headless mode
 pub struct HeadlessRenderPlugins {
-    pub initial_physic_state: kesko_physics::PhysicState
+    pub initial_physic_state: kesko_physics::PhysicState,
 }
 impl PluginGroup for HeadlessRenderPlugins {
     fn build(&mut self, group: &mut PluginGroupBuilder) {
@@ -50,7 +44,7 @@ impl PluginGroup for HeadlessRenderPlugins {
 impl Default for HeadlessRenderPlugins {
     fn default() -> Self {
         Self {
-            initial_physic_state: kesko_physics::PhysicState::Running
+            initial_physic_state: kesko_physics::PhysicState::Running,
         }
     }
 }

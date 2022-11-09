@@ -1,11 +1,10 @@
-pub mod fps;
 pub mod event;
+pub mod fps;
 
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 
 use self::event::DebugEventPlugin;
-
 
 pub struct DiagnosticsPlugins;
 impl PluginGroup for DiagnosticsPlugins {

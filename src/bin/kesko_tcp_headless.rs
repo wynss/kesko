@@ -1,16 +1,15 @@
 use bevy::{
-    prelude::*, 
-    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}
+    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    prelude::*,
 };
 
 use kesko_plugins::HeadlessRenderPlugins;
 use kesko_tcp::TcpPlugin;
 
-
 fn main() {
     App::new()
         .add_plugins(HeadlessRenderPlugins {
-            initial_physic_state: kesko_physics::PhysicState::Stopped
+            initial_physic_state: kesko_physics::PhysicState::Stopped,
         })
         .add_plugin(FrameTimeDiagnosticsPlugin)
         .add_plugin(LogDiagnosticsPlugin::default())
@@ -19,9 +18,7 @@ fn main() {
         .run();
 }
 
-fn setup(
-    mut commands: Commands
-) {
+fn setup(mut commands: Commands) {
     // Light
     const HALF_SIZE: f32 = 10.0;
     commands.spawn_bundle(DirectionalLightBundle {

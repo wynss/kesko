@@ -1,8 +1,7 @@
-use bevy::prelude::*;
 use crate::rapier_extern::rapier::prelude as rapier;
+use bevy::prelude::*;
 
 use crate::conversions::IntoRapier;
-
 
 #[derive(Component, Clone, Copy)]
 pub struct SphericalJoint {
@@ -21,7 +20,6 @@ pub struct SphericalJoint {
 }
 
 impl SphericalJoint {
-
     pub fn attach_to(parent: Entity) -> Self {
         Self {
             parent,
@@ -36,7 +34,6 @@ impl SphericalJoint {
             y_damping: 0.0,
             z_stiffness: 0.0,
             z_damping: 0.0,
-
         }
     }
 
@@ -68,31 +65,57 @@ impl SphericalJoint {
 
 impl From<SphericalJoint> for rapier::GenericJoint {
     fn from(joint: SphericalJoint) -> rapier::GenericJoint {
-
         let mut builder = rapier::SphericalJointBuilder::new();
 
         // set activate and set motor parameters
         if joint.x_stiffness > 0.0 || joint.x_damping > 0.0 {
-            builder = builder.motor(rapier::JointAxis::AngX, 0.0, 0.0,  joint.x_stiffness, joint.x_damping);
+            builder = builder.motor(
+                rapier::JointAxis::AngX,
+                0.0,
+                0.0,
+                joint.x_stiffness,
+                joint.x_damping,
+            );
         }
         if joint.y_stiffness > 0.0 || joint.y_damping > 0.0 {
-            builder = builder.motor(rapier::JointAxis::AngY, 0.0, 0.0,  joint.y_stiffness, joint.y_damping);
+            builder = builder.motor(
+                rapier::JointAxis::AngY,
+                0.0,
+                0.0,
+                joint.y_stiffness,
+                joint.y_damping,
+            );
         }
         if joint.z_stiffness > 0.0 || joint.z_damping > 0.0 {
-            builder = builder.motor(rapier::JointAxis::AngZ, 0.0, 0.0,  joint.z_stiffness, joint.z_damping);
+            builder = builder.motor(
+                rapier::JointAxis::AngZ,
+                0.0,
+                0.0,
+                joint.z_stiffness,
+                joint.z_damping,
+            );
         }
 
         // set rotational limits if any
         if let Some(x_ang_limit) = joint.x_ang_limit {
-            builder = builder.limits(rapier::JointAxis::AngX, [x_ang_limit.x as rapier::Real, x_ang_limit.y as rapier::Real]);
+            builder = builder.limits(
+                rapier::JointAxis::AngX,
+                [x_ang_limit.x as rapier::Real, x_ang_limit.y as rapier::Real],
+            );
         }
 
         if let Some(y_ang_limit) = joint.y_ang_limit {
-            builder = builder.limits(rapier::JointAxis::AngY, [y_ang_limit.x as rapier::Real, y_ang_limit.y as rapier::Real]);
+            builder = builder.limits(
+                rapier::JointAxis::AngY,
+                [y_ang_limit.x as rapier::Real, y_ang_limit.y as rapier::Real],
+            );
         }
 
         if let Some(z_ang_limit) = joint.z_ang_limit {
-            builder = builder.limits(rapier::JointAxis::AngZ, [z_ang_limit.x as rapier::Real, z_ang_limit.y as rapier::Real]);
+            builder = builder.limits(
+                rapier::JointAxis::AngZ,
+                [z_ang_limit.x as rapier::Real, z_ang_limit.y as rapier::Real],
+            );
         }
 
         let mut generic: rapier::GenericJoint = builder.into();
@@ -110,16 +133,15 @@ impl From<rapier::GenericJoint> for SphericalJoint {
 
 #[cfg(test)]
 mod tests {
-    use bevy::math::Vec2;
-    use bevy::prelude::{Transform, Vec3, Entity};
+    use super::SphericalJoint;
     use crate::rapier_extern::rapier::dynamics::JointAxis;
     use crate::rapier_extern::rapier::prelude::GenericJoint;
     use crate::IntoRapier;
-    use super::SphericalJoint;
+    use bevy::math::Vec2;
+    use bevy::prelude::{Entity, Transform, Vec3};
 
     #[test]
     fn only_translation() {
-
         let expected_parent_transform = Transform::from_translation(Vec3::new(1.0, 2.0, 3.0));
         let expected_child_transform = Transform::from_translation(Vec3::new(4.0, 5.0, 6.0));
 
@@ -130,13 +152,15 @@ mod tests {
         let generic: GenericJoint = joint.into();
 
         assert!(generic.as_spherical().is_some());
-        assert_eq!(generic.local_frame1, expected_parent_transform.into_rapier());
+        assert_eq!(
+            generic.local_frame1,
+            expected_parent_transform.into_rapier()
+        );
         assert_eq!(generic.local_frame2, expected_child_transform.into_rapier());
     }
 
     #[test]
     fn with_limits() {
-
         let x_min = -1.0;
         let x_max = 1.0;
 
@@ -169,7 +193,6 @@ mod tests {
 
     #[test]
     fn default_values() {
-
         let joint = SphericalJoint::attach_to(Entity::from_raw(0));
 
         let generic: GenericJoint = joint.into();

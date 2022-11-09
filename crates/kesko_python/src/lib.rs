@@ -1,29 +1,17 @@
 use std::collections::BTreeMap;
 
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-use bevy::diagnostic::{LogDiagnosticsPlugin, FrameTimeDiagnosticsPlugin};
 use pyo3::prelude::*;
 
-use kesko_models::{
-    Model,
-    SpawnEvent,
-    wheely::WheelyPlugin,
-    car::CarPlugin
+use kesko_core::event::{SimulatorRequestEvent, SimulatorResponseEvent};
+use kesko_models::{car::CarPlugin, wheely::WheelyPlugin, Model, SpawnEvent};
+use kesko_physics::{
+    event::{collision::CollisionEvent, PhysicRequestEvent, PhysicResponseEvent},
+    joint::{JointMotorEvent, MotorCommand},
 };
 use kesko_plugins::CorePlugins;
 use kesko_plugins::HeadlessRenderPlugins;
-use kesko_physics::{
-    event::{
-        PhysicRequestEvent,
-        PhysicResponseEvent,
-        collision::CollisionEvent
-    },
-    joint::{
-        JointMotorEvent, MotorCommand
-    }
-};
-use kesko_core::event::{SimulatorRequestEvent, SimulatorResponseEvent};
-
 
 #[pymodule]
 fn pykesko(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
@@ -33,16 +21,14 @@ fn pykesko(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
 }
 #[pyclass(unsendable)]
 pub struct Kesko {
-    app: App
+    app: App,
 }
 
 #[pymethods]
 impl Kesko {
     #[new]
     pub fn new() -> Self {
-        Self {
-            app: App::new()
-        }
+        Self { app: App::new() }
     }
 
     pub fn init_default(&mut self) {
@@ -67,12 +53,19 @@ impl Kesko {
         self.app.world.send_event::<SpawnEvent>(SpawnEvent::Spawn {
             model,
             transform: Transform::from_xyz(position[0], position[1], position[2]),
-            color: Color::Rgba { red: color[0], green: color[1], blue: color[2], alpha: 1.0 }
+            color: Color::Rgba {
+                red: color[0],
+                green: color[1],
+                blue: color[2],
+                alpha: 1.0,
+            },
         })
     }
 
     pub fn despawn(&mut self, body_id: u64) {
-        self.app.world.send_event(PhysicRequestEvent::DespawnBody(body_id));
+        self.app
+            .world
+            .send_event(PhysicRequestEvent::DespawnBody(body_id));
     }
 
     pub fn despawn_all(&mut self) {
@@ -82,12 +75,17 @@ impl Kesko {
     pub fn get_physics_events(&mut self) -> PyResult<Option<String>> {
         let events = self.app.world.resource_mut::<Events<PhysicResponseEvent>>();
         if events.is_empty() {
-            return Ok(None)
+            return Ok(None);
         }
-        
+
         let mut reader = events.get_reader();
-        let events_vec = reader.iter(&events).cloned().collect::<Vec<PhysicResponseEvent>>();
-        Ok(Some(serde_json::to_string_pretty(&events_vec).expect("Could not serialize events")))
+        let events_vec = reader
+            .iter(&events)
+            .cloned()
+            .collect::<Vec<PhysicResponseEvent>>();
+        Ok(Some(
+            serde_json::to_string_pretty(&events_vec).expect("Could not serialize events"),
+        ))
     }
 
     pub fn get_collisions(&mut self) -> PyResult<Option<String>> {
@@ -97,12 +95,19 @@ impl Kesko {
         }
 
         let mut reader = events.get_reader();
-        let events_vec = reader.iter(&events).cloned().collect::<Vec<CollisionEvent>>();
-        Ok(Some(serde_json::to_string_pretty(&events_vec).expect("Could not serialize events")))
+        let events_vec = reader
+            .iter(&events)
+            .cloned()
+            .collect::<Vec<CollisionEvent>>();
+        Ok(Some(
+            serde_json::to_string_pretty(&events_vec).expect("Could not serialize events"),
+        ))
     }
 
     pub fn step(&mut self) {
-        self.app.world.send_event::<SimulatorRequestEvent>(SimulatorRequestEvent::GetState);
+        self.app
+            .world
+            .send_event::<SimulatorRequestEvent>(SimulatorRequestEvent::GetState);
         self.app.update();
     }
 
@@ -112,25 +117,28 @@ impl Kesko {
             let entity = Entity::from_bits(*joint_id);
             world.send_event::<JointMotorEvent>(JointMotorEvent {
                 entity,
-                command: MotorCommand::PositionRevolute { position: *val, stiffness: None, damping: None }
+                command: MotorCommand::PositionRevolute {
+                    position: *val,
+                    stiffness: None,
+                    damping: None,
+                },
             });
         }
     }
 
     pub fn get_multibody_state(&mut self) -> PyResult<Option<String>> {
-
-        let events = self.app.world.resource_mut::<Events<SimulatorResponseEvent>>();
+        let events = self
+            .app
+            .world
+            .resource_mut::<Events<SimulatorResponseEvent>>();
         let mut reader = events.get_reader();
         if reader.is_empty(&events) {
             return Ok(None);
         }
 
         for event in reader.iter(&events) {
-            match event {
-                SimulatorResponseEvent::MultibodyStates(states) => {
-                    return Ok(Some(serde_json::to_string_pretty(states).unwrap()));
-                },
-                _ => ()
+            if let SimulatorResponseEvent::MultibodyStates(states) = event {
+                return Ok(Some(serde_json::to_string_pretty(states).unwrap()));
             }
         }
 
@@ -150,10 +158,13 @@ impl Kesko {
     }
 }
 
-fn start_scene(
-    mut commands: Commands, 
-) {
-    
+impl Default for Kesko {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+fn start_scene(mut commands: Commands) {
     // Light
     const HALF_SIZE: f32 = 10.0;
     commands.spawn_bundle(DirectionalLightBundle {

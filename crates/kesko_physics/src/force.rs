@@ -1,8 +1,7 @@
-use bevy::prelude::*;
 use crate::rapier_extern::rapier::prelude as rapier;
+use bevy::prelude::*;
 
-use crate::{rigid_body::RigidBodyHandle, conversions::IntoRapier};
-
+use crate::{conversions::IntoRapier, rigid_body::RigidBodyHandle};
 
 /// Component to apply force to a rigid body
 #[derive(Component)]
@@ -10,7 +9,7 @@ pub struct Force {
     /// Force vector
     pub vec: Vec3,
     /// If the forces should be reset before applying force
-    pub reset_forces: bool
+    pub reset_forces: bool,
 }
 
 impl Force {
@@ -22,16 +21,18 @@ impl Force {
 
 impl Default for Force {
     fn default() -> Self {
-        Self { vec: Vec3::ZERO, reset_forces: true }
+        Self {
+            vec: Vec3::ZERO,
+            reset_forces: true,
+        }
     }
 }
-
 
 /// System to apply a force to a rigid body
 #[allow(clippy::type_complexity)]
 pub(crate) fn update_force_system(
     mut rigid_bodies: ResMut<rapier::RigidBodySet>,
-    changed_force: Query<(&RigidBodyHandle, &Force), (Changed<Force>, With<RigidBodyHandle>)>
+    changed_force: Query<(&RigidBodyHandle, &Force), (Changed<Force>, With<RigidBodyHandle>)>,
 ) {
     for (body_handle, force) in changed_force.iter() {
         if let Some(body) = rigid_bodies.get_mut(body_handle.0) {

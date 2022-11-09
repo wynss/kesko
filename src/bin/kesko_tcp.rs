@@ -1,22 +1,17 @@
 use bevy::{
-    prelude::*, 
-    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}
+    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    prelude::*,
 };
 
-use kesko_plugins::{
-    main_camera::MainCameraPlugin,
-    UIPlugin,
-    InteractionPlugin
-};
-use kesko_physics::PhysicsPlugin;
 use kesko_core::{
-    CorePlugin,
     cursor_tracking::GrabablePlugin,
-    interaction::groups::{GroupDynamic, GroupStatic}
+    interaction::groups::{GroupDynamic, GroupStatic},
+    CorePlugin,
 };
-use kesko_tcp::TcpPlugin;
 use kesko_models::ModelPlugin;
-
+use kesko_physics::PhysicsPlugin;
+use kesko_plugins::{main_camera::MainCameraPlugin, InteractionPlugin, UIPlugin};
+use kesko_tcp::TcpPlugin;
 
 fn main() {
     App::new()
@@ -31,7 +26,6 @@ fn main() {
         .add_plugin(GrabablePlugin::<GroupDynamic>::default())
         .add_plugin(InteractionPlugin::<GroupDynamic>::default())
         .add_plugin(InteractionPlugin::<GroupStatic>::default())
-
         .add_plugin(FrameTimeDiagnosticsPlugin)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(TcpPlugin)
@@ -39,9 +33,7 @@ fn main() {
         .run();
 }
 
-fn setup(
-    mut commands: Commands
-) {
+fn setup(mut commands: Commands) {
     // Light
     const HALF_SIZE: f32 = 10.0;
     commands.spawn_bundle(DirectionalLightBundle {

@@ -1,10 +1,9 @@
-use std::f32::consts::PI;
-use bevy::render::mesh::{PrimitiveTopology, Indices, Mesh, shape};
 use bevy::math::Vec3;
+use bevy::render::mesh::{shape, Indices, Mesh, PrimitiveTopology};
+use std::f32::consts::PI;
 
 use kesko_physics::collider::ColliderShape;
 use kesko_physics::rapier_extern::rapier::prelude as rapier;
-
 
 /// A cylinder which stands on the XZ plane
 pub struct Cylinder {
@@ -24,19 +23,18 @@ impl Default for Cylinder {
             radius: 0.5,
             height: 1.0,
             resolution: 50,
-            rings: 7
+            rings: 7,
         }
     }
 }
 
 impl From<Cylinder> for Mesh {
     fn from(cylinder: Cylinder) -> Self {
-
         let Cylinder {
             radius,
             height,
             resolution,
-            rings
+            rings,
         } = cylinder;
 
         // the two comes from the vertices centered at the top and bottom circles respectively
@@ -92,7 +90,11 @@ impl From<Cylinder> for Mesh {
             let base_top = top_offset + 1;
             let base_bottom = bottom_offset + 1;
             indices.extend([top_offset, base_top + j1, base_top + j].iter().copied());
-            indices.extend([bottom_offset, base_bottom + j, base_bottom + j1].iter().copied());
+            indices.extend(
+                [bottom_offset, base_bottom + j, base_bottom + j1]
+                    .iter()
+                    .copied(),
+            );
         }
 
         assert_eq!(indices.len(), index_count);
@@ -146,52 +148,82 @@ pub enum Shape {
     Cylinder {
         radius: f32,
         length: f32,
-        resolution: u32
+        resolution: u32,
     },
     Capsule {
         radius: f32,
-        length: f32
-    }
+        length: f32,
+    },
 }
 
 impl Shape {
     pub fn into_mesh(&self) -> Option<Mesh> {
         match self {
-            Self::Sphere { radius , subdivisions} => {
-                Some(Mesh::from(shape::Icosphere { radius: *radius, subdivisions: *subdivisions}))
-            },
-            Self::Box { x_length, y_length, z_length } => {
-                Some(Mesh::from(shape::Box::new(*x_length, *y_length, *z_length)))
-            },
-            Self::Cylinder { radius, length, resolution} => {
-                Some(Mesh::from(Cylinder { radius: *radius, height: *length, resolution: *resolution, ..Default::default()}))
-            },
-            Self::Capsule { radius, length } => {
-                Some(Mesh::from(shape::Capsule{ radius: *radius, depth: *length, ..Default::default()}))
-            },
-            Self::Cube {size} => {
-                Some(Mesh::from(shape::Box::new(*size, *size, *size)))
-            }
-        } 
+            Self::Sphere {
+                radius,
+                subdivisions,
+            } => Some(Mesh::from(shape::Icosphere {
+                radius: *radius,
+                subdivisions: *subdivisions,
+            })),
+            Self::Box {
+                x_length,
+                y_length,
+                z_length,
+            } => Some(Mesh::from(shape::Box::new(*x_length, *y_length, *z_length))),
+            Self::Cylinder {
+                radius,
+                length,
+                resolution,
+            } => Some(Mesh::from(Cylinder {
+                radius: *radius,
+                height: *length,
+                resolution: *resolution,
+                ..Default::default()
+            })),
+            Self::Capsule { radius, length } => Some(Mesh::from(shape::Capsule {
+                radius: *radius,
+                depth: *length,
+                ..Default::default()
+            })),
+            Self::Cube { size } => Some(Mesh::from(shape::Box::new(*size, *size, *size))),
+        }
     }
 
     pub fn into_collider_shape(&self) -> ColliderShape {
         match self {
-            Self::Sphere { radius , subdivisions: _} => {
-                ColliderShape::Sphere { radius: *radius as rapier::Real}
+            Self::Sphere {
+                radius,
+                subdivisions: _,
+            } => ColliderShape::Sphere {
+                radius: *radius as rapier::Real,
             },
-            Self::Box { x_length, y_length, z_length } => {
-                ColliderShape::Cuboid { x_half: (x_length / 2.0) as rapier::Real, y_half: (y_length / 2.0) as rapier::Real, z_half: (z_length / 2.0) as rapier::Real }
+            Self::Box {
+                x_length,
+                y_length,
+                z_length,
+            } => ColliderShape::Cuboid {
+                x_half: (x_length / 2.0) as rapier::Real,
+                y_half: (y_length / 2.0) as rapier::Real,
+                z_half: (z_length / 2.0) as rapier::Real,
             },
-            Self::Cylinder { radius, length, resolution: _} => {
-                ColliderShape::Cylinder { radius: *radius as rapier::Real, length: *length as rapier::Real}
+            Self::Cylinder {
+                radius,
+                length,
+                resolution: _,
+            } => ColliderShape::Cylinder {
+                radius: *radius as rapier::Real,
+                length: *length as rapier::Real,
             },
-            Self::Capsule { radius, length } => {
-                ColliderShape::CapsuleY { half_length: (length / 2.0) as rapier::Real, radius: *radius as rapier::Real}
+            Self::Capsule { radius, length } => ColliderShape::CapsuleY {
+                half_length: (length / 2.0) as rapier::Real,
+                radius: *radius as rapier::Real,
             },
-            Self::Cube { size } => {
-                ColliderShape::Cuboid { x_half: (size / 2.0) as rapier::Real, y_half: (size / 2.0) as rapier::Real, z_half: (size / 2.0) as rapier::Real}
-            }
-        } 
+            Self::Cube { size } => ColliderShape::Cuboid {
+                x_half: (size / 2.0) as rapier::Real,
+                y_half: (size / 2.0) as rapier::Real,
+                z_half: (size / 2.0) as rapier::Real,
+            },
+        }
     }
 }
