@@ -15,7 +15,11 @@ classifiers = [
 requires-python = ">=3.8"
 keywords = ["Robotics", "machine learning", "reinforcement learning"]
 dependencies = [
-    
+    "numpy",
+    "requests",
+    "pydantic",
+    "torch",
+    "gym"
 ]
 
 [project.optional-dependencies]

@@ -3,6 +3,9 @@
 /wasm
 Cargo.lock
 
+# binaries
+*.so
+
 # python
 **/__pycache__/**
 /venv
