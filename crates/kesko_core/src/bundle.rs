@@ -1,12 +1,11 @@
 use bevy::prelude::*;
 
+use crate::shape::Shape;
 use kesko_physics::collider::{ColliderPhysicalProperties, ColliderShape};
 use kesko_physics::force::Force;
 use kesko_physics::gravity::GravityScale;
 use kesko_physics::impulse::Impulse;
-use kesko_physics::rigid_body::{RigidBody, CanSleep};
-use crate::shape::Shape;
-
+use kesko_physics::rigid_body::{CanSleep, RigidBody};
 
 #[derive(Bundle)]
 pub struct PhysicBodyBundle {
@@ -20,15 +19,11 @@ pub struct PhysicBodyBundle {
     can_sleep: CanSleep,
 
     #[bundle]
-    transform_bundle: TransformBundle
+    transform_bundle: TransformBundle,
 }
 
 impl PhysicBodyBundle {
-    pub fn from(
-        body_type: RigidBody,
-        shape: Shape,
-        transform: Transform,
-    ) -> Self {
+    pub fn from(body_type: RigidBody, shape: Shape, transform: Transform) -> Self {
         Self {
             rigid_body: body_type,
             collider_shape: shape.into_collider_shape(),
@@ -38,7 +33,10 @@ impl PhysicBodyBundle {
             gravity_scale: GravityScale::default(),
             can_sleep: CanSleep(false),
 
-            transform_bundle: TransformBundle { local: transform, ..Default::default() }
+            transform_bundle: TransformBundle {
+                local: transform,
+                ..Default::default()
+            },
         }
     }
 }
@@ -67,7 +65,6 @@ impl MeshPhysicBodyBundle {
         transform: Transform,
         meshes: &mut Assets<Mesh>,
     ) -> Self {
-
         let mesh = shape.into_mesh().unwrap();
         let collider_shape = shape.into_collider_shape();
 

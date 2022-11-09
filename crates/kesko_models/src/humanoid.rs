@@ -10,11 +10,11 @@ use kesko_core::{
 };
 use kesko_object_interaction::InteractiveBundle;
 use kesko_physics::{
+    event::collision::GenerateCollisionEvents,
     joint::{revolute::RevoluteJoint, KeskoAxis},
     mass::Mass,
     rapier_extern::rapier::prelude as rapier,
     rigid_body::RigidBody,
-    event::collision::GenerateCollisionEvents
 };
 
 use super::Model;
@@ -117,7 +117,7 @@ impl Humanoid {
             meshes,
         );
 
-        Self::build_legs(hip, commands, material.clone(), hip_transform, meshes);
+        Self::build_legs(hip, commands, material, hip_transform, meshes);
     }
 
     fn build_neck(
@@ -227,7 +227,6 @@ impl Humanoid {
         transform: Transform,
         meshes: &mut Assets<Mesh>,
     ) -> (Entity, Transform) {
-
         let should_dist = 3.5 * SHOULDER_RADIUS;
 
         let parent_anchor = Transform::from_translation(Vec3::new(-should_dist, 0.0, 0.0));
@@ -303,7 +302,7 @@ impl Humanoid {
                     radius: SHOULDER_RADIUS,
                     length: 0.5 * SHOULDER_WIDTH,
                 },
-                material.clone(),
+                material,
                 world_transform,
                 meshes,
             ))
@@ -497,7 +496,7 @@ impl Humanoid {
                     radius: ARM_RADIUS,
                     length: ARM_LOWER_LENGTH,
                 },
-                material.clone(),
+                material,
                 world_transform,
                 meshes,
             ))
@@ -522,7 +521,6 @@ impl Humanoid {
         transform: Transform,
         meshes: &mut Assets<Mesh>,
     ) {
-
         let space = 0.02;
         let spine_to_hip = SHOULDER_WIDTH / 3.0 + space;
         let hip_to_leg = LEG_RADIUS + space;
@@ -751,7 +749,7 @@ impl Humanoid {
                     radius: LEG_RADIUS,
                     length: FOOT_LENGTH,
                 },
-                material.clone(),
+                material,
                 world_transform,
                 meshes,
             ))

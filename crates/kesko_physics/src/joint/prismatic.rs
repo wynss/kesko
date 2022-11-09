@@ -1,9 +1,8 @@
-use bevy::prelude::*;
-use crate::rapier_extern::rapier::prelude as rapier;
 use crate::conversions::IntoRapier;
+use crate::rapier_extern::rapier::prelude as rapier;
+use bevy::prelude::*;
 
-use super::{AxisIntoVec, KeskoAxis, JointState};
-
+use super::{AxisIntoVec, JointState, KeskoAxis};
 
 #[derive(Component, Clone, Copy)]
 pub struct PrismaticJoint {
@@ -17,23 +16,23 @@ pub struct PrismaticJoint {
     pub max_motor_force: rapier::Real,
 
     position: rapier::Real,
-    velocity: rapier::Real
+    velocity: rapier::Real,
 }
 
 impl PrismaticJoint {
     pub fn attach_to(parent: Entity) -> Self {
         Self {
             parent,
-            parent_anchor: Transform::default(), 
-            child_anchor: Transform::default(), 
-            axis: KeskoAxis::X, 
+            parent_anchor: Transform::default(),
+            child_anchor: Transform::default(),
+            axis: KeskoAxis::X,
             limits: None,
             damping: 0.0,
             stiffness: 0.0,
             max_motor_force: rapier::Real::MAX,
 
             position: 0.0,
-            velocity: 0.0
+            velocity: 0.0,
         }
     }
 
@@ -69,7 +68,6 @@ impl PrismaticJoint {
     }
 
     pub fn update_position_vel(&mut self, translation: Vec3, dt: rapier::Real) {
-
         let prev_pos = self.position;
 
         match self.axis {
@@ -79,7 +77,7 @@ impl PrismaticJoint {
             KeskoAxis::NegY => self.position = -translation.y as rapier::Real,
             KeskoAxis::Z => self.position = translation.z as rapier::Real,
             KeskoAxis::NegZ => self.position = -translation.z as rapier::Real,
-            _ => error!("Prismatic joint does not have a valid axis")
+            _ => error!("Prismatic joint does not have a valid axis"),
         }
 
         self.velocity = (self.position - prev_pos) / dt;
@@ -90,10 +88,10 @@ impl PrismaticJoint {
     }
 
     pub fn state(&self) -> JointState {
-        JointState::Prismatic { 
-            axis: self.axis, 
+        JointState::Prismatic {
+            axis: self.axis,
             position: self.position,
-            velocity: self.velocity
+            velocity: self.velocity,
         }
     }
 }
@@ -103,9 +101,11 @@ impl From<PrismaticJoint> for rapier::GenericJoint {
         let mut builder = rapier::PrismaticJointBuilder::new(joint.axis.into_unitvec())
             .local_anchor1(joint.parent_anchor.translation.into_rapier())
             .local_anchor2(joint.child_anchor.translation.into_rapier());
-        
+
         if joint.stiffness > 0.0 || joint.damping > 0.0 {
-            builder = builder.set_motor(0.0, 0.0, joint.stiffness, joint.damping).motor_max_force(joint.max_motor_force);
+            builder = builder
+                .set_motor(0.0, 0.0, joint.stiffness, joint.damping)
+                .motor_max_force(joint.max_motor_force);
         }
 
         if let Some(limits) = joint.limits {
@@ -113,25 +113,25 @@ impl From<PrismaticJoint> for rapier::GenericJoint {
         }
 
         let mut generic: rapier::GenericJoint = builder.into();
-        generic.local_frame1.rotation = joint.parent_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
-        generic.local_frame1.rotation = joint.child_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
+        generic.local_frame1.rotation =
+            joint.parent_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
+        generic.local_frame1.rotation =
+            joint.child_anchor.rotation.into_rapier() * generic.local_frame1.rotation;
         generic
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use bevy::math::Vec2;
-    use bevy::prelude::{Transform, Vec3, Entity};
+    use super::PrismaticJoint;
     use crate::rapier_extern::rapier::dynamics::JointAxis;
     use crate::rapier_extern::rapier::prelude::GenericJoint;
-    use crate::{IntoRapier, joint::KeskoAxis};
-    use super::PrismaticJoint;
+    use crate::{joint::KeskoAxis, IntoRapier};
+    use bevy::math::Vec2;
+    use bevy::prelude::{Entity, Transform, Vec3};
 
     #[test]
     fn only_translation() {
-
         let expected_parent_transform = Transform::from_translation(Vec3::new(1.0, 2.0, 3.0));
         let expected_child_transform = Transform::from_translation(Vec3::new(4.0, 5.0, 6.0));
 
@@ -142,13 +142,18 @@ mod tests {
         let generic: GenericJoint = joint.into();
 
         assert!(generic.as_prismatic().is_some());
-        assert_eq!(generic.local_anchor1(), expected_parent_transform.translation.into_rapier());
-        assert_eq!(generic.local_anchor2(), expected_child_transform.translation.into_rapier());
+        assert_eq!(
+            generic.local_anchor1(),
+            expected_parent_transform.translation.into_rapier()
+        );
+        assert_eq!(
+            generic.local_anchor2(),
+            expected_child_transform.translation.into_rapier()
+        );
     }
 
     #[test]
     fn with_limits() {
-
         let limit_min = -1.0;
         let limit_max = 1.0;
 
@@ -167,7 +172,6 @@ mod tests {
 
     #[test]
     fn no_limits() {
-
         let joint = PrismaticJoint::attach_to(Entity::from_raw(0));
         let generic: GenericJoint = joint.into();
 

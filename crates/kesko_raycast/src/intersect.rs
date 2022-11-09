@@ -2,10 +2,9 @@ use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology, VertexAttributeValues};
 use bevy::render::primitives::Aabb;
 
-use crate::Ray;
-use crate::triangle::Triangle;
 use crate::convert::IntoUsize;
-
+use crate::triangle::Triangle;
+use crate::Ray;
 
 #[derive(Clone)]
 pub struct RayHit {
@@ -17,7 +16,7 @@ pub struct RayHit {
 pub struct RayIntersection {
     pub point: Vec3,
     pub normal: Vec3,
-    pub distance: f32
+    pub distance: f32,
 }
 
 impl RayIntersection {
@@ -27,17 +26,16 @@ impl RayIntersection {
         Self {
             point: point_transformed,
             normal: transform.transform_vector3(self.normal),
-            distance: ray_origin.distance(point_transformed)
+            distance: ray_origin.distance(point_transformed),
         }
     }
 }
 
 /// Checks if ray intersects with a specific Aabb
 /// NOTE: The function cann not handle when the ray is lying on any of the faces of the box. Then false will always be returned
-/// 
-/// Check https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection for technicals 
+///
+/// Check https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection for technicals
 pub(crate) fn aabb_intersection(ray: &Ray, aabb: &Aabb, mesh_to_world: &Mat4) -> bool {
-
     let world_to_mesh = mesh_to_world.inverse();
     let ray_mesh = ray.transform(&world_to_mesh);
 
@@ -51,8 +49,20 @@ pub(crate) fn aabb_intersection(ray: &Ray, aabb: &Aabb, mesh_to_world: &Mat4) ->
         return false;
     }
 
-    let mut near = { if t_min.x > t_min.y { t_min.x } else { t_min.y }};
-    let mut far = {if t_max.x < t_max.y { t_max.x } else { t_max.y }};
+    let mut near = {
+        if t_min.x > t_min.y {
+            t_min.x
+        } else {
+            t_min.y
+        }
+    };
+    let mut far = {
+        if t_max.x < t_max.y {
+            t_max.x
+        } else {
+            t_max.y
+        }
+    };
 
     if near > t_max.z || t_min.z > far {
         return false;
@@ -75,8 +85,11 @@ pub(crate) fn aabb_intersection(ray: &Ray, aabb: &Aabb, mesh_to_world: &Mat4) ->
 }
 
 /// Checks if a ray intersects a Mesh, if so the closest point of intersection is returned
-pub(crate) fn mesh_intersection(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) -> Option<RayIntersection> {
-
+pub(crate) fn mesh_intersection(
+    mesh: &Mesh,
+    ray: &Ray,
+    mesh_to_world: &Mat4,
+) -> Option<RayIntersection> {
     if mesh.primitive_topology() != PrimitiveTopology::TriangleList {
         error!("Ray casting only works with triangle list topology for now");
         return None;
@@ -85,41 +98,42 @@ pub(crate) fn mesh_intersection(mesh: &Mesh, ray: &Ray, mesh_to_world: &Mat4) ->
     let vertex_positions = match mesh.attribute(Mesh::ATTRIBUTE_POSITION) {
         Some(vertex_values) => match vertex_values {
             VertexAttributeValues::Float32x3(positions) => positions,
-            _ => panic!("Unsupported vertex attribute values type {:?}", vertex_values)
+            _ => panic!(
+                "Unsupported vertex attribute values type {:?}",
+                vertex_values
+            ),
         },
-        None => panic!("Mesh does not have any vertex positions")
+        None => panic!("Mesh does not have any vertex positions"),
     };
 
     let vertex_normals = match mesh.attribute(Mesh::ATTRIBUTE_NORMAL) {
         Some(vertex_values) => match vertex_values {
             VertexAttributeValues::Float32x3(normals) => normals,
-            _ => panic!("Unsupported vertex attribute values type {:?}", vertex_values)
+            _ => panic!(
+                "Unsupported vertex attribute values type {:?}",
+                vertex_values
+            ),
         },
-        None => panic!("Could not get vertex normal for mesh")
-
+        None => panic!("Could not get vertex normal for mesh"),
     };
 
     if let Some(indices) = mesh.indices() {
         return match indices {
-            Indices::U16(indices) => {
-                mesh_intersection_with_vertices(
-                    ray,
-                    mesh_to_world,
-                    vertex_positions,
-                    vertex_normals,
-                    indices
-                )
-            },
-            Indices::U32(indices) => {
-                mesh_intersection_with_vertices(
-                    ray,
-                    mesh_to_world,
-                    vertex_positions,
-                    vertex_normals,
-                    indices
-                )
-            }
-        }
+            Indices::U16(indices) => mesh_intersection_with_vertices(
+                ray,
+                mesh_to_world,
+                vertex_positions,
+                vertex_normals,
+                indices,
+            ),
+            Indices::U32(indices) => mesh_intersection_with_vertices(
+                ray,
+                mesh_to_world,
+                vertex_positions,
+                vertex_normals,
+                indices,
+            ),
+        };
     }
 
     None
@@ -130,10 +144,8 @@ fn mesh_intersection_with_vertices(
     mesh_to_world: &Mat4,
     vertex_positions: &[[f32; 3]],
     vertex_normals: &[[f32; 3]],
-    vertex_indices: &[impl IntoUsize]
-) -> Option<RayIntersection>
-{
-
+    vertex_indices: &[impl IntoUsize],
+) -> Option<RayIntersection> {
     let world_to_mesh = mesh_to_world.inverse();
     let ray_mesh = ray.transform(&world_to_mesh);
 
@@ -155,7 +167,6 @@ fn mesh_intersection_with_vertices(
         ];
 
         if let Some(intersection) = triangle_intersect(&triangle, &normals, &ray_mesh) {
-
             let intersection_world = intersection.transform(mesh_to_world, &ray.origin);
 
             if intersection_world.distance < min_intersection_distance {
@@ -172,7 +183,6 @@ fn mesh_intersection_with_vertices(
 ///
 /// Note that the vertices are relative to the mesh so the ray also need to be in the mesh frame of reference.
 fn triangle_intersect(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Option<RayIntersection> {
-
     let v0v1 = triangle.v1 - triangle.v0;
     let v0v2 = triangle.v2 - triangle.v0;
     let p = ray.direction.cross(v0v2);
@@ -214,7 +224,7 @@ fn triangle_intersect(triangle: &Triangle, normals: &[Vec3], ray: &Ray) -> Optio
     Some(RayIntersection {
         point: intersection,
         normal,
-        distance: ray.origin.distance(intersection)
+        distance: ray.origin.distance(intersection),
     })
 }
 
@@ -227,11 +237,7 @@ mod tests {
     const V0: [f32; 3] = [1.0, 5.0, -1.0];
     const V1: [f32; 3] = [-1.0, 5.0, -1.0];
     const V2: [f32; 3] = [0.0, 5.0, 2.0];
-    const NORMALS: [[f32; 3]; 3] = [
-        [0.0, 1.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [0.0, 1.0, 0.0],
-    ];
+    const NORMALS: [[f32; 3]; 3] = [[0.0, 1.0, 0.0], [0.0, 1.0, 0.0], [0.0, 1.0, 0.0]];
 
     fn get_triangle() -> (Triangle, [Vec3; 3]) {
         let triangle: Triangle = [V0, V1, V2].into();
@@ -253,7 +259,7 @@ mod tests {
 
         let intersection = intersection.unwrap();
         assert_eq!(intersection.normal, Vec3::Y);
-        assert_eq!(intersection.point, 5.0*Vec3::Y);
+        assert_eq!(intersection.point, 5.0 * Vec3::Y);
         assert_eq!(intersection.distance, (ray_origin.length() - 5.0).abs());
     }
 
@@ -295,17 +301,19 @@ mod tests {
 
     #[test]
     fn test_aabb_intersection() {
-        
         // unit cube
-        let aabb = Aabb {center: Vec3A::ZERO, half_extents: 0.5*Vec3A::ONE};
-        
+        let aabb = Aabb {
+            center: Vec3A::ZERO,
+            half_extents: 0.5 * Vec3A::ONE,
+        };
+
         // identity transform
         let world_to_mesh = Mat4::IDENTITY;
 
         // should intersect
         let ray = Ray::new(Vec3::new(2.0, 0.0, 0.0), -Vec3::X);
         assert!(aabb_intersection(&ray, &aabb, &world_to_mesh));
-        
+
         // cube behind ray
         let ray = Ray::new(Vec3::new(2.0, 0.0, 0.0), Vec3::X);
         assert!(!aabb_intersection(&ray, &aabb, &world_to_mesh));

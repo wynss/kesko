@@ -1,7 +1,6 @@
-use bevy::prelude::*;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
-use kesko_raycast::{RayCastPlugin, RayCastSource, RayCastMethod, RayVisible};
-
+use bevy::prelude::*;
+use kesko_raycast::{RayCastMethod, RayCastPlugin, RayCastSource, RayVisible};
 
 #[derive(Component, Default)]
 struct RayCastGroup;
@@ -23,25 +22,31 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-
     // ray-castable sphere
-    commands.spawn_bundle(PbrBundle {
-        //mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 1.0, subdivisions: 1})),
-        mesh: meshes.add(Mesh::from(shape::Icosphere { radius:2.0, subdivisions: 5})),
-        material: materials.add(Color::GOLD.into()),
-        transform: Transform::from_xyz(0.0, 0.0, -3.0),
-        ..Default::default()
-    }).insert(RayVisible::<RayCastGroup>::default());
+    commands
+        .spawn_bundle(PbrBundle {
+            //mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 1.0, subdivisions: 1})),
+            mesh: meshes.add(Mesh::from(shape::Icosphere {
+                radius: 2.0,
+                subdivisions: 5,
+            })),
+            material: materials.add(Color::GOLD.into()),
+            transform: Transform::from_xyz(0.0, 0.0, -3.0),
+            ..Default::default()
+        })
+        .insert(RayVisible::<RayCastGroup>::default());
 
     // camera that can cast rays from screen space
     let camera_pos = Vec3::new(0.0, 0.0, 5.0);
-    let camera_transform = Transform::from_translation(camera_pos)
-        .looking_at(Vec3::ZERO, Vec3::Y);
-    commands.spawn_bundle(Camera3dBundle {
-        transform: camera_transform,
-        ..Default::default()
-    })
-    .insert(RayCastSource::<RayCastGroup>::new(RayCastMethod::ScreenSpace));
+    let camera_transform = Transform::from_translation(camera_pos).looking_at(Vec3::ZERO, Vec3::Y);
+    commands
+        .spawn_bundle(Camera3dBundle {
+            transform: camera_transform,
+            ..Default::default()
+        })
+        .insert(RayCastSource::<RayCastGroup>::new(
+            RayCastMethod::ScreenSpace,
+        ));
 
     // Light
     commands.spawn_bundle(PointLightBundle {

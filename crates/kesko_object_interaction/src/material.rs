@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-
 #[derive(Component, Default)]
 pub(crate) struct OriginalMaterial(pub(crate) Option<Handle<StandardMaterial>>);
 
@@ -35,15 +34,14 @@ pub(crate) fn set_initial_interaction_material(
 
 #[cfg(test)]
 mod tests {
-    use bevy::prelude::*;
+    use crate::{set_initial_interaction_material, OriginalMaterial};
     use bevy::asset::AssetPlugin;
     use bevy::core::CorePlugin;
-    use crate::{OriginalMaterial, set_initial_interaction_material};
+    use bevy::prelude::*;
 
     #[test]
     fn test_set_initial_material() {
-
-        let mut app  = App::new();
+        let mut app = App::new();
         app.add_plugin(CorePlugin)
             .add_plugin(AssetPlugin)
             .add_plugin(MaterialPlugin::<StandardMaterial>::default());
@@ -51,7 +49,10 @@ mod tests {
         let world = &mut app.world;
         let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
         let material = materials.add(Color::GOLD.into());
-        world.spawn().insert(OriginalMaterial::default()).insert(material);
+        world
+            .spawn()
+            .insert(OriginalMaterial::default())
+            .insert(material);
 
         let mut stage = SystemStage::parallel();
         stage.add_system(set_initial_interaction_material);
@@ -61,9 +62,9 @@ mod tests {
         // only 1 entity
         assert_eq!(world.query::<&OriginalMaterial>().iter(world).len(), 1);
 
-        world.query::<(&OriginalMaterial, &Handle<StandardMaterial>)>()
+        world
+            .query::<(&OriginalMaterial, &Handle<StandardMaterial>)>()
             .for_each(world, |(original_material, material)| {
-
                 // assert we have a material set
                 assert!(original_material.0.is_some());
 
@@ -71,6 +72,6 @@ mod tests {
                 if let Some(original_material) = &original_material.0 {
                     assert_eq!(original_material, material);
                 }
-        });
+            });
     }
 }

@@ -13,5 +13,3 @@ impl IntoUsize for u32 {
         self as usize
     }
 }
-
-

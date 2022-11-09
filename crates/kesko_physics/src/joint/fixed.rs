@@ -1,11 +1,7 @@
+use crate::rapier_extern::rapier::prelude::{FixedJointBuilder, GenericJoint};
 use bevy::prelude::*;
-use crate::rapier_extern::rapier::prelude::{
-    GenericJoint, 
-    FixedJointBuilder
-};
 
 use crate::conversions::IntoRapier;
-
 
 #[derive(Component, Clone, Copy)]
 pub struct FixedJoint {
@@ -19,7 +15,7 @@ impl FixedJoint {
         Self {
             parent,
             parent_anchor: Transform::default(),
-            child_anchor: Transform::default()
+            child_anchor: Transform::default(),
         }
     }
 
@@ -43,29 +39,30 @@ impl From<FixedJoint> for GenericJoint {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use bevy::prelude::{Transform, Vec3, Entity};
-    use crate::rapier_extern::rapier::prelude::GenericJoint;
-    use crate::rapier_extern::rapier::dynamics::JointAxis;
-    use crate::IntoRapier;
     use super::FixedJoint;
+    use crate::rapier_extern::rapier::dynamics::JointAxis;
+    use crate::rapier_extern::rapier::prelude::GenericJoint;
+    use crate::IntoRapier;
+    use bevy::prelude::{Entity, Transform, Vec3};
 
     #[test]
     fn convert() {
-
         let expected_parent_transform = Transform::from_translation(Vec3::new(1.0, 2.0, 3.0));
         let expected_child_transform = Transform::from_translation(Vec3::new(4.0, 5.0, 6.0));
         let joint = FixedJoint {
             parent: Entity::from_raw(0),
             parent_anchor: expected_parent_transform,
-            child_anchor: expected_child_transform
+            child_anchor: expected_child_transform,
         };
 
         let generic: GenericJoint = joint.into();
 
-        assert_eq!(generic.local_frame1, expected_parent_transform.into_rapier());
+        assert_eq!(
+            generic.local_frame1,
+            expected_parent_transform.into_rapier()
+        );
         assert_eq!(generic.local_frame2, expected_child_transform.into_rapier());
 
         assert!(generic.limits(JointAxis::AngX).is_none());

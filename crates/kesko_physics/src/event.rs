@@ -5,27 +5,23 @@ use std::collections::BTreeMap;
 
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::rapier_extern::rapier::prelude as rapier;
 
 use crate::{
-    PhysicState,
-    rigid_body::{
-        Entity2BodyHandle, 
-        RigidBodyHandle
-    },
+    joint::JointInfo,
     multibody::MultibodyRoot,
-    joint::JointInfo
+    rigid_body::{Entity2BodyHandle, RigidBodyHandle},
+    PhysicState,
 };
-
 
 pub enum PhysicRequestEvent {
     PausePhysics,
     RunPhysics,
     TogglePhysics,
     DespawnBody(u64),
-    DespawnAll
+    DespawnAll,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -38,14 +34,15 @@ pub enum PhysicResponseEvent {
         id: u64,
         entity: Entity,
         name: String,
-        joints: BTreeMap<u64, JointInfo>
+        joints: BTreeMap<u64, JointInfo>,
     },
     RigidBodySpawned {
         id: u64,
-        name: String
-    }
+        name: String,
+    },
 }
 
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 pub(crate) fn handle_events(
     mut rigid_body_set: ResMut<rapier::RigidBodySet>,
     mut collider_set: ResMut<rapier::ColliderSet>,
@@ -57,28 +54,26 @@ pub(crate) fn handle_events(
     current_physic_state: Res<CurrentState<PhysicState>>,
     mut request_events: EventReader<PhysicRequestEvent>,
     mut response_events: EventWriter<PhysicResponseEvent>,
-    query: Query<(Entity, Option<&MultibodyRoot>), With<RigidBodyHandle>>
+    query: Query<(Entity, Option<&MultibodyRoot>), With<RigidBodyHandle>>,
 ) {
     for event in request_events.iter() {
         match event {
             PhysicRequestEvent::PausePhysics => {
                 commands.insert_resource(NextState(PhysicState::Stopped));
                 response_events.send(PhysicResponseEvent::StoppedPhysics);
-            },
+            }
             PhysicRequestEvent::RunPhysics => {
                 commands.insert_resource(NextState(PhysicState::Running));
                 response_events.send(PhysicResponseEvent::StartedPhysics);
-            },
-            PhysicRequestEvent::TogglePhysics => {
-                match current_physic_state.0 {
-                    PhysicState::Stopped => {
-                        commands.insert_resource(NextState(PhysicState::Running));
-                        response_events.send(PhysicResponseEvent::StartedPhysics);
-                    },
-                    PhysicState::Running => {
-                        commands.insert_resource(NextState(PhysicState::Stopped));
-                        response_events.send(PhysicResponseEvent::StoppedPhysics);
-                    },
+            }
+            PhysicRequestEvent::TogglePhysics => match current_physic_state.0 {
+                PhysicState::Stopped => {
+                    commands.insert_resource(NextState(PhysicState::Running));
+                    response_events.send(PhysicResponseEvent::StartedPhysics);
+                }
+                PhysicState::Running => {
+                    commands.insert_resource(NextState(PhysicState::Stopped));
+                    response_events.send(PhysicResponseEvent::StoppedPhysics);
                 }
             },
             PhysicRequestEvent::DespawnBody(id) => {
@@ -94,37 +89,36 @@ pub(crate) fn handle_events(
                         }
 
                         for entity in entities_to_remove.iter() {
-
                             debug!("Despawning entity {:?}", entity);
                             commands.entity(*entity).despawn_recursive();
 
                             if let Some(body_handle) = entity_2_body_handle.get(entity) {
                                 despawn_rapier_body(
-                                    *body_handle, 
+                                    *body_handle,
                                     &mut rigid_body_set,
-                                    &mut islands, 
-                                    &mut collider_set, 
-                                    &mut impulse_set, 
-                                    &mut multibody_joint_set
+                                    &mut islands,
+                                    &mut collider_set,
+                                    &mut impulse_set,
+                                    &mut multibody_joint_set,
                                 );
                             }
                         }
-                    },
-                    Err(e) => error!("Could not get body to remove {}", e)
+                    }
+                    Err(e) => error!("Could not get body to remove {}", e),
                 }
-                response_events.send(PhysicResponseEvent::DespawnedBody(*id) )
-            },
+                response_events.send(PhysicResponseEvent::DespawnedBody(*id))
+            }
             PhysicRequestEvent::DespawnAll => {
                 query.for_each(|(e, _)| {
                     commands.entity(e).despawn_recursive();
                     if let Some(body_handle) = entity_2_body_handle.get(&e) {
                         despawn_rapier_body(
-                            *body_handle, 
+                            *body_handle,
                             &mut rigid_body_set,
-                            &mut islands, 
-                            &mut collider_set, 
-                            &mut impulse_set, 
-                            &mut multibody_joint_set
+                            &mut islands,
+                            &mut collider_set,
+                            &mut impulse_set,
+                            &mut multibody_joint_set,
                         );
                     }
                 });
@@ -135,20 +129,20 @@ pub(crate) fn handle_events(
 }
 
 fn despawn_rapier_body(
-    handle: rapier::RigidBodyHandle, 
+    handle: rapier::RigidBodyHandle,
     rigid_body_set: &mut rapier::RigidBodySet,
-    islands: &mut rapier::IslandManager, 
-    colliders: &mut rapier::ColliderSet, 
+    islands: &mut rapier::IslandManager,
+    colliders: &mut rapier::ColliderSet,
     impulse_joints: &mut rapier::ImpulseJointSet,
-    multibody_joints: &mut rapier::MultibodyJointSet
+    multibody_joints: &mut rapier::MultibodyJointSet,
 ) {
     multibody_joints.remove_multibody_articulations(handle, true);
     rigid_body_set.remove(
-        handle, 
-        islands, 
-        colliders, 
-        impulse_joints, 
-        multibody_joints, 
-        true
+        handle,
+        islands,
+        colliders,
+        impulse_joints,
+        multibody_joints,
+        true,
     );
 }

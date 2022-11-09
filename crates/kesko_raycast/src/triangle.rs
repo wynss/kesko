@@ -1,6 +1,5 @@
-use std::convert::From;
 use bevy::math::Vec3;
-
+use std::convert::From;
 
 impl From<&[[f32; 3]]> for Triangle {
     fn from(vertices: &[[f32; 3]]) -> Self {

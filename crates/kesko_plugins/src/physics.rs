@@ -1,7 +1,6 @@
 use bevy::app::{App, Plugin};
 use kesko_physics::PhysicsPlugin;
 
-
 #[derive(Default)]
 pub struct DefaultPhysicsPlugin;
 

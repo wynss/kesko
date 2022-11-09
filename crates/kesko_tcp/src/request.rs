@@ -1,25 +1,15 @@
-use std::net::TcpStream;
 use std::io::Read;
+use std::net::TcpStream;
 
-use bevy::{
-    prelude::*, 
-    utils::hashbrown::HashMap
-};
+use bevy::{prelude::*, utils::hashbrown::HashMap};
 use iyes_loopless::prelude::*;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use kesko_core::event::SimulatorRequestEvent;
+use kesko_models::{Model, SpawnEvent};
 use kesko_physics::event::PhysicRequestEvent;
-use kesko_models::{
-    Model, SpawnEvent
-};
 
-use super::{
-    TcpBuffer,
-    TcpConnectionState
-};
-
-
+use super::{TcpBuffer, TcpConnectionState};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub(crate) enum TcpCommand {
@@ -28,31 +18,31 @@ pub(crate) enum TcpCommand {
     SpawnModel {
         model: Model,
         position: Vec3,
-        color: Color
+        color: Color,
     },
     Despawn {
-        id: u64
+        id: u64,
     },
     DespawnAll,
 
     ApplyMotorCommand {
         id: u64,
-        command: HashMap<u64, f32>
+        command: HashMap<u64, f32>,
     },
     PausePhysics,
     RunPhysics,
-    IsAlive
+    IsAlive,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct HttpRequest {
-    pub(crate) commands: Vec<TcpCommand>
+    pub(crate) commands: Vec<TcpCommand>,
 }
 
 impl HttpRequest {
     pub(crate) fn parse(request_str: String) -> Result<String, String> {
         for line in request_str.lines() {
-            if line.starts_with("{") {
+            if line.starts_with('{') {
                 return Ok(line.to_owned());
             }
         }
@@ -61,13 +51,14 @@ impl HttpRequest {
 
     pub(crate) fn from_http_str(req: String) -> Result<HttpRequest, String> {
         match Self::parse(req) {
-            Ok(json) =>{
-                match serde_json::from_str::<HttpRequest>(json.as_str()) {
-                    Ok(req) => Ok(req),
-                    Err(e) => Err(format!("Failed to convert http request to SimHttpRequest: {}", e))
-                }
-            }
-            Err(e) => Err(format!("{}", e))
+            Ok(json) => match serde_json::from_str::<HttpRequest>(json.as_str()) {
+                Ok(req) => Ok(req),
+                Err(e) => Err(format!(
+                    "Failed to convert http request to SimHttpRequest: {}",
+                    e
+                )),
+            },
+            Err(e) => Err(e),
         }
     }
 }
@@ -78,14 +69,12 @@ pub(crate) fn handle_requests(
     mut tcp_buffer: ResMut<TcpBuffer>,
     mut system_event_writer: EventWriter<SimulatorRequestEvent>,
     mut spawn_event_writer: EventWriter<SpawnEvent>,
-    mut physic_event_writer: EventWriter<PhysicRequestEvent>
+    mut physic_event_writer: EventWriter<PhysicRequestEvent>,
 ) {
-
     let mut got_msg = false;
     while !got_msg {
         match tcp_stream.read(&mut tcp_buffer.data) {
             Ok(msg_len) => {
-
                 if msg_len == 0 {
                     continue;
                 }
@@ -99,19 +88,46 @@ pub(crate) fn handle_requests(
 
                         for command in request.commands.drain(..) {
                             match command {
-                                TcpCommand::Close => system_event_writer.send(SimulatorRequestEvent::ExitApp),
-                                TcpCommand::SpawnModel { model, position, color } => {
-                                    spawn_event_writer.send(SpawnEvent::Spawn { model, transform: Transform::from_translation(position), color });
-                                },
-                                TcpCommand::GetState => system_event_writer.send(SimulatorRequestEvent::GetState),
-                                TcpCommand::PausePhysics => physic_event_writer.send(PhysicRequestEvent::PausePhysics),
-                                TcpCommand::RunPhysics => physic_event_writer.send(PhysicRequestEvent::RunPhysics),
-                                TcpCommand::IsAlive => system_event_writer.send(SimulatorRequestEvent::IsAlive),
+                                TcpCommand::Close => {
+                                    system_event_writer.send(SimulatorRequestEvent::ExitApp)
+                                }
+                                TcpCommand::SpawnModel {
+                                    model,
+                                    position,
+                                    color,
+                                } => {
+                                    spawn_event_writer.send(SpawnEvent::Spawn {
+                                        model,
+                                        transform: Transform::from_translation(position),
+                                        color,
+                                    });
+                                }
+                                TcpCommand::GetState => {
+                                    system_event_writer.send(SimulatorRequestEvent::GetState)
+                                }
+                                TcpCommand::PausePhysics => {
+                                    physic_event_writer.send(PhysicRequestEvent::PausePhysics)
+                                }
+                                TcpCommand::RunPhysics => {
+                                    physic_event_writer.send(PhysicRequestEvent::RunPhysics)
+                                }
+                                TcpCommand::IsAlive => {
+                                    system_event_writer.send(SimulatorRequestEvent::IsAlive)
+                                }
                                 TcpCommand::ApplyMotorCommand { id, command } => {
-                                    system_event_writer.send( SimulatorRequestEvent::ApplyMotorCommand { entity: Entity::from_bits(id), command })
-                                },
-                                TcpCommand::Despawn { id } => physic_event_writer.send(PhysicRequestEvent::DespawnBody(id)),
-                                TcpCommand::DespawnAll => physic_event_writer.send(PhysicRequestEvent::DespawnAll)
+                                    system_event_writer.send(
+                                        SimulatorRequestEvent::ApplyMotorCommand {
+                                            entity: Entity::from_bits(id),
+                                            command,
+                                        },
+                                    )
+                                }
+                                TcpCommand::Despawn { id } => {
+                                    physic_event_writer.send(PhysicRequestEvent::DespawnBody(id))
+                                }
+                                TcpCommand::DespawnAll => {
+                                    physic_event_writer.send(PhysicRequestEvent::DespawnAll)
+                                }
                             }
                         }
                     }
@@ -120,7 +136,7 @@ pub(crate) fn handle_requests(
                         error!("{}", e)
                     }
                 }
-            },
+            }
             Err(e) => {
                 error!("Could not read tcp stream: {}", e);
                 commands.insert_resource(NextState(TcpConnectionState::NotConnected));

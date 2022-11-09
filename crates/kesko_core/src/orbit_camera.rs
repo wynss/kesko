@@ -1,15 +1,13 @@
 use bevy::prelude::*;
 use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
-    render::camera::Projection
+    render::camera::Projection,
 };
-
 
 pub struct PanOrbitCameraPlugin;
 
 impl Plugin for PanOrbitCameraPlugin {
     fn build(&self, app: &mut App) {
-
         app.add_system(send_camera_mouse_events)
             .add_system(handle_camera_events)
             .add_event::<PanOrbitCameraEvents>();
@@ -21,13 +19,12 @@ enum PanOrbitCameraEvents {
     Orbit(Vec2),
     Pan(Vec2),
     Zoom(f32),
-    Translate(Vec3)
+    Translate(Vec3),
 }
 
 #[derive(Component)]
 pub struct PanOrbitCamera {
-
-    /// center of the sphere the camera is orbiting around 
+    /// center of the sphere the camera is orbiting around
     pub center: Vec3,
     /// distance to center for the sphere camera is orbiting around
     pub dist_to_center: f32,
@@ -58,7 +55,7 @@ pub struct PanOrbitCamera {
     pub translation_vel: Vec3,
     pub translation_friction: f32,
     pub acceleration: f32,
-    pub max_velocity: f32
+    pub max_velocity: f32,
 }
 
 impl Default for PanOrbitCamera {
@@ -90,7 +87,7 @@ impl Default for PanOrbitCamera {
             translation_vel: Vec3::ZERO,
             translation_friction: 0.8,
             acceleration: 1.2,
-            max_velocity: 20.0
+            max_velocity: 20.0,
         }
     }
 }
@@ -101,11 +98,9 @@ fn send_camera_mouse_events(
     mut mouse_scroll_events: EventReader<MouseWheel>,
     mouse_button_input: Res<Input<MouseButton>>,
     key_input: Res<Input<KeyCode>>,
-    query: Query<&PanOrbitCamera>
+    query: Query<&PanOrbitCamera>,
 ) {
-
     if let Ok(camera) = query.get_single() {
-
         let mut translation = Vec3::ZERO;
         if key_input.pressed(KeyCode::Up) {
             translation.z += 1.0;
@@ -128,7 +123,7 @@ fn send_camera_mouse_events(
 
         if translation != Vec3::ZERO {
             events.send(PanOrbitCameraEvents::Translate(translation));
-        } 
+        }
 
         // mouse motion
         let mut motion_delta = Vec2::ZERO;
@@ -138,8 +133,7 @@ fn send_camera_mouse_events(
         if motion_delta != Vec2::ZERO {
             if mouse_button_input.pressed(camera.orbit_button) {
                 events.send(PanOrbitCameraEvents::Orbit(motion_delta));
-            }
-            else if mouse_button_input.pressed(camera.pan_button) {
+            } else if mouse_button_input.pressed(camera.pan_button) {
                 events.send(PanOrbitCameraEvents::Pan(motion_delta));
             }
         }
@@ -159,14 +153,12 @@ fn handle_camera_events(
     time: Res<Time>,
     windows: Res<Windows>,
     mut camera_events: EventReader<PanOrbitCameraEvents>,
-    mut query: Query<(&mut PanOrbitCamera, &mut Transform, &Projection)>
+    mut query: Query<(&mut PanOrbitCamera, &mut Transform, &Projection)>,
 ) {
-
     let window = windows.get_primary().unwrap();
     let window_size = Vec2::new(window.width(), window.height());
 
     if let Ok((mut camera, mut transform, projection)) = query.get_single_mut() {
-
         let projection = match projection {
             Projection::Perspective(proj) => proj,
             _ => {
@@ -195,7 +187,9 @@ fn handle_camera_events(
                 PanOrbitCameraEvents::Pan(mut mouse_move) => {
                     pan_updated = true;
                     // make panning distance independent of resolution and FOV
-                    mouse_move *= Vec2::new(projection.fov * projection.aspect_ratio, projection.fov) / window_size;
+                    mouse_move *=
+                        Vec2::new(projection.fov * projection.aspect_ratio, projection.fov)
+                            / window_size;
                     let acc = camera.pan_acc;
                     camera.pan_vel += mouse_move * acc;
                     camera.pan_vel = camera.pan_vel.clamp_length_max(camera.pan_max_vel);
@@ -203,13 +197,15 @@ fn handle_camera_events(
                 PanOrbitCameraEvents::Zoom(scroll_move) => {
                     zoom_updated = true;
                     camera.zoom_vel += camera.zoom_acc * scroll_move.signum();
-                    camera.zoom_vel = camera.zoom_vel.clamp(-camera.zoom_max_vel, camera.zoom_max_vel);
-                },
+                    camera.zoom_vel = camera
+                        .zoom_vel
+                        .clamp(-camera.zoom_max_vel, camera.zoom_max_vel);
+                }
                 PanOrbitCameraEvents::Translate(translation) => {
                     translation_updated = true;
                     let acceleration = camera.acceleration;
                     camera.translation_vel += translation.normalize() * acceleration;
-                    let new_velocity =camera.translation_vel.clamp_length_max(camera.max_velocity);
+                    let new_velocity = camera.translation_vel.clamp_length_max(camera.max_velocity);
                     camera.translation_vel = new_velocity;
                 }
             }
@@ -274,18 +270,20 @@ fn handle_camera_events(
         }
         if camera.translation_vel != Vec3::ZERO {
             if !translation_updated {
-                let friction = camera.translation_friction; 
+                let friction = camera.translation_friction;
                 camera.translation_vel *= 1.0 - friction;
             }
             let right = transform.right();
             let forward = transform.forward();
-            let translation = camera.translation_vel.x * dt * right + camera.translation_vel.y * dt * Vec3::Y + camera.translation_vel.z * dt * forward;
+            let translation = camera.translation_vel.x * dt * right
+                + camera.translation_vel.y * dt * Vec3::Y
+                + camera.translation_vel.z * dt * forward;
             camera.center += translation;
         }
 
         // translate so camera always is on the sphere centered around camera.center with radius camera.dist_to_center
-        transform.translation = camera.center + (transform.rotation * Vec3::Z) * camera.dist_to_center;
-
+        transform.translation =
+            camera.center + (transform.rotation * Vec3::Z) * camera.dist_to_center;
     } else {
         error!("Can only have one pan orbit camera, found more than one");
     }
