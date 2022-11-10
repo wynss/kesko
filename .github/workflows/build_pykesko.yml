@@ -1,21 +1,62 @@
-# place holder action for building pykesko
-
-name: Rust
+name: Build PyKesko
 
 on:
   workflow_dispatch:
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
-  build:
 
-    runs-on: ubuntu-latest
+  build-wheels:
+    name: Build wheels
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu, macos]
+        manylinux: [auto]
+        python: [3.9]
+        include:
+          - os: ubuntu
+            platform: linux
+            target: x86_64 
+          - os: macos
+            target: aarch64
+        exclude:
+          - os: ubuntu
+            target: aarch64
+    
+    runs-on: ${{ matrix.os }}-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Jump into PyKesko folder
+        run: cd pykesko/
+      
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install python packages
+        run: pip install -U twine 'black>=22.3.0,<23' typing_extensions
+
+      - name: Build wheels
+        uses: messense/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: ${{ matrix.manylinux }}
+          args: --release --out dist --interpreter ${{ matrix.interpreter }}
+          rust-toolchain: nightly-2022-11-05
+      
+      - name: List files in dist folder
+        run: ls -lh dist/
+
+      - name: Check dist with twine
+        run: twine check dist/*
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: pypi_files
+          path: dist
