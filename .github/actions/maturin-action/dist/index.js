@@ -11901,8 +11901,15 @@ async function innerMain() {
             fullCommand = `${maturinPath} ${command} ${uploadArgs.join(' ')}`;
         }
         const build_dir = getBuildDir();
-        await exec.exec(`cd ${build_dir}`);
         env['GITHUB_WORKSPACE'] = build_dir;
+        env['PWD'] = build_dir;
+        for (const [k, v] of Object.entries(env)) {
+            if (v !== undefined) {
+                core.info(`Key: ${k} Val: ${v}`);
+            }
+        }
+        await exec.exec(`sudo /usr/bin/cd ${build_dir}`);
+        await exec.exec('pwd');
         exitCode = await exec.exec(fullCommand, undefined, { env });
     }
     if (exitCode !== 0) {
