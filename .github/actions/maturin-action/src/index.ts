@@ -701,6 +701,11 @@ async function innerMain(): Promise<void> {
     if (isUniversal2 || isArm64) {
       const buildEnvName = isUniversal2 ? 'universal2' : 'arm64'
       core.startGroup(`Prepare macOS ${buildEnvName} build environment`)
+
+      // switch to build dir
+      const build_dir = getBuildDir()
+      exec.exec(`cd ${build_dir}`)
+
       if (isUniversal2) {
         await installRustTarget('x86_64-apple-darwin', rustToolchain)
       }
@@ -728,10 +733,6 @@ async function innerMain(): Promise<void> {
       }
       fullCommand = `${maturinPath} ${command} ${uploadArgs.join(' ')}`
     }
-
-    // switch to build dir
-    const build_dir = getBuildDir()
-    exec.exec(`cd ${build_dir}`)
 
     exitCode = await exec.exec(fullCommand, undefined, {env})
   }

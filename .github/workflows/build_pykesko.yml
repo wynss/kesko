@@ -57,4 +57,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: pypi_files
-          path: dist
+          path: pykesko/dist
