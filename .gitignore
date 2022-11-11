@@ -16,6 +16,7 @@ Cargo.lock
 
 # trunk
 dist/
+!.github/actions/maturin-action/dist
 
 # mac
 .DS_Store
