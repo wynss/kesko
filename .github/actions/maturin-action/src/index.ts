@@ -733,6 +733,7 @@ async function innerMain(): Promise<void> {
     // switch to build dir
     const build_dir = getBuildDir()
     await exec.exec(`cd ${build_dir}`)
+    env['GITHUB_WORKSPACE'] = build_dir
 
     exitCode = await exec.exec(fullCommand, undefined, {env})
   }
