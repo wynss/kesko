@@ -50,8 +50,8 @@ jobs:
       - name: List files in dist folder
         run: ls -lh dist/
 
-      - name: Check dist with twine
-        run: twine check dist/*
+      # - name: Check dist with twine
+      #   run: twine check dist/*
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
