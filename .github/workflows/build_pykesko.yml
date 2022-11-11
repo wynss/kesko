@@ -1,7 +1,7 @@
 name: Build PyKesko
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
 
 jobs:
 
@@ -18,9 +18,6 @@ jobs:
             platform: linux
             target: x86_64 
           - os: macos
-            target: aarch64
-        exclude:
-          - os: ubuntu
             target: aarch64
     
     runs-on: ${{ matrix.os }}-latest
