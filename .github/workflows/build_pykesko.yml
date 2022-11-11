@@ -31,6 +31,9 @@ jobs:
 
       - name: Checkout repo
         uses: actions/checkout@v3
+
+      - name: Debug list files
+        run: ls -lh ./
       
       - name: Setup python
         uses: actions/setup-python@v4
