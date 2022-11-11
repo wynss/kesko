@@ -5,53 +5,81 @@ on:
 
 jobs:
 
-  build-wheels:
-    name: Build Wheels on ${{ matrix.platform || matrix.os }} (${{ matrix.target }} - ${{ matrix.manylinux || 'auto' }})
-    strategy:
-      fail-fast: true
-      matrix:
-        os: [ubuntu, macos]
-        manylinux: [auto]
-        interpreter: [3.9]
-        include:
-          - os: ubuntu
-            platform: linux
-            target: x86_64 
-          - os: macos
-            target: aarch64
-
-    runs-on: ${{ matrix.os }}-latest
-
+  linux-wheels:
+    name: Build wheels for linux
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux2014_x86_64
     steps:
-
       - name: Checkout repo
         uses: actions/checkout@v3
-      
-      - name: Setup python
-        uses: actions/setup-python@v4
+      - name: Install Rust nightly
+        uses: actions-rs/toolchain@v1
         with:
-          python-version: '3.9'
-
-      - name: Install python packages
-        run: pip install -U twine 'black>=22.3.0,<23' typing_extensions
-
+          toolchain: nightly-2022-11-05
+          override: true
+      # - name: Setup python
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: '3.9'
       - name: Build wheels
-        uses: ./.github/actions/maturin-action
-        with:
-          target: ${{ matrix.target }}
-          manylinux: ${{ matrix.manylinux }}
-          args: --release --out dist --interpreter ${{ matrix.interpreter }}
-          rust-toolchain: nightly-2022-11-05
-          build-dir: pykesko
-      
-      - name: List files in dist folder
-        run: ls -lh pykesko
-
-      # - name: Check dist with twine
-      #   run: twine check dist/*
-      
+        run: |
+          python3 -m pip install maturin
+          maturin build --release
+        working-directory: pykesko
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: pypi_files
           path: pykesko/dist
+
+
+  # build-wheels:
+  #   name: Build Wheels on ${{ matrix.platform || matrix.os }} (${{ matrix.target }} - ${{ matrix.manylinux || 'auto' }})
+  #   strategy:
+  #     fail-fast: true
+  #     matrix:
+  #       os: [ubuntu, macos]
+  #       manylinux: [auto]
+  #       interpreter: [3.9]
+  #       include:
+  #         - os: ubuntu
+  #           platform: linux
+  #           target: x86_64 
+  #         - os: macos
+  #           target: aarch64
+
+  #   runs-on: ${{ matrix.os }}-latest
+
+  #   steps:
+
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v3
+      
+  #     - name: Setup python
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: '3.9'
+
+  #     - name: Install python packages
+  #       run: pip install -U twine 'black>=22.3.0,<23' typing_extensions
+
+  #     - name: Build wheels
+  #       uses: ./.github/actions/maturin-action
+  #       with:
+  #         target: ${{ matrix.target }}
+  #         manylinux: ${{ matrix.manylinux }}
+  #         args: --release --out dist --interpreter ${{ matrix.interpreter }}
+  #         rust-toolchain: nightly-2022-11-05
+  #         build-dir: pykesko
+      
+  #     - name: List files in dist folder
+  #       run: ls -lh pykesko
+
+  #     # - name: Check dist with twine
+  #     #   run: twine check dist/*
+      
+  #     - name: Upload artifacts
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: pypi_files
+  #         path: pykesko/dist
