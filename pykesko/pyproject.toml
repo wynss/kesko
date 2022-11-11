@@ -1,6 +1,6 @@
 [project]
 name = "pykesko"
-version = "0.1.0"
+version = "0.0.1"
 description = "Robotics Simulator written in Rust"
 authors = [{ name = "Toni Axelsson", email = "toniaxelsson@gmail.com" }]
 licence = { file = "../../LICENSE" }
