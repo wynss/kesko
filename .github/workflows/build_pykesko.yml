@@ -7,9 +7,6 @@ jobs:
 
   build-wheels:
     name: Build Wheels on ${{ matrix.platform || matrix.os }} (${{ matrix.target }} - ${{ matrix.manylinux || 'auto' }})
-    defaults:
-     run:
-      working-directory: pykesko
     strategy:
       fail-fast: true
       matrix:
@@ -37,6 +34,9 @@ jobs:
 
       - name: Install python packages
         run: pip install -U twine 'black>=22.3.0,<23' typing_extensions
+      
+      - name: Test to switch directory
+        run: cd pykesko
 
       - name: Build wheels
         uses: ./.github/actions/maturin-action
@@ -48,7 +48,7 @@ jobs:
           build-dir: pykesko
       
       - name: List files in dist folder
-        run: ls -lh dist/
+        run: ls -lh pykesko/dist/
 
       # - name: Check dist with twine
       #   run: twine check dist/*
