@@ -733,8 +733,8 @@ async function innerMain(): Promise<void> {
     await exec.exec('ls -al')
 
     const build_dir = getBuildDir()
-    fullCommand = `cd ${build_dir} ; ${fullCommand}`
-    exitCode = await exec.exec(fullCommand, undefined, {env})
+    await exec.exec(`cd ${build_dir}`)
+    exitCode = await exec.exec(`cd ./pykesko && ${fullCommand}`)
   }
   if (exitCode !== 0) {
     throw new Error(`maturin: returned ${exitCode}`)
