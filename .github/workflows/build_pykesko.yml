@@ -3,10 +3,15 @@ name: Build PyKesko
 on:
   workflow_dispatch:
 
+
+
 jobs:
 
   build-wheels:
-    name: Build wheels
+    name: Build Wheels on ${{ matrix.platform || matrix.os }} (${{ matrix.target }} - ${{ matrix.manylinux || 'auto' }})
+    defaults:
+     run:
+      working-directory: pykesko
     strategy:
       fail-fast: false
       matrix:
@@ -19,16 +24,13 @@ jobs:
             target: x86_64 
           - os: macos
             target: aarch64
-    
+
     runs-on: ${{ matrix.os }}-latest
 
     steps:
 
       - name: Checkout repo
         uses: actions/checkout@v3
-
-      - name: Jump into PyKesko folder
-        run: cd pykesko/
       
       - name: Setup python
         uses: actions/setup-python@v4
