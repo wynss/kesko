@@ -29,17 +29,14 @@ jobs:
 
       - name: Checkout repo
         uses: actions/checkout@v3
-
-      - name: Debug list files
-        run: tree -a ${{ github.workspace }}
       
       - name: Setup python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      # - name: Install python packages
-      #   run: pip install -U twine 'black>=22.3.0,<23' typing_extensions
+      - name: Install python packages
+        run: pip install -U twine 'black>=22.3.0,<23' typing_extensions
 
       - name: Build wheels
         uses: ./.github/actions/maturin-action

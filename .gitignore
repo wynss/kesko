@@ -16,7 +16,7 @@ Cargo.lock
 
 # trunk
 dist/
-!.github/actions/maturin-action/dist
+
 
 # mac
 .DS_Store
@@ -30,3 +30,6 @@ trace-*.json
 
 # training related
 ml/*
+
+# github action for building PyKesko
+!.github/actions/maturin-action/dist
