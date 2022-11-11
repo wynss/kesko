@@ -171,13 +171,13 @@ function getManifestDir(args: string[]): string {
 
 function getBuildDir(): string {
   const workspace = process.env.GITHUB_WORKSPACE!
-  let build_dir = core.getInput('build-dir');
+  let build_dir = core.getInput('build-dir')
   if (!build_dir) {
-    build_dir = workspace;
+    build_dir = workspace
   } else {
-    build_dir = path.join(workspace, build_dir);
+    build_dir = path.join(workspace, build_dir)
   }
-  return build_dir;
+  return build_dir
 }
 
 function parseRustToolchain(content: string): string {
@@ -513,7 +513,7 @@ async function dockerBuild(
       dockerEnvs.push(env)
     }
   }
-  let build_dir = getBuildDir();
+  const build_dir = getBuildDir()
   const exitCode = await exec.exec('docker', [
     'run',
     '--rm',
@@ -730,9 +730,9 @@ async function innerMain(): Promise<void> {
     }
 
     // switch to build dir
-    const build_dir = getBuildDir();
-    exec.exec(`cd ${build_dir}`);
-    
+    const build_dir = getBuildDir()
+    exec.exec(`cd ${build_dir}`)
+
     exitCode = await exec.exec(fullCommand, undefined, {env})
   }
   if (exitCode !== 0) {

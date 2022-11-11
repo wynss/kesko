@@ -11445,6 +11445,17 @@ function getManifestDir(args) {
     const manifestPath = getCliValue(args, '--manifest-path') || getCliValue(args, '-m');
     return manifestPath ? path.dirname(manifestPath) : process.cwd();
 }
+function getBuildDir() {
+    const workspace = process.env.GITHUB_WORKSPACE;
+    let build_dir = core.getInput('build-dir');
+    if (!build_dir) {
+        build_dir = workspace;
+    }
+    else {
+        build_dir = path.join(workspace, build_dir);
+    }
+    return build_dir;
+}
 function parseRustToolchain(content) {
     const toml = (0, toml_1.parse)(content.toString());
     const toolchain = toml === null || toml === void 0 ? void 0 : toml.toolchain;
@@ -11702,12 +11713,12 @@ async function dockerBuild(tag, manylinux, args) {
             dockerEnvs.push(env);
         }
     }
-    const buildspace = path.join(workspace, 'pykesko');
+    const build_dir = getBuildDir();
     const exitCode = await exec.exec('docker', [
         'run',
         '--rm',
         '--workdir',
-        buildspace,
+        build_dir,
         '-e',
         'DEBIAN_FRONTEND=noninteractive',
         '-e',
@@ -11889,6 +11900,8 @@ async function innerMain() {
             }
             fullCommand = `${maturinPath} ${command} ${uploadArgs.join(' ')}`;
         }
+        const build_dir = getBuildDir();
+        exec.exec(`cd ${build_dir}`);
         exitCode = await exec.exec(fullCommand, undefined, { env });
     }
     if (exitCode !== 0) {
