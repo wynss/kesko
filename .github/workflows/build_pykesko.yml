@@ -17,14 +17,10 @@ jobs:
         with:
           toolchain: nightly-2022-11-05
           override: true
-      # - name: Setup python
-      #   uses: actions/setup-python@v4
-      #   with:
-      #     python-version: '3.9'
       - name: Build wheels
         run: |
-          python3 -m pip install maturin
-          maturin build --release
+          ls -al
+          bash ../.github/workflows/build-wheels.sh
         working-directory: pykesko
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
