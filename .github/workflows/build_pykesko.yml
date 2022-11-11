@@ -19,15 +19,17 @@ jobs:
           override: true
       - name: Build wheels
         run: |
-          ls -al
           bash ../.github/workflows/build-wheels.sh
         working-directory: pykesko
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: pypi_files
-          path: pykesko/dist
-
+          name: linux-wheels
+          path: pykesko/wheelhouse/
+  
+  # macos-wheels:
+  #   name: Build wheels for MacOS
+  #   runs-on: macos-latest
 
   # build-wheels:
   #   name: Build Wheels on ${{ matrix.platform || matrix.os }} (${{ matrix.target }} - ${{ matrix.manylinux || 'auto' }})
