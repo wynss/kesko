@@ -730,9 +730,10 @@ async function innerMain(): Promise<void> {
       fullCommand = `${maturinPath} ${command} ${uploadArgs.join(' ')}`
     }
 
-    const build_dir = getBuildDir()
-    fullCommand = `cd ${build_dir} && ${fullCommand}`
+    await exec.exec('ls -al')
 
+    const build_dir = getBuildDir()
+    fullCommand = `cd ${build_dir} ; ${fullCommand}`
     exitCode = await exec.exec(fullCommand, undefined, {env})
   }
   if (exitCode !== 0) {

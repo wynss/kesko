@@ -11900,8 +11900,9 @@ async function innerMain() {
             }
             fullCommand = `${maturinPath} ${command} ${uploadArgs.join(' ')}`;
         }
+        await exec.exec('ls -al');
         const build_dir = getBuildDir();
-        fullCommand = `cd ${build_dir} && ${fullCommand}`;
+        fullCommand = `cd ${build_dir} ; ${fullCommand}`;
         exitCode = await exec.exec(fullCommand, undefined, { env });
     }
     if (exitCode !== 0) {
