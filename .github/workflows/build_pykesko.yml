@@ -3,8 +3,6 @@ name: Build PyKesko
 on:
   workflow_dispatch:
 
-
-
 jobs:
 
   build-wheels:
@@ -44,7 +42,7 @@ jobs:
         run: pip install -U twine 'black>=22.3.0,<23' typing_extensions
 
       - name: Build wheels
-        uses: messense/maturin-action@v1
+        uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
           manylinux: ${{ matrix.manylinux }}
