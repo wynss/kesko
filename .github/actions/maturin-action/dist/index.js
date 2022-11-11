@@ -11901,8 +11901,6 @@ async function innerMain() {
             fullCommand = `${maturinPath} ${command} ${uploadArgs.join(' ')}`;
         }
         const build_dir = getBuildDir();
-        await exec.exec(`sudo /usr/bin/cd ${build_dir}`);
-        await exec.exec('pwd');
         fullCommand = `cd ${build_dir} && ${fullCommand}`;
         exitCode = await exec.exec(fullCommand, undefined, { env });
     }
