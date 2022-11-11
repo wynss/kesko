@@ -11,7 +11,7 @@ jobs:
      run:
       working-directory: pykesko
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu, macos]
         manylinux: [auto]

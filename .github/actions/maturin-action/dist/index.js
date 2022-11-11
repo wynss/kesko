@@ -11901,7 +11901,7 @@ async function innerMain() {
             fullCommand = `${maturinPath} ${command} ${uploadArgs.join(' ')}`;
         }
         const build_dir = getBuildDir();
-        exec.exec(`cd ${build_dir}`);
+        await exec.exec(`cd ${build_dir}`);
         exitCode = await exec.exec(fullCommand, undefined, { env });
     }
     if (exitCode !== 0) {
