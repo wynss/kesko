@@ -8,11 +8,11 @@ jobs:
   build-wheels:
     name: Build wheels
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu, macos]
         manylinux: [auto]
-        python: [3.9]
+        interpreter: [3.9]
         include:
           - os: ubuntu
             platform: linux
