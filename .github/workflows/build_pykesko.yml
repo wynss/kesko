@@ -45,6 +45,7 @@ jobs:
           manylinux: ${{ matrix.manylinux }}
           args: --release --out dist --interpreter ${{ matrix.interpreter }}
           rust-toolchain: nightly-2022-11-05
+          build-dir: pykesko
       
       - name: List files in dist folder
         run: ls -lh dist/
