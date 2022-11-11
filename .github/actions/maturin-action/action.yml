@@ -1,0 +1,42 @@
+name: 'maturin-action'
+description: 'GitHub Action to install and run a custom maturin command'
+author: messense
+
+inputs:
+  token:
+    description: Used to pull maturin distributions using GitHub API. Since there's a default, this is typically not supplied by the user.
+    required: false
+    default: ${{ github.token }}
+  command:
+    description: maturin command to run. Defaults to "build".
+    required: false
+    default: 'build'
+  args:
+    description: Arguments for the maturin command
+    required: false
+  maturin-version:
+    description: Version of maturin to install like "v0.12.0".
+    required: false
+  manylinux:
+    description: Control the manylinux platform tag on linux.
+    required: false
+  container:
+    description: Docker container image name. Default depends on "target" and "manylinux" options.
+    required: false
+  target:
+    description: The --target option for cargo
+    required: false
+  rust-toolchain:
+    description: |
+      Rust toolchain name.
+      See https://rust-lang.github.io/rustup/concepts/toolchains.html#toolchain-specification
+    required: false
+  rustup-components:
+    description: |
+      Rustup components.
+      See https://rust-lang.github.io/rustup/concepts/components.html
+    required: false
+
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
