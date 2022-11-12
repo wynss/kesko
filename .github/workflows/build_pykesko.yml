@@ -37,12 +37,11 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-      - name: Install Rust nightly
-        uses: actions-rs/toolchain@v1
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          target: aarch64-apple-darwin
+          targets: aarch64-apple-darwin
           toolchain: nightly-2022-11-05
-          override: true
       - name: Setup python
         uses: actions/setup-python@v4
         with:
