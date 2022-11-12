@@ -40,7 +40,7 @@ jobs:
       - name: Install Rust nightly
         uses: actions-rs/toolchain@v1
         with:
-          targets: aarch64-apple-darwin
+          target: aarch64-apple-darwin
           toolchain: nightly-2022-11-05
           override: true
       - name: Setup python
