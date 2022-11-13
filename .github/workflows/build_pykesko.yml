@@ -63,7 +63,6 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
-        target: [x64, x86]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -75,7 +74,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: ${{ matrix.target }}
+          architecture: x64
       - name: Build wheels
         working-directory: pykesko
         run: |
