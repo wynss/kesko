@@ -9,14 +9,38 @@ use kesko::physics::{
     event::{collision::CollisionEvent, PhysicRequestEvent, PhysicResponseEvent},
     joint::{JointMotorEvent, MotorCommand},
 };
-use kesko::plugins::{CorePlugins, HeadlessRenderPlugins};
+use kesko::plugins::{CorePlugins, HeadlessRenderPlugins, UIPlugin};
+use kesko::tcp::TcpPlugin;
 
 #[pymodule]
 fn pykesko(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<KeskoApp>()?;
     m.add_class::<Model>()?;
+    m.add_function(wrap_pyfunction!(run_kesko_tcp, m)?)?;
     Ok(())
 }
+
+/// Function to start Kesko with tcp communication
+#[pyfunction]
+fn run_kesko_tcp(window: bool) {
+    if window {
+        App::new()
+            .add_plugins(CorePlugins)
+            .add_plugin(CarPlugin)
+            .add_plugin(WheelyPlugin)
+            .add_plugin(TcpPlugin)
+            .add_startup_system(start_scene)
+            .run();
+    } else {
+        App::new()
+            .add_plugins(HeadlessRenderPlugins::default())
+            .add_plugin(TcpPlugin)
+            .add_startup_system(start_scene)
+            .run();
+    }
+}
+
+/// Hold an instance to the Kesko app
 #[pyclass(unsendable)]
 pub struct KeskoApp {
     app: App,
@@ -31,7 +55,7 @@ impl KeskoApp {
 
     pub fn init_default(&mut self) {
         self.app
-            .add_plugins(CorePlugins)
+            .add_plugins_with(CorePlugins, |group| group.disable::<UIPlugin>())
             .add_plugin(CarPlugin)
             .add_plugin(WheelyPlugin)
             .add_startup_system(start_scene);

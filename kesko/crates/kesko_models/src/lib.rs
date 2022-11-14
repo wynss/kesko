@@ -8,7 +8,7 @@ pub mod spider;
 pub mod wheely;
 
 use bevy::prelude::*;
-use pyo3::pyclass;
+use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 
 pub struct ModelPlugin;
@@ -47,8 +47,10 @@ pub enum Model {
     Plane,
 }
 
+#[pymethods]
 impl Model {
     /// Names to use for example in UI
+    #[getter]
     pub const fn name(&self) -> &'static str {
         match self {
             Self::Car => "Car",
