@@ -1,5 +1,5 @@
 from enum import Enum, auto
-from typing import Protocol
+from typing import Protocol, Optional
 
 from ..protocol.response import KeskoResponse
 from ..protocol.commands import Command
@@ -22,5 +22,5 @@ class Backend(Protocol):
     def step(self, commands: list[Command]) -> KeskoResponse:
         ...
 
-    def close(self):
+    def close(self) -> Optional[KeskoResponse]:
         ...

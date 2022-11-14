@@ -18,7 +18,7 @@ from ..protocol.response import (
     MultibodyStates,
     MultibodySpawned,
 )
-from ..pykesko import KeskoApp, Model
+from ..pykesko import KeskoApp
 
 
 class BindingBackend:

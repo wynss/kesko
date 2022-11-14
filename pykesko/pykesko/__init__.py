@@ -1,7 +1,8 @@
 from pykesko.kesko import Kesko
 
 # import the the rust bindings
-from .pykesko import KeskoApp, Model
+from .pykesko import KeskoApp as _KeskoApp
+from .pykesko import Model, run_kesko_tcp
 
 from gym.envs.registration import register
 

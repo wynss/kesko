@@ -32,6 +32,7 @@ class Kesko:
         self.backend.initialize(self.render_mode)
 
     def send(self, commands: Union[list[Command], Command]) -> KeskoResponse:
+
         if not isinstance(commands, list):
             commands = [commands]
         commands = self._prepare_commands(commands)
