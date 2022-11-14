@@ -58,10 +58,7 @@ class Kesko:
                 if isinstance(action.values, (np.ndarray, torch.Tensor)):
                     # convert tensor or array to dict
                     action.values = {
-                        joint_id: val
-                        for joint_id, val in zip(
-                            self.bodies[action.body_id].joints, action.values.tolist()
-                        )
+                        joint_id: val for joint_id, val in zip(self.bodies[action.body_id].joints, action.values.tolist())
                     }
             elif isinstance(action, DespawnAll) or action == DespawnAll:
                 self.bodies = {}

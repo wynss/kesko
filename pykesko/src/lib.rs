@@ -1,31 +1,29 @@
 use std::collections::BTreeMap;
 
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use pyo3::prelude::*;
 
-use kesko_core::event::{SimulatorRequestEvent, SimulatorResponseEvent};
-use kesko_models::{car::CarPlugin, wheely::WheelyPlugin, Model, SpawnEvent};
-use kesko_physics::{
+use kesko::core::event::{SimulatorRequestEvent, SimulatorResponseEvent};
+use kesko::models::{car::CarPlugin, wheely::WheelyPlugin, Model, SpawnEvent};
+use kesko::physics::{
     event::{collision::CollisionEvent, PhysicRequestEvent, PhysicResponseEvent},
     joint::{JointMotorEvent, MotorCommand},
 };
-use kesko_plugins::CorePlugins;
-use kesko_plugins::HeadlessRenderPlugins;
+use kesko::plugins::{CorePlugins, HeadlessRenderPlugins};
 
 #[pymodule]
 fn pykesko(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
-    m.add_class::<Kesko>()?;
+    m.add_class::<KeskoApp>()?;
     m.add_class::<Model>()?;
     Ok(())
 }
 #[pyclass(unsendable)]
-pub struct Kesko {
+pub struct KeskoApp {
     app: App,
 }
 
 #[pymethods]
-impl Kesko {
+impl KeskoApp {
     #[new]
     pub fn new() -> Self {
         Self { app: App::new() }
@@ -34,8 +32,6 @@ impl Kesko {
     pub fn init_default(&mut self) {
         self.app
             .add_plugins(CorePlugins)
-            .add_plugin(LogDiagnosticsPlugin::default())
-            .add_plugin(FrameTimeDiagnosticsPlugin::default())
             .add_plugin(CarPlugin)
             .add_plugin(WheelyPlugin)
             .add_startup_system(start_scene);
@@ -44,8 +40,6 @@ impl Kesko {
     pub fn init_headless(&mut self) {
         self.app
             .add_plugins(HeadlessRenderPlugins::default())
-            .add_plugin(LogDiagnosticsPlugin::default())
-            .add_plugin(FrameTimeDiagnosticsPlugin::default())
             .add_startup_system(start_scene);
     }
 
@@ -158,7 +152,7 @@ impl Kesko {
     }
 }
 
-impl Default for Kesko {
+impl Default for KeskoApp {
     fn default() -> Self {
         Self::new()
     }

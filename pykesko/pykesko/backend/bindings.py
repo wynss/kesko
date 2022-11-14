@@ -1,8 +1,5 @@
-import pykesko
-
 import json
 
-from ..model import KeskoModel
 from ..color import Color, Rgba
 from .backend import RenderMode
 from ..protocol.commands import (
@@ -21,11 +18,12 @@ from ..protocol.response import (
     MultibodyStates,
     MultibodySpawned,
 )
+from ..pykesko import KeskoApp, Model
 
 
 class BindingBackend:
     def __init__(self):
-        self.kesko = pykesko.Kesko()
+        self.kesko = KeskoApp()
 
     def initialize(self, render_mode: RenderMode):
         if render_mode == RenderMode.HEADLESS:
@@ -50,20 +48,9 @@ class BindingBackend:
                 elif isinstance(command.color, Rgba):
                     color = command.color.to_list()
                 else:
-                    raise ValueError(
-                        f"Spawn had an invalid color type, {type(command.color)}"
-                    )
+                    raise ValueError(f"Spawn had an invalid color type, {type(command.color)}")
 
-                if command.model == KeskoModel.Spider:
-                    model = pykesko.Model.Spider
-                elif command.model == KeskoModel.Plane:
-                    model = pykesko.Model.Plane
-                elif command.model == KeskoModel.Humanoid:
-                    model = pykesko.Model.Humanoid
-                else:
-                    raise ValueError(f"Model not supported {type(command.model)}")
-
-                self.kesko.spawn(model=model, position=command.position, color=color)
+                self.kesko.spawn(model=command.model, position=command.position, color=color)
 
             elif isinstance(command, RunPhysics):
                 self.kesko.start_physics()
@@ -98,15 +85,11 @@ class BindingBackend:
             collision_events = json.loads(collision_events)
             for ev in collision_events:
                 if CollisionStarted.__name__ in ev:
-                    collision_started = CollisionStarted(
-                        **ev[CollisionStarted.__name__]
-                    )
+                    collision_started = CollisionStarted(**ev[CollisionStarted.__name__])
                     responses.append(collision_started)
 
                 elif CollisionStopped.__name__ in ev:
-                    collision_stopped = CollisionStopped(
-                        **ev[CollisionStopped.__name__]
-                    )
+                    collision_stopped = CollisionStopped(**ev[CollisionStopped.__name__])
                     responses.append(collision_stopped)
 
         return KeskoResponse(responses)

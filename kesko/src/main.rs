@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 
-use kesko_diagnostic::DiagnosticsPlugins;
-use kesko_plugins::CorePlugins;
-
-use kesko_models::{self, car::CarPlugin, wheely::WheelyPlugin};
+use kesko::diagnostic::DiagnosticsPlugins;
+use kesko::models::{car::CarPlugin, wheely::WheelyPlugin};
+use kesko::plugins::CorePlugins;
 
 fn main() {
     App::new()

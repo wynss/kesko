@@ -3,8 +3,8 @@ from typing import Union, Protocol
 import torch
 import numpy as np
 
-from ..model import KeskoModel
 from ..color import Rgba, Color
+from ..pykesko import Model
 
 
 class Command(Protocol):
@@ -18,9 +18,7 @@ class CheckAlive:
 
 
 class Spawn:
-    def __init__(
-        self, model: KeskoModel, position: list[float], color: Union[Rgba, Color]
-    ):
+    def __init__(self, model: Model, position: list[float], color: Union[Rgba, Color]):
         self.model = model
         self.position = position
         self.color = color

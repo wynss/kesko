@@ -1,5 +1,5 @@
 [workspace]
-resolver = "2" # Important! wgpu/Bevy needs this!
+resolver = "2" # Important! wgpu/Bevy needs this when using workspaces
 members = [
     "crates/kesko_core",
     "crates/kesko_physics",
@@ -9,8 +9,7 @@ members = [
     "crates/kesko_plugins",
     "crates/kesko_ui",
     "crates/kesko_diagnostic",
-    "crates/kesko_tcp",
-    "crates/kesko_python",
+    "crates/kesko_tcp"
 ]
 
 [package]
@@ -19,8 +18,11 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
+name = "kesko_main"
+path = "src/main.rs"
+
+[lib]
 name = "kesko"
-src = "src/main.rs"
 
 [[bin]]
 name = "kesko_tcp"
@@ -30,10 +32,6 @@ name = "kesko_tcp_headless"
 
 [[bin]]
 name = "kesko_demo"
-
-[lib]
-name = "pykesko"
-crate-type = ["cdylib"]
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
@@ -62,4 +60,3 @@ kesko_models = { version = "0.1.0", path = "crates/kesko_models" }
 kesko_plugins = { version = "0.1.0", path="crates/kesko_plugins" }
 kesko_diagnostic = { version = "0.1.0", path="crates/kesko_diagnostic" }
 kesko_tcp = { version = "0.1.0", path = "crates/kesko_tcp" }
-kesko_python = { version = "0.1.0", path = "crates/kesko_python" }

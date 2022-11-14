@@ -1,7 +1,10 @@
 # rust
-/target
+**/target
 /wasm
 Cargo.lock
+
+# binaries
+*.so
 
 # python
 **/__pycache__/**
@@ -13,6 +16,7 @@ Cargo.lock
 
 # trunk
 dist/
+
 
 # mac
 .DS_Store
@@ -26,3 +30,6 @@ trace-*.json
 
 # training related
 ml/*
+
+# github action for building PyKesko
+!.github/actions/maturin-action/dist
