@@ -1,5 +1,5 @@
 import numpy as np
-from gymnasium.spaces.box import Box
+from gym.spaces.box import Box
 
 
 def action_space_from_limits(limits: list, normalized: bool = True):

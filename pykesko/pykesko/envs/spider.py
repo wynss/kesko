@@ -1,8 +1,8 @@
 from typing import Optional
 from queue import Queue
 
-import gymnasium as gym
-from gymnasium.spaces.box import Box
+import gym
+from gym.spaces.box import Box
 import numpy as np
 
 from ..backend import BackendType, RenderMode
