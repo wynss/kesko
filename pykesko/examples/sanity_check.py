@@ -1,13 +1,13 @@
-import gym
+import gymnasium as gym
 
 
 ENV = "Spider-v0"
 
 env = gym.make(
-    f"kesko:kesko/{ENV}",
+    f"pykesko:{ENV}",
     max_steps=1_000,
     render_mode="human",
-    backend="bindings",
+    backend="tcp",
 )
 obs, _ = env.reset()
 for i in range(10_000):

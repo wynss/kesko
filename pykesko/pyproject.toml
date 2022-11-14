@@ -27,8 +27,7 @@ dependencies = [
     "numpy",
     "requests",
     "pydantic",
-    "torch",
-    "gym"
+    "gymnasium"
 ]
 
 [project.optional-dependencies]
