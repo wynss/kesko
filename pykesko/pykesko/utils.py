@@ -1,14 +1,5 @@
 import numpy as np
-import torch
-import gym
-
-
-def to_tensor(arr: np.ndarray):
-    return torch.from_numpy(arr)
-
-
-def to_numpy(t: torch.Tensor):
-    return t.numpy()
+from gymnasium.spaces.box import Box
 
 
 def action_space_from_limits(limits: list, normalized: bool = True):
@@ -25,4 +16,4 @@ def action_space_from_limits(limits: list, normalized: bool = True):
         highs.append(high_limit)
         lows.append(low_limit)
 
-    return gym.spaces.Box(low=np.array(lows), high=np.array(highs))
+    return Box(low=np.array(lows), high=np.array(highs))

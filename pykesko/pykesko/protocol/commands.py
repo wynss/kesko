@@ -1,6 +1,5 @@
 from typing import Union, Protocol
 
-import torch
 import numpy as np
 
 from ..color import Rgba, Color
@@ -60,7 +59,7 @@ class ApplyControl:
     def __init__(
         self,
         body_id: int,
-        values: Union[dict[np.uint64, float], torch.Tensor, np.ndarray],
+        values: Union[dict[np.uint64, float], np.ndarray],
     ):
         self.body_id = body_id
         self.values = values

@@ -2,7 +2,6 @@ import logging
 from typing import Any, Optional, Union
 
 import numpy as np
-import torch
 
 from .config import URL
 from .backend import Backend, TcpBackend, BindingBackend, RenderMode, BackendType
@@ -56,7 +55,7 @@ class Kesko:
     def _prepare_commands(self, actions: list):
         for action in actions:
             if isinstance(action, ApplyControl):
-                if isinstance(action.values, (np.ndarray, torch.Tensor)):
+                if isinstance(action.values, np.ndarray):
                     # convert tensor or array to dict
                     action.values = {
                         joint_id: val for joint_id, val in zip(self.bodies[action.body_id].joints, action.values.tolist())

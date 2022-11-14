@@ -1,8 +1,8 @@
 from typing import Optional
 from queue import Queue
 
-import torch
-import gym
+import gymnasium as gym
+from gymnasium.spaces.box import Box
 import numpy as np
 
 from ..backend import BackendType, RenderMode
@@ -17,7 +17,7 @@ from ..protocol.commands import (
 )
 from ..protocol.response import KeskoResponse, MultibodyStates, CollisionStarted
 from ..color import Color
-from ..model import KeskoModel
+from pykesko import KeskoModel
 from ..utils import action_space_from_limits
 
 
@@ -75,9 +75,7 @@ class SpiderEnv(gym.Env):
         # Spawn bodies
         self._kesko.send(
             [
-                Spawn(
-                    model=KeskoModel.Plane, position=[0.0, 0.0, 0.0], color=Color.WHITE
-                ),
+                Spawn(model=KeskoModel.Plane, position=[0.0, 0.0, 0.0], color=Color.WHITE),
                 Spawn(
                     model=KeskoModel.Spider,
                     position=[0.0, 0.4, 0.0],
@@ -88,9 +86,7 @@ class SpiderEnv(gym.Env):
 
         # Kesko stores all the bodies that are in the environment, get the body named by base name.
         try:
-            self.spider_body = [
-                body for body in self._kesko.bodies.values() if "spider" in body.name
-            ][0]
+            self.spider_body = [body for body in self._kesko.bodies.values() if "spider" in body.name][0]
         except IndexError as e:
             self.close()
             raise ValueError(f"Could not get body from Kesko: {e}")
@@ -107,7 +103,7 @@ class SpiderEnv(gym.Env):
             [joint.limits for joint in self.spider_body.joints.values()],
             normalized=False,
         )
-        self.observation_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=initial_state.shape)
+        self.observation_space = Box(low=-np.inf, high=np.inf, shape=initial_state.shape)
 
         return initial_state, {}
 
@@ -117,20 +113,13 @@ class SpiderEnv(gym.Env):
         orientation = state.orientation
         linear_velocity = state.velocity
         angular_velocity = state.angular_velocity
-        joint_angles = [
-            joint_state.angle for joint_state in state.joint_states.values()
-        ]
+        joint_angles = [joint_state.angle for joint_state in state.joint_states.values() if joint_state is not None]
         joint_angular_velocities = [
-            joint_state.angular_velocity for joint_state in state.joint_states.values()
+            joint_state.angular_velocity for joint_state in state.joint_states.values() if joint_state is not None
         ]
 
         return np.array(
-            position
-            + orientation
-            + linear_velocity
-            + angular_velocity
-            + joint_angles
-            + joint_angular_velocities,
+            position + orientation + linear_velocity + angular_velocity + joint_angles + joint_angular_velocities,
             dtype=dtype,
         )
 
@@ -155,11 +144,9 @@ class SpiderEnv(gym.Env):
         state = self._to_numpy(state)
         return state, reward, done, done, {}
 
-    def _calc_reward(
-        self, state: MultibodyStates, collision: Optional[CollisionStarted]
-    ):
+    def _calc_reward(self, state: MultibodyStates, collision: Optional[CollisionStarted]):
 
-        position = torch.Tensor(state.position)
+        position = np.array(state.position)
         if self.past_states_queue.full():
 
             past_state = self.past_states_queue.get()
@@ -174,25 +161,14 @@ class SpiderEnv(gym.Env):
             self.reward_move = np.maximum(np.minimum(100.0, reward), -100.0)
 
             # positive reward for using large movements
-            angles = np.array([js.angle for js in state.joint_states.values()])
-            past_angles = np.array(
-                [js.angle for js in past_state.joint_states.values()]
-            )
-            self.reward_large_movements = (
-                np.linalg.norm(angles - past_angles) * self.large_movement_reward_factor
-            )
+            angles = np.array([js.angle for js in state.joint_states.values() if js is not None])
+            past_angles = np.array([js.angle for js in past_state.joint_states.values() if js is not None])
+            self.reward_large_movements = np.linalg.norm(angles - past_angles) * self.large_movement_reward_factor
 
             # punish large accelerations in joints
-            angvel = np.array(
-                [js.angular_velocity for js in state.joint_states.values()]
-            )
-            past_angvel = np.array(
-                [js.angular_velocity for js in past_state.joint_states.values()]
-            )
-            self.reward_energy = (
-                -np.linalg.norm(angvel - past_angvel)
-                * self.joint_acceleration_reward_factor
-            )
+            angvel = np.array([js.angular_velocity for js in state.joint_states.values() if js is not None])
+            past_angvel = np.array([js.angular_velocity for js in past_state.joint_states.values()])
+            self.reward_energy = -np.linalg.norm(angvel - past_angvel) * self.joint_acceleration_reward_factor
         else:
             # need to gather more states
             self.past_states_queue.put(state)
@@ -203,12 +179,7 @@ class SpiderEnv(gym.Env):
         # If the torso have not collided give some reward
         self.reward_survive = 1.0 if collision is None else 0.0
 
-        return (
-            self.reward_move
-            + self.reward_survive
-            + self.reward_energy
-            + self.reward_large_movements
-        )
+        return self.reward_move + self.reward_survive + self.reward_energy + self.reward_large_movements
 
     def reset(self):
         self._kesko.send([PausePhysics(), DespawnAll()])
