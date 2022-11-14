@@ -24,8 +24,8 @@
     <br />
     <a href="#about-the-project">About The Project</a> |
     <a href="#getting-started">Getting Started</a> |
+    <a href="#pykesko">PyKesko</a> |
     <a href="#demo">Demo</a> |
-    <a href="#roadmap">Roadmap</a> |
     <a href="#acknowledgments">Acknowledgments</a>
   </p>
 </div>
@@ -42,16 +42,15 @@ Kesko is pre-release and in its infancy, quite far from useful (but perhaps a bi
 * Free and open-source
 * Good looking!
 
-Going forward an initial python API is priority to enable the first support for training reinforcement learning models.
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- GETTING STARTED -->
 ## Getting Started
+Kesko in not yet available on [crates.io](https://crates.io/) but you can clone the repo and build it locally.
 ### Prerequisites
  
- Make sure you have the latest stable version of [Rust](https://www.rust-lang.org/learn/get-started) installed.
+ Make sure you have [Rust](https://www.rust-lang.org/learn/get-started) installed.
 
 ### Installation
 
@@ -60,9 +59,9 @@ Going forward an initial python API is priority to enable the first support for 
    git clone https://github.com/wynss/kesko.git
 
    ```
-2. Build and run
+2. Build and run the demo example
    ```bash
-   cargo run --release
+   cargo run --bin kesko_demo --release
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -72,25 +71,18 @@ Going forward an initial python API is priority to enable the first support for 
 
 As stated Kesko is quite useless at the moment but you can play around with some of the built in models and experiment with the physics.
 
+## PyKesko
+Kesko will have a python API built with [PyO3](https://github.com/PyO3/pyo3) making it easy to integrate with popular deep/reinforcement learning frameworks such as [PyTorch](https://pytorch.org/), [Tensorflow](https://www.tensorflow.org/). It will also integrate well with [Gymnasium](https://github.com/Farama-Foundation/Gymnasium) making it easy to use high quality implementation of RL algorithms like [Stable Baselines3](https://stable-baselines3.readthedocs.io/en/master/). Below is an example of a four legged model that has been trained to walk using Kesko's Gymnasium integration. The algorithm used was an implementation of Proximal Policy Optimization (PPO) from the Stable Baselines3 library.
+<img src="media/spider-walk.webp" alt="drawing" style="width:100%;"/>
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Demo
 
-Thanks to WebAssembly support Kesko can be run in the browser, try it at [Kesko Demo](https://toniaxelsson.com/projects/kesko)
+Thanks to WebAssembly support Kesko can be run in the browser, try it here [Kesko Demo](https://toniaxelsson.com/projects/kesko)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Roadmap
-
-The roadmap is subject to change, but a very rough version is 
-
-- [ ] Python API
-    - [ ] GYM integration
-    - [ ] Image data
-- [ ] URDF Support
-- [ ] Locally attached cameras
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
 ## Contributing
