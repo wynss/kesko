@@ -8,7 +8,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/wynss/kesko">
-    <img src="media/kesko-light.png" alt="Logo" width="200" height="200">
+    <img src="media/kesko-light.png" alt="Kesko Logo" width="200" height="200">
   </a>
 
   <h3 align="center">Kesko</h3>
@@ -33,7 +33,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-<img src="media/kesko.png" alt="drawing" style="width:100%;"/>
+<img src="media/kesko.png" alt="Kesko screenshot" style="width:100%;"/>
 <br />
 Kesko is pre-release and in its infancy, quite far from useful (but perhaps a bit fun to play around with). Currently it's more an exploration in Rust and what is currently possible within its open-source community. But, as time goes on the goal is to create a modern robotics simulator that fulfills
 
@@ -73,7 +73,7 @@ As stated Kesko is quite useless at the moment but you can play around with some
 
 ## PyKesko
 Kesko will have a python API built with [PyO3](https://github.com/PyO3/pyo3) making it easy to integrate with popular deep/reinforcement learning frameworks such as [PyTorch](https://pytorch.org/), [Tensorflow](https://www.tensorflow.org/). It will also integrate well with [Gymnasium](https://github.com/Farama-Foundation/Gymnasium) making it easy to use high quality implementation of RL algorithms like [Stable Baselines3](https://stable-baselines3.readthedocs.io/en/master/). Below is an example of a four legged model that has been trained to walk using Kesko's Gymnasium integration. The algorithm used was an implementation of Proximal Policy Optimization (PPO) from the Stable Baselines3 library.
-<img src="media/spider-walk.webp" alt="drawing" style="width:100%;"/>
+<img src="media/spider-walk.webp" alt="Trained agent that walks" style="width:100%;"/>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

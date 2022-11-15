@@ -16,6 +16,8 @@ class BackendType(Enum):
 
 
 class Backend(Protocol):
+    """Protocol for different communication backends to Kesko"""
+
     def initialize(self, render_mode: RenderMode):
         ...
 
