@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 from queue import Queue
 
 import gym
@@ -33,7 +33,9 @@ class SpiderEnv(gym.Env):
         large_movement_reward_factor: float = 1.0,
         joint_acceleration_reward_factor: float = 0.02,
     ):
-        """Creates the spider environment. A four legged agent which is tasked with learning to walk in the positive x-direction.
+        """
+        Creates the spider environment. A four legged agent which is tasked with
+        learning to walk in the positive x-direction.
 
         Reward description
         -------------------
@@ -53,7 +55,7 @@ class SpiderEnv(gym.Env):
         Args:
             max_steps: Maximum steps before resetting. Defaults to None.
             render_mode: If the environment should be rendered or run in headless. Defaults to None.
-            backend: Type of backend to use for communication with Kesko. Can be either 'tcp' or 'bindings'. Defaults to "bindings".
+            backend: Type of backend to use for communication with Kesko. Can be either 'tcp' or 'bindings'.
             reward_step_length: The step interval to use when calculating the reward. Defaults to 5.
             large_movement_reward_factor: How much to reward large movements over small movements.
             joint_acceleration_reward_factor: How much to punish large joint accelerations
@@ -87,7 +89,7 @@ class SpiderEnv(gym.Env):
         self._kesko.initialize()
         self._setup()
 
-    def _setup(self):
+    def _setup(self) -> Tuple[np.ndarray, dict]:
 
         # Spawn bodies
         self._kesko.send(
@@ -140,7 +142,7 @@ class SpiderEnv(gym.Env):
             dtype=dtype,
         )
 
-    def step(self, action: np.ndarray):
+    def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, bool, dict]:
         """Take one step in the environment and perform an action"""
 
         # perform action
@@ -162,7 +164,7 @@ class SpiderEnv(gym.Env):
         state = self._to_numpy(state)
         return state, reward, done, done, {}
 
-    def _calc_reward(self, state: MultibodyStates, collision: Optional[CollisionStarted]):
+    def _calc_reward(self, state: MultibodyStates, collision: Optional[CollisionStarted]) -> float:
 
         position = np.array(state.position)
         if self.past_states_queue.full():
@@ -197,13 +199,17 @@ class SpiderEnv(gym.Env):
         # If the torso have not collided give some reward
         self.reward_survive = 1.0 if collision is None else 0.0
 
-        return self.reward_move + self.reward_survive + self.reward_acceleration + self.reward_large_movements
+        return float(self.reward_move + self.reward_survive + self.reward_acceleration + self.reward_large_movements)
 
-    def reset(self):
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple[np.ndarray, dict]:
         """Reset the environment to it's initial state"""
+        super().reset(seed=seed)
         self._kesko.send([PausePhysics(), DespawnAll()])
         self.step_count = 0
         return self._setup()
+
+    def seed(self, seed: Optional[int]):
+        super().reset(seed=seed)
 
     def close(self):
         """Shutdown Kesko and the backend"""

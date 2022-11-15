@@ -7,7 +7,7 @@ def action_space_from_limits(limits: list[list[float]], normalized: bool = True)
 
     Args:
         limits: List containing each limit in the from of a list with low and high limit.
-        normalized (bool, optional): If the action space limits should be normalized to be in the range [-1.0, 1.0]. Defaults to True.
+        normalized: If the action space limits should be normalized to be in the range [-1.0, 1.0]. Defaults to True.
 
     Returns:
         Box: The action space

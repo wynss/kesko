@@ -42,5 +42,8 @@ dev = [
 requires = ["maturin==0.13.7"]
 build-backend = "maturin"
 
+[tool.maturin]
+exclude = ["examples/*"]
+
 [tool.black]
 line-length = 127
