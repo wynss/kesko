@@ -1,8 +1,8 @@
-### PyKesko
+# PyKesko
 
 PyKesko is the python package for the Kesko simulator. It contains python bindings to the Rust code and provides an API to interact with simulator.
 
-**Note that PyKesko is currently pre-release and can be unstable.**
+**Note that PyKesko is currently pre-release and is unstable.**
 
 ## Getting Started
 ### Prerequisites
@@ -59,13 +59,14 @@ import gym
 
 env = gym.make("pykesko:Spider-v0", render_mode="human")
 env.reset()
+
 for _ in range(1000):
     env.step(env.action_space.sample())
 
 env.close()
 ```
 
-#### Use Stable Baselines3 to train an RL agent to walk
+#### Use Stable Baselines3 to train an agent to walk
 Since PyKesko has Gym integration it is really easy to train with a library like Stable Baselines3.
 Make sure to use the bleeding edge version of Stable Baselines3 that has support for the latest Gym version
 
