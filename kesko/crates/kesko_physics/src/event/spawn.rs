@@ -46,8 +46,12 @@ pub(crate) fn send_spawned_events(
 
                     (e.to_bits(), joint_info)
                 })
-                .filter(|(_, ji)| ji.is_some())
-                .map(|(id, ji)| (id, ji.unwrap()))
+                .filter_map(|(e, joint_info)| {
+                    match joint_info {
+                        Some(joint_info) => Some((e, joint_info)),
+                        None => None
+                    }
+                })
                 .collect::<BTreeMap<u64, JointInfo>>();
 
             event_writer.send(PhysicResponseEvent::MultibodySpawned {

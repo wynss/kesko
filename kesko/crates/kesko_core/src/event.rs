@@ -41,6 +41,7 @@ pub fn handle_system_events(
     for event in system_requests.iter() {
         match event {
             SimulatorRequestEvent::ExitApp => {
+                info!("Kesko will shutdown");
                 app_exit_events.send_default();
                 system_response_writer.send(SimulatorResponseEvent::WillExitApp);
             }

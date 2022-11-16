@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class Kesko:
     """Class responsible to communicate with Kesko"""
 
-    def __init__(self, render_mode: RenderMode, backend_type: BackendType) -> None:
+    def __init__(self, render_mode: RenderMode = RenderMode.WINDOW, backend_type: BackendType = BackendType.TCP) -> None:
 
         self.render_mode = render_mode
         if backend_type == BackendType.TCP:

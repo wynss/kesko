@@ -42,8 +42,15 @@ pub(crate) fn handle_responses(
                 );
 
                 // send response
-                let _bytes_written = tcp_stream.write(response.as_bytes()).unwrap();
-                tcp_stream.flush().unwrap();
+                if let Err(e) = tcp_stream.write(response.as_bytes()) {
+                    error!("{:?}", e);
+                    return
+                }
+
+                if let Err(e) = tcp_stream.flush() {
+                    error!("{:?}", e);
+                    return
+                }
             }
             Err(e) => error!("{:?}", e),
         }

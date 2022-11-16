@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic import BaseModel
 
@@ -19,17 +19,23 @@ class JointInfo(BaseModel):
     name: str
     type: str
     axis: str
-    limits: list
+    limits: Optional[list]
     damping: float
     stiffness: float
     max_motor_force: float
 
 
-class JointState(BaseModel):
+class RevoluteJointState(BaseModel):
     type: str
     axis: str
     angle: float
     angular_velocity: float
+
+class PrismaticJointState(BaseModel):
+    type: str
+    axis: str
+    position: float
+    velocity: float
 
 
 class MultibodySpawned(BaseModel):
@@ -52,7 +58,7 @@ class MultibodyStates(BaseModel):
     velocity: list
     angular_velocity: list
     relative_positions: dict[str, list[float]]
-    joint_states: dict[str, Optional[JointState]]
+    joint_states: dict[str, Optional[Union[RevoluteJointState, PrismaticJointState]]]
 
 
 class KeskoResponse:
