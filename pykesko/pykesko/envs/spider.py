@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 from queue import Queue
 
 import gym
@@ -28,21 +28,40 @@ class SpiderEnv(gym.Env):
         self,
         max_steps: Optional[int] = None,
         render_mode: Optional[str] = None,
-        backend: str = "bindings",
+        backend_type: str = "bindings",
         reward_step_length: int = 5,
         large_movement_reward_factor: float = 1.0,
         joint_acceleration_reward_factor: float = 0.02,
     ):
-        """Creates the spider environment.
+        """
+        Creates the spider environment. A four legged agent which is tasked with
+        learning to walk in the positive x-direction.
+
+        Reward description
+        -------------------
+        The reward consists of 4 parts.
+
+        1. For each step when the agent is not terminated it will receive 1.0
+
+        2. It will get a reward equal to the velocity in the x-direction
+
+        3. A positive reward for making large movements instead of small movements.
+
+        4. It will get a negative reward proportional to the magnitude of the accelerations in the joints.
+           This in order to minimize erratic movements
+
+        The episode will be terminated if the head collides with the ground.
 
         Args:
-            max_steps (Optional[int], optional): maximum steps before resetting. Defaults to None.
-            render_mode (Optional[str], optional): If the environment should be rendered or run in headless. Defaults to None.
-            backend (str, optional): Type of backend to use for communication with Kesko. Defaults to "bindings".
-            reward_step_length (int, optional): The steps interval to use when calculating the reward. Defaults to 5.
+            max_steps: Maximum steps before resetting. Defaults to None.
+            render_mode: If the environment should be rendered or run in headless. Defaults to None.
+            backend: Type of backend to use for communication with Kesko. Can be either 'tcp' or 'bindings'.
+            reward_step_length: The step interval to use when calculating the reward. Defaults to 5.
+            large_movement_reward_factor: How much to reward large movements over small movements.
+            joint_acceleration_reward_factor: How much to punish large joint accelerations
 
         Raises:
-            ValueError: If incorrect render mode or backend.
+            ValueError: If incorrect 'render_mode' or 'backend'.
         """
 
         assert render_mode is None or render_mode in self.metadata["render_modes"]
@@ -57,20 +76,20 @@ class SpiderEnv(gym.Env):
         self.step_count = 0
         self.reward_move = 0.0
         self.reward_survive = 0.0
-        self.reward_energy = 0.0
+        self.reward_acceleration = 0.0
         self.reward_large_movements = 0.0
 
         # setup kesko
         mode = RenderMode.WINDOW if self.render_mode == "human" else RenderMode.HEADLESS
-        if backend not in ("bindings", "tcp"):
+        if backend_type not in ("bindings", "tcp"):
             raise ValueError("Invalid option for backend, use 'native' or 'tcp'")
 
-        self.backend = BackendType.TCP if backend == "tcp" else BackendType.BINDINGS
-        self._kesko = Kesko(mode=mode, backend=self.backend)
+        self.backend = BackendType.TCP if backend_type == "tcp" else BackendType.BINDINGS
+        self._kesko = Kesko(render_mode=mode, backend_type=self.backend)
         self._kesko.initialize()
         self._setup()
 
-    def _setup(self):
+    def _setup(self) -> Tuple[np.ndarray, dict]:
 
         # Spawn bodies
         self._kesko.send(
@@ -123,7 +142,8 @@ class SpiderEnv(gym.Env):
             dtype=dtype,
         )
 
-    def step(self, action: np.ndarray):
+    def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, bool, dict]:
+        """Take one step in the environment and perform an action"""
 
         # perform action
         response = self._kesko.step(ApplyControl(self.spider_body.id, action))
@@ -144,7 +164,7 @@ class SpiderEnv(gym.Env):
         state = self._to_numpy(state)
         return state, reward, done, done, {}
 
-    def _calc_reward(self, state: MultibodyStates, collision: Optional[CollisionStarted]):
+    def _calc_reward(self, state: MultibodyStates, collision: Optional[CollisionStarted]) -> float:
 
         position = np.array(state.position)
         if self.past_states_queue.full():
@@ -168,28 +188,35 @@ class SpiderEnv(gym.Env):
             # punish large accelerations in joints
             angvel = np.array([js.angular_velocity for js in state.joint_states.values() if js is not None])
             past_angvel = np.array([js.angular_velocity for js in past_state.joint_states.values()])
-            self.reward_energy = -np.linalg.norm(angvel - past_angvel) * self.joint_acceleration_reward_factor
+            self.reward_acceleration = -np.linalg.norm(angvel - past_angvel) * self.joint_acceleration_reward_factor
         else:
             # need to gather more states
             self.past_states_queue.put(state)
             self.reward_move = 0.0
-            self.reward_energy = 0.0
+            self.reward_acceleration = 0.0
             self.reward_large_movements = 0.0
 
         # If the torso have not collided give some reward
         self.reward_survive = 1.0 if collision is None else 0.0
 
-        return self.reward_move + self.reward_survive + self.reward_energy + self.reward_large_movements
+        return float(self.reward_move + self.reward_survive + self.reward_acceleration + self.reward_large_movements)
 
-    def reset(self):
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None) -> Tuple[np.ndarray, dict]:
+        """Reset the environment to it's initial state"""
+        super().reset(seed=seed)
         self._kesko.send([PausePhysics(), DespawnAll()])
         self.step_count = 0
         return self._setup()
 
+    def seed(self, seed: Optional[int]):
+        super().reset(seed=seed)
+
     def close(self):
+        """Shutdown Kesko and the backend"""
         self._kesko.close()
 
     def _get_state(self, response: KeskoResponse) -> MultibodyStates:
+        """Extract state from response"""
         state = response.get_state_for_body(self.spider_body.name)
         if state is None:
             raise ValueError("Could not get state")

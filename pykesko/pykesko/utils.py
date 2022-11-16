@@ -2,8 +2,16 @@ import numpy as np
 from gym.spaces.box import Box
 
 
-def action_space_from_limits(limits: list, normalized: bool = True):
-    """Creates an action space from a list of limits"""
+def action_space_from_limits(limits: list[list[float]], normalized: bool = True) -> Box:
+    """Creates an action space from a list of limits
+
+    Args:
+        limits: List containing each limit in the from of a list with low and high limit.
+        normalized: If the action space limits should be normalized to be in the range [-1.0, 1.0]. Defaults to True.
+
+    Returns:
+        Box: The action space
+    """
     highs = []
     lows = []
     for limit in limits:

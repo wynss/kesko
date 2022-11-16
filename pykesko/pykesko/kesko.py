@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
 class Kesko:
     """Class responsible to communicate with Kesko"""
 
-    def __init__(self, mode: RenderMode, backend: BackendType) -> None:
+    def __init__(self, render_mode: RenderMode, backend_type: BackendType) -> None:
 
-        self.render_mode = mode
-        if backend == BackendType.TCP:
+        self.render_mode = render_mode
+        if backend_type == BackendType.TCP:
             self.backend: Backend = TcpBackend(url=URL)
         else:
             self.backend: Backend = BindingBackend()
@@ -56,7 +56,7 @@ class Kesko:
         for action in actions:
             if isinstance(action, ApplyControl):
                 if isinstance(action.values, np.ndarray):
-                    # convert tensor or array to dict
+                    # convert array to dict
                     action.values = {
                         joint_id: val for joint_id, val in zip(self.bodies[action.body_id].joints, action.values.tolist())
                     }

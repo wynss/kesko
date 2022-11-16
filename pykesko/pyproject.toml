@@ -1,6 +1,6 @@
 [project]
 name = "pykesko"
-version = "0.0.1"
+version = "0.0.2"
 description = "Robotics Simulator written in Rust"
 readme = "README.md"
 authors = [{ name = "Toni Axelsson", email = "toniaxelsson@gmail.com" }]
@@ -41,6 +41,9 @@ dev = [
 [build-system]
 requires = ["maturin==0.13.7"]
 build-backend = "maturin"
+
+[tool.maturin]
+exclude = ["examples/*"]
 
 [tool.black]
 line-length = 127

@@ -42,9 +42,7 @@ if __name__ == "__main__":
 
     if MULTI_PROC:
         num_envs = 16
-        env = SubprocVecEnv(
-            [make_env(env_id=FULL_ENV, rank=i) for i in range(num_envs)]
-        )
+        env = SubprocVecEnv([make_env(env_id=FULL_ENV, rank=i) for i in range(num_envs)])
     else:
         num_envs = 1
         env = make_env(FULL_ENV, 0)()
@@ -67,8 +65,5 @@ if __name__ == "__main__":
         n_epochs=N_EPOCHS,
         batch_size=BATCH_SIZE,
     )
-    model.learn(
-        total_timesteps=TIME_STEPS, callback=checkpoint_callback, progress_bar=True
-    )
+    model.learn(total_timesteps=TIME_STEPS, callback=checkpoint_callback, progress_bar=True)
     env.close()
-

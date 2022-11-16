@@ -1,6 +1,5 @@
 from typing import Optional
 from multiprocessing import Process
-import subprocess
 import logging
 import json
 
@@ -16,7 +15,6 @@ from ..protocol.response import (
     CollisionStarted,
     CollisionStopped,
 )
-from ..config import KESKO_BIN_PATH, KESKO_HEADLESS_BIN_PATH
 
 
 logger = logging.getLogger(__name__)
