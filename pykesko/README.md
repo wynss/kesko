@@ -20,13 +20,15 @@ Run and step the simulator
 ```python
 from pykesko import Kesko
 
-kesko = Kesko()
-kesko.initialize()
 
-for _ in range(1000):
-    kesko.step()
+if __name__ == "__main__":
+    kesko = Kesko()
+    kesko.initialize()
 
-kesko.close()
+    for _ in range(1000):
+        kesko.step()
+
+    kesko.close()
 ```
 #### Spawn bodies
 Kesko has som built in models that can be spawned.
@@ -36,20 +38,21 @@ from pykesko.protocol.commands import Spawn
 from pykesko.color import Color
 
 
-kesko = Kesko()
-kesko.initialize()
+if __name__ == "__main__":
+    kesko = Kesko()
+    kesko.initialize()
 
-kesko.send(
-    [
-        Spawn(model=KeskoModel.Plane, position=[0.0, 0.0, 0.0], color=Color.WHITE),
-        Spawn(model=KeskoModel.Humanoid, position=[0.0, 2.0, 0.0], color=Color.DEEP_ORANGE),
-    ]
-)
+    kesko.send(
+        [
+            Spawn(model=KeskoModel.Plane, position=[0.0, 0.0, 0.0], color=Color.WHITE),
+            Spawn(model=KeskoModel.Humanoid, position=[0.0, 2.0, 0.0], color=Color.DEEP_ORANGE),
+        ]
+    )
 
-for _ in range(1000):
-    kesko.step()
+    for _ in range(1000):
+        kesko.step()
 
-kesko.close()
+    kesko.close()
 ```
 
 #### Use a Gym environment
@@ -97,7 +100,6 @@ Running PPO for about 5 million steps yield the result below. Note that in order
 Below is an example how to use multiple parallel environments without rendering (headless mode). It also includes saving checkpoints
 as well as logging to tensorboard
 ```python
-from multiprocessing import freeze_support
 from datetime import datetime
 
 import gym
@@ -144,7 +146,6 @@ def make_env(env_id: str, rank: int, seed: int = 0):
 
 
 if __name__ == "__main__":
-    freeze_support()
 
     # Create NUM_ENVS environments
     env = SubprocVecEnv([make_env(env_id=FULL_ENV, rank=i) for i in range(NUM_ENVS)])

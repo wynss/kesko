@@ -28,7 +28,7 @@ impl AboutComponent {
             .open(&mut comp.open)
             .show(egui_context.ctx_mut(), |ui| {
                 // TODO: Move this when versioning is addressed
-                ui.label("Version: 0.0.3");
+                ui.label("Version: 0.0.4");
             });
     }
 }

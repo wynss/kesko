@@ -68,14 +68,12 @@ Kesko in not yet available on [crates.io](https://crates.io/) but you can clone 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-## Usage
-
-As stated Kesko is quite useless at the moment but you can play around with some of the built in models and experiment with the physics.
-
 ## PyKesko
 Kesko will have a python API built with [PyO3](https://github.com/PyO3/pyo3) making it easy to integrate with popular deep/reinforcement learning frameworks such as [PyTorch](https://pytorch.org/), [Tensorflow](https://www.tensorflow.org/). It will also integrate well with [Gymnasium](https://github.com/Farama-Foundation/Gymnasium) making it easy to use high quality implementation of RL algorithms like [Stable Baselines3](https://stable-baselines3.readthedocs.io/en/master/). Below is an example of a four legged model that has been trained to walk using Kesko's Gymnasium integration. The algorithm used was an implementation of Proximal Policy Optimization (PPO) from the Stable Baselines3 library.
 <img src="media/spider-walk.webp" alt="Trained agent that walks" style="width:100%;"/>
+
+### Pre-release version
+There is a pre-release version available of PyKesko, read more about how to use it [here](https://github.com/wynss/kesko/blob/main/pykesko).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
