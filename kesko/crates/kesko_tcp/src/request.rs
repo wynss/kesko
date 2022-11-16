@@ -2,14 +2,13 @@ use std::io::Read;
 use std::net::TcpStream;
 
 use bevy::{prelude::*, utils::hashbrown::HashMap};
-use iyes_loopless::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use kesko_core::event::SimulatorRequestEvent;
 use kesko_models::{Model, SpawnEvent};
 use kesko_physics::event::PhysicRequestEvent;
 
-use super::{TcpBuffer, TcpConnectionState};
+use super::TcpBuffer;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub(crate) enum TcpCommand {
@@ -64,7 +63,6 @@ impl HttpRequest {
 }
 
 pub(crate) fn handle_requests(
-    mut commands: Commands,
     mut tcp_stream: ResMut<TcpStream>,
     mut tcp_buffer: ResMut<TcpBuffer>,
     mut system_event_writer: EventWriter<SimulatorRequestEvent>,
@@ -139,7 +137,8 @@ pub(crate) fn handle_requests(
             }
             Err(e) => {
                 error!("Could not read tcp stream: {}", e);
-                commands.insert_resource(NextState(TcpConnectionState::NotConnected));
+                system_event_writer.send(SimulatorRequestEvent::ExitApp);
+                return
             }
         }
     }
