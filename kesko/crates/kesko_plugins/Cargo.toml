@@ -1,11 +1,12 @@
 [package]
 name = "kesko_plugins"
-version = "0.1.0"
+version = "0.0.3"
 edition = "2021"
 
 [dependencies]
 bevy = { workspace = true }
-kesko_core = { version = "0.1.0", path = "../kesko_core" }
+
+kesko_core = { path = "../kesko_core" }
 kesko_physics = { path = "../kesko_physics" }
 kesko_object_interaction = { path = "../kesko_object_interaction"}
 kesko_ui = { path = "../kesko_ui"}

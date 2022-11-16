@@ -33,7 +33,7 @@ impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
             .insert_resource(WindowDescriptor {
-                title: String::from("Kesko 0.1-alpha"),
+                title: String::from("Kesko 0.0.3"),
                 width: 1920.0,
                 height: 1080.0,
                 position: WindowPosition::Centered(MonitorSelection::Primary),

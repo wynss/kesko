@@ -1,6 +1,6 @@
 [project]
 name = "pykesko"
-version = "0.0.2"
+version = "0.0.3"
 description = "Robotics Simulator written in Rust"
 readme = "README.md"
 authors = [{ name = "Toni Axelsson", email = "toniaxelsson@gmail.com" }]
