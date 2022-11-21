@@ -49,7 +49,7 @@ Kesko is pre-release and in its infancy, quite far from useful (but perhaps a bi
 
 <!-- GETTING STARTED -->
 ## Getting Started
-Kesko in not yet available on [crates.io](https://crates.io/) but you can clone the repo and build it locally.
+Kesko in not yet available on [crates.io](https://crates.io/) but you can clone the repo and run locally.
 ### Prerequisites
  
  Make sure you have [Rust](https://www.rust-lang.org/learn/get-started) installed.
@@ -63,6 +63,7 @@ Kesko in not yet available on [crates.io](https://crates.io/) but you can clone 
    ```
 2. Build and run the demo example
    ```bash
+   cd kesko/kesko
    cargo run --bin kesko_demo --release
    ```
 
