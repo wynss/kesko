@@ -29,7 +29,7 @@ fn setup_scene(
     );
 
     // Light
-    commands.spawn_bundle(DirectionalLightBundle {
+    commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 50000.0,
             ..Default::default()

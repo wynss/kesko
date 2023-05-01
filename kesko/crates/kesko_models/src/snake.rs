@@ -22,16 +22,18 @@ impl Snake {
         let mut world_transform = transform;
 
         let mut root = commands
-            .spawn_bundle(MeshPhysicBodyBundle::from(
-                RigidBody::Dynamic,
-                Shape::Capsule { radius, length },
-                material.clone(),
-                world_transform,
-                meshes,
+            .spawn((
+                MeshPhysicBodyBundle::from(
+                    RigidBody::Dynamic,
+                    Shape::Capsule { radius, length },
+                    material.clone(),
+                    world_transform,
+                    meshes,
+                ),
+                InteractiveBundle::<GroupDynamic>::default(),
+                Mass { val: 0.2 },
+                Name::new("snake"),
             ))
-            .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-            .insert(Mass { val: 0.2 })
-            .insert(Name::new("snake"))
             .id();
 
         for i in 1..4 {
@@ -41,21 +43,21 @@ impl Snake {
                 world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
 
             let child = commands
-                .spawn_bundle(MeshPhysicBodyBundle::from(
-                    RigidBody::Dynamic,
-                    Shape::Capsule { radius, length },
-                    material.clone(),
-                    world_transform,
-                    meshes,
-                ))
-                .insert(
+                .spawn((
+                    MeshPhysicBodyBundle::from(
+                        RigidBody::Dynamic,
+                        Shape::Capsule { radius, length },
+                        material.clone(),
+                        world_transform,
+                        meshes,
+                    ),
                     SphericalJoint::attach_to(root)
                         .with_parent_anchor(parent_anchor)
                         .with_child_anchor(child_anchor),
-                )
-                .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-                .insert(Mass { val: 0.2 })
-                .insert(Name::new(format!("joint {i}")))
+                    InteractiveBundle::<GroupDynamic>::default(),
+                    Mass { val: 0.2 },
+                    Name::new(format!("joint {i}")),
+                ))
                 .id();
 
             root = child;

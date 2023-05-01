@@ -16,8 +16,8 @@ pub fn spawn(
     let half_wall_width = wall_width / 2.0;
 
     // Spawn ground
-    commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
+    commands.spawn((
+        MeshPhysicBodyBundle::from(
             RigidBody::Fixed,
             Shape::Box {
                 x_length: width,
@@ -27,12 +27,13 @@ pub fn spawn(
             material.clone(),
             Transform::from_xyz(0.0, -0.25, 0.0),
             meshes,
-        ))
-        .insert(RayVisible::<GroupStatic>::default());
+        ),
+        insert(RayVisible::<GroupStatic>::default()),
+    ));
 
     // right wall
-    commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
+    commands.spawn((
+        MeshPhysicBodyBundle::from(
             RigidBody::Fixed,
             Shape::Box {
                 x_length: wall_width,
@@ -42,12 +43,13 @@ pub fn spawn(
             material.clone(),
             Transform::from_xyz(half_wall_width - (width / 2.0), wall_height / 2.0, 0.0),
             meshes,
-        ))
-        .insert(RayVisible::<GroupStatic>::default());
+        ),
+        RayVisible::<GroupStatic>::default(),
+    ));
 
     // left wall
-    commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
+    commands.spawn((
+        MeshPhysicBodyBundle::from(
             RigidBody::Fixed,
             Shape::Box {
                 x_length: wall_width,
@@ -57,12 +59,13 @@ pub fn spawn(
             material.clone(),
             Transform::from_xyz(width / 2.0 - half_wall_width, wall_height / 2.0, 0.0),
             meshes,
-        ))
-        .insert(RayVisible::<GroupStatic>::default());
+        ),
+        RayVisible::<GroupStatic>::default(),
+    ));
 
     // back wall
-    commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
+    commands.spawn((
+        MeshPhysicBodyBundle::from(
             RigidBody::Fixed,
             Shape::Box {
                 x_length: length,
@@ -72,12 +75,13 @@ pub fn spawn(
             material.clone(),
             Transform::from_xyz(0.0, wall_height / 2.0, half_wall_width - (width / 2.0)),
             meshes,
-        ))
-        .insert(RayVisible::<GroupStatic>::default());
+        ),
+        RayVisible::<GroupStatic>::default(),
+    ));
 
     // front wall
     commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
+        .spawn((MeshPhysicBodyBundle::from(
             RigidBody::Fixed,
             Shape::Box {
                 x_length: length,
@@ -87,6 +91,7 @@ pub fn spawn(
             material,
             Transform::from_xyz(0.0, wall_height / 2.0, width / 2.0 - half_wall_width),
             meshes,
-        ))
-        .insert(RayVisible::<GroupStatic>::default());
+        ),
+        RayVisible::<GroupStatic>::default()
+    ));
 }

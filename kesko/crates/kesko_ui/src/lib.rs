@@ -46,17 +46,11 @@ fn initialize_ui_components_system(mut commands: Commands, mut egui_context: Res
         .as_mut()
         .ctx_mut()
         .set_visuals(egui::Visuals::light());
-    commands
-        .spawn()
-        .insert(main_menu::MainMenuComponent::default());
-    commands.spawn().insert(about::AboutComponent::default());
-    commands
-        .spawn()
-        .insert(spawn_component::SpawnComponent::default());
-    commands
-        .spawn()
-        .insert(fps_component::FPSComponent::default());
-    commands
-        .spawn()
-        .insert(multibody_component::MultibodyUIComponent::default());
+    commands.spawn((
+        main_menu::MainMenuComponent::default(),
+        about::AboutComponent::default(),
+        spawn_component::SpawnComponent::default(),
+        fps_component::FPSComponent::default(),
+        multibody_component::MultibodyUIComponent::default(),
+    ));
 }

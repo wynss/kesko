@@ -120,10 +120,11 @@ mod tests {
 
         let mut world = app.world;
         let entity = world
-            .spawn()
-            .insert(Hover::<TestGroup>::default())
-            .insert(Drag::<TestGroup>::default())
-            .insert(Select::<TestGroup>::default())
+            .spawn((
+                Hover::<TestGroup>::default(),
+                Drag::<TestGroup>::default(),
+                Select::<TestGroup>::default(),
+            ))
             .id();
 
         (world, entity)

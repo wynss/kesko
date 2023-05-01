@@ -93,12 +93,11 @@ mod tests {
         world.init_resource::<rapier::RigidBodySet>();
 
         let entity = world
-            .spawn()
-            .insert(RigidBody::Fixed)
-            .insert(
+            .spawn((
+                RigidBody::Fixed,
                 Transform::from_translation(Vec3::new(0.0, 0.0, 1.0))
                     .with_rotation(Quat::from_xyzw(1.0, 0.0, 0.0, 0.0)),
-            )
+            ))
             .id();
 
         test_stage.run(&mut world);

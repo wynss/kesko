@@ -189,18 +189,19 @@ mod tests {
         // add root
         let root_entity = app
             .world
-            .spawn()
-            .insert_bundle(TransformBundle::default())
-            .insert(rigid_body::RigidBody::Dynamic)
-            .insert(Name::new("Root".to_owned()))
+            .spawn((
+                TransformBundle::default(),
+                rigid_body::RigidBody::Dynamic,
+                Name::new("Root".to_owned()),
+            ))
             .id();
 
         // attach a child
-        app.world
-            .spawn()
-            .insert_bundle(TransformBundle::default())
-            .insert(rigid_body::RigidBody::Dynamic)
-            .insert(joint::fixed::FixedJoint::attach_to(root_entity));
+        app.world.spawn((
+            TransformBundle::default(),
+            rigid_body::RigidBody::Dynamic,
+            joint::fixed::FixedJoint::attach_to(root_entity),
+        ));
 
         app.update();
 

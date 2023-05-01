@@ -528,10 +528,7 @@ mod tests {
         world.init_resource::<Entity2JointHandle>();
 
         let parent_body_handle = rapier::RigidBodyHandle::from_raw_parts(1, 0);
-        let parent_entity = world
-            .spawn()
-            .insert(RigidBodyHandle(parent_body_handle))
-            .id();
+        let parent_entity = world.spawn(RigidBodyHandle(parent_body_handle)).id();
 
         let expected_transform = Transform::from_translation(Vec3::X);
         let joint = FixedJoint {
@@ -542,9 +539,7 @@ mod tests {
 
         let child_body_handle = rapier::RigidBodyHandle::from_raw_parts(2, 0);
         let child_entity = world
-            .spawn()
-            .insert(joint)
-            .insert(RigidBodyHandle(child_body_handle))
+            .spawn((joint, RigidBodyHandle(child_body_handle)))
             .id();
 
         let mut entity_body_map = Entity2BodyHandle::default();
@@ -632,10 +627,7 @@ mod tests {
             .unwrap();
 
         world.insert_resource(joint_set);
-        let entity = world
-            .spawn()
-            .insert(MultibodyJointHandle(joint_handle))
-            .id();
+        let entity = world.spawn(MultibodyJointHandle(joint_handle)).id();
 
         // Setup and send test event for setting the velocity
         let mut events = Events::<JointMotorEvent>::default();
@@ -705,10 +697,7 @@ mod tests {
             .unwrap();
 
         world.insert_resource(joint_set);
-        let entity = world
-            .spawn()
-            .insert(MultibodyJointHandle(joint_handle))
-            .id();
+        let entity = world.spawn(MultibodyJointHandle(joint_handle)).id();
 
         events.send(JointMotorEvent {
             entity,
@@ -784,10 +773,7 @@ mod tests {
             .unwrap();
 
         world.insert_resource(joint_set);
-        let entity = world
-            .spawn()
-            .insert(MultibodyJointHandle(joint_handle))
-            .id();
+        let entity = world.spawn(MultibodyJointHandle(joint_handle)).id();
 
         // Setup and send test event for setting the velocity
         let mut events = Events::<JointMotorEvent>::default();
@@ -862,10 +848,7 @@ mod tests {
             .unwrap();
 
         world.insert_resource(joint_set);
-        let entity = world
-            .spawn()
-            .insert(MultibodyJointHandle(joint_handle))
-            .id();
+        let entity = world.spawn(MultibodyJointHandle(joint_handle)).id();
 
         // Setup and send test event for setting the velocity
         let mut events = Events::<JointMotorEvent>::default();

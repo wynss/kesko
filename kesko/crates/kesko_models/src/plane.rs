@@ -12,8 +12,8 @@ pub fn spawn(
     meshes: &mut ResMut<Assets<Mesh>>,
 ) {
     // Spawn ground
-    commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
+    commands.spawn((
+        MeshPhysicBodyBundle::from(
             RigidBody::Fixed,
             Shape::Box {
                 x_length: 2000.0,
@@ -23,8 +23,9 @@ pub fn spawn(
             material,
             Transform::from_xyz(0.0, -1.0, 0.0),
             meshes,
-        ))
-        .insert(RayVisible::<GroupStatic>::default())
-        .insert(Mass { val: 1000.0 })
-        .insert(Name::new(NAME));
+        ),
+        RayVisible::<GroupStatic>::default(),
+        Mass { val: 1000.0 },
+        Name::new(NAME),
+    ));
 }

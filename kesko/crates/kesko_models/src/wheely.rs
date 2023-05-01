@@ -103,24 +103,25 @@ impl Wheely {
         let damping = 3.0;
         let stiffness = 0.0;
 
-        let body = commands.spawn_bundle(MeshPhysicBodyBundle::from(RigidBody::Dynamic,
-            Shape::Cylinder { radius: BODY_RADIUS, length: BODY_HEIGHT, resolution: 21 },
-            material.clone(),
-            transform,
-            meshes
+        let body = commands.spawn((MeshPhysicBodyBundle::from(RigidBody::Dynamic,
+                Shape::Cylinder { radius: BODY_RADIUS, length: BODY_HEIGHT, resolution: 21 },
+                material.clone(),
+                transform,
+                meshes
+            ),
+            InteractiveBundle::<GroupDynamic>::default(),
+            Mass { val: 0.5 },
+            Name::new(NAME),
+            ControlDescription("Use following keys\nRight wheel: E-D\tLeft wheel: Q-A\tArm joint 1: R-F\tArm joint 2: T-G".to_owned())
         ))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: 0.5 })
-        .insert(Name::new(NAME))
-        .insert(ControlDescription("Use following keys\nRight wheel: E-D\tLeft wheel: Q-A\tArm joint 1: R-F\tArm joint 2: T-G".to_owned()))
         .id();
 
         // left wheel
         let parent_anchor = Transform::from_translation(Vec3::new(rh, -hh + wheel_offset, 0.15))
             .with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
         let child_anchor = Transform::default();
-        commands
-            .spawn_bundle(MeshPhysicBodyBundle::from(
+        commands.spawn((
+            MeshPhysicBodyBundle::from(
                 RigidBody::Dynamic,
                 Shape::Cylinder {
                     radius: WHEEL_RADIUS,
@@ -130,24 +131,23 @@ impl Wheely {
                 wheel_material.clone(),
                 world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
                 meshes,
-            ))
-            .insert(
-                RevoluteJoint::attach_to(body)
-                    .with_parent_anchor(parent_anchor)
-                    .with_child_anchor(child_anchor)
-                    .with_axis(KeskoAxis::Y)
-                    .with_motor_params(stiffness, damping),
-            )
-            .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-            .insert(Mass { val: 1.5 })
-            .insert(Name::new(LEFT_WHEEL));
+            ),
+            RevoluteJoint::attach_to(body)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::Y)
+                .with_motor_params(stiffness, damping),
+            InteractiveBundle::<GroupDynamic>::default(),
+            Mass { val: 1.5 },
+            Name::new(LEFT_WHEEL),
+        ));
 
         // right wheel
         let parent_anchor = Transform::from_translation(Vec3::new(-rh, -hh + wheel_offset, 0.15))
             .with_rotation(Quat::from_rotation_z(-FRAC_PI_2));
         let child_anchor = Transform::default();
-        commands
-            .spawn_bundle(MeshPhysicBodyBundle::from(
+        commands.spawn((
+            MeshPhysicBodyBundle::from(
                 RigidBody::Dynamic,
                 Shape::Cylinder {
                     radius: WHEEL_RADIUS,
@@ -157,17 +157,16 @@ impl Wheely {
                 wheel_material.clone(),
                 world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor),
                 meshes,
-            ))
-            .insert(
-                RevoluteJoint::attach_to(body)
-                    .with_parent_anchor(parent_anchor)
-                    .with_child_anchor(child_anchor)
-                    .with_axis(KeskoAxis::Y)
-                    .with_motor_params(stiffness, damping),
-            )
-            .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-            .insert(Mass { val: 1.5 })
-            .insert(Name::new(RIGHT_WHEEL));
+            ),
+            RevoluteJoint::attach_to(body)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::Y)
+                .with_motor_params(stiffness, damping),
+            InteractiveBundle::<GroupDynamic>::default(),
+            Mass { val: 1.5 },
+            Name::new(RIGHT_WHEEL),
+        ));
 
         // back wheel turn link
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, -hh, -rh));
@@ -175,23 +174,23 @@ impl Wheely {
         let world_transform =
             world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
         let back_wheel_turn = commands
-            .spawn_bundle(PhysicBodyBundle::from(
-                RigidBody::Dynamic,
-                Shape::Sphere {
-                    radius: 0.01,
-                    subdivisions: 5,
-                },
-                world_transform,
-            ))
-            .insert(
+            .spawn((
+                PhysicBodyBundle::from(
+                    RigidBody::Dynamic,
+                    Shape::Sphere {
+                        radius: 0.01,
+                        subdivisions: 5,
+                    },
+                    world_transform,
+                ),
                 RevoluteJoint::attach_to(body)
                     .with_parent_anchor(parent_anchor)
                     .with_child_anchor(child_anchor)
                     .with_axis(KeskoAxis::Y),
-            )
-            .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-            .insert(Mass { val: 0.5 })
-            .insert(Name::new(REAR_WHEEL_TURN))
+                InteractiveBundle::<GroupDynamic>::default(),
+                Mass { val: 0.5 },
+                Name::new(REAR_WHEEL_TURN),
+            ))
             .id();
 
         // back wheel
@@ -202,8 +201,8 @@ impl Wheely {
         ))
         .with_rotation(Quat::from_rotation_z(FRAC_PI_2));
         let child_anchor = Transform::default();
-        commands
-            .spawn_bundle(MeshPhysicBodyBundle::from(
+        commands.spawn((
+            MeshPhysicBodyBundle::from(
                 RigidBody::Dynamic,
                 Shape::Cylinder {
                     radius: BACK_WHEEL_RADIUS,
@@ -213,16 +212,15 @@ impl Wheely {
                 wheel_material,
                 world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
                 meshes,
-            ))
-            .insert(
-                RevoluteJoint::attach_to(back_wheel_turn)
-                    .with_parent_anchor(parent_anchor)
-                    .with_child_anchor(child_anchor)
-                    .with_axis(KeskoAxis::Y),
-            )
-            .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-            .insert(Mass { val: 0.2 })
-            .insert(Name::new(REAR_WHEEL));
+            ),
+            RevoluteJoint::attach_to(back_wheel_turn)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::Y),
+            InteractiveBundle::<GroupDynamic>::default(),
+            Mass { val: 0.2 },
+            Name::new(REAR_WHEEL),
+        ));
 
         Self::build_arm(body, commands, material, transform, meshes);
     }
@@ -239,25 +237,25 @@ impl Wheely {
         let world_transform =
             world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
         let arm_base = commands
-            .spawn_bundle(MeshPhysicBodyBundle::from(
-                RigidBody::Dynamic,
-                Shape::Box {
-                    x_length: 0.03,
-                    y_length: 0.5,
-                    z_length: 0.03,
-                },
-                material.clone(),
-                world_transform,
-                meshes,
-            ))
-            .insert(
+            .spawn((
+                MeshPhysicBodyBundle::from(
+                    RigidBody::Dynamic,
+                    Shape::Box {
+                        x_length: 0.03,
+                        y_length: 0.5,
+                        z_length: 0.03,
+                    },
+                    material.clone(),
+                    world_transform,
+                    meshes,
+                ),
                 FixedJoint::attach_to(body)
                     .with_parent_anchor(parent_anchor)
                     .with_child_anchor(child_anchor),
-            )
-            .insert(Mass { val: 0.1 })
-            .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-            .insert(Name::new(ARM_BASE))
+                Mass { val: 0.1 },
+                InteractiveBundle::<GroupDynamic>::default(),
+                Name::new(ARM_BASE),
+            ))
             .id();
 
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.25, -0.015));
@@ -265,36 +263,36 @@ impl Wheely {
         let world_transform =
             world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
         let arm_link_1 = commands
-            .spawn_bundle(MeshPhysicBodyBundle::from(
-                RigidBody::Dynamic,
-                Shape::Box {
-                    x_length: 0.03,
-                    y_length: 0.5,
-                    z_length: 0.03,
-                },
-                material.clone(),
-                world_transform,
-                meshes,
-            ))
-            .insert(
+            .spawn((
+                MeshPhysicBodyBundle::from(
+                    RigidBody::Dynamic,
+                    Shape::Box {
+                        x_length: 0.03,
+                        y_length: 0.5,
+                        z_length: 0.03,
+                    },
+                    material.clone(),
+                    world_transform,
+                    meshes,
+                ),
                 RevoluteJoint::attach_to(arm_base)
                     .with_parent_anchor(parent_anchor)
                     .with_child_anchor(child_anchor)
                     .with_axis(KeskoAxis::X)
                     .with_motor_params(10.0, 0.0)
                     .with_limits(Vec2::new(0.0, PI - 0.001)),
-            )
-            .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-            .insert(Mass { val: 0.1 })
-            .insert(Name::new(ARM_LINK_1))
+                InteractiveBundle::<GroupDynamic>::default(),
+                Mass { val: 0.1 },
+                Name::new(ARM_LINK_1),
+            ))
             .id();
 
         let parent_anchor = Transform::from_translation(Vec3::new(0.0, 0.25, -0.015));
         let child_anchor = Transform::from_translation(Vec3::new(0.0, 0.25, 0.015));
         let world_transform =
             world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor);
-        commands
-            .spawn_bundle(MeshPhysicBodyBundle::from(
+        commands.spawn((
+            MeshPhysicBodyBundle::from(
                 RigidBody::Dynamic,
                 Shape::Box {
                     x_length: 0.03,
@@ -304,18 +302,17 @@ impl Wheely {
                 material,
                 world_transform,
                 meshes,
-            ))
-            .insert(
-                PrismaticJoint::attach_to(arm_link_1)
-                    .with_parent_anchor(parent_anchor)
-                    .with_child_anchor(child_anchor)
-                    .with_axis(KeskoAxis::NegY)
-                    .with_motor_params(10.0, 0.0)
-                    .with_limits(Vec2::new(0.0, 0.45)),
-            )
-            .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-            .insert(Mass { val: 0.1 })
-            .insert(Name::new(ARM_LINK_2));
+            ),
+            PrismaticJoint::attach_to(arm_link_1)
+                .with_parent_anchor(parent_anchor)
+                .with_child_anchor(child_anchor)
+                .with_axis(KeskoAxis::NegY)
+                .with_motor_params(10.0, 0.0)
+                .with_limits(Vec2::new(0.0, 0.45)),
+            InteractiveBundle::<GroupDynamic>::default(),
+            Mass { val: 0.1 },
+            Name::new(ARM_LINK_2),
+        ));
     }
 
     fn enable_control_system(

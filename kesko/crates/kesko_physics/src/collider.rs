@@ -166,17 +166,16 @@ mod tests {
         let (mut world, mut stage) = setup_world();
 
         let entity = world
-            .spawn()
-            .insert(RigidBody::Fixed)
-            .insert(ColliderShape::Cuboid {
-                x_half: 1.0,
-                y_half: 1.0,
-                z_half: 1.0,
-            })
-            .insert(
+            .spawn((
+                RigidBody::Fixed,
+                ColliderShape::Cuboid {
+                    x_half: 1.0,
+                    y_half: 1.0,
+                    z_half: 1.0,
+                },
                 Transform::from_translation(Vec3::new(0.0, 0.0, 1.0))
                     .with_rotation(Quat::from_xyzw(1.0, 0.0, 0.0, 0.0)),
-            )
+            ))
             .id();
 
         // run two times so the collider is added
@@ -213,18 +212,17 @@ mod tests {
         };
 
         let entity = world
-            .spawn()
-            .insert(RigidBody::Fixed)
-            .insert(ColliderShape::Cuboid {
-                x_half: 1.0,
-                y_half: 1.0,
-                z_half: 1.0,
-            })
-            .insert(physical_properties.clone())
-            .insert(
+            .spawn((
+                RigidBody::Fixed,
+                ColliderShape::Cuboid {
+                    x_half: 1.0,
+                    y_half: 1.0,
+                    z_half: 1.0,
+                },
+                physical_properties.clone(),
                 Transform::from_translation(Vec3::new(0.0, 0.0, 1.0))
                     .with_rotation(Quat::from_xyzw(1.0, 0.0, 0.0, 0.0)),
-            )
+            ))
             .id();
 
         // run two times so the collider is added

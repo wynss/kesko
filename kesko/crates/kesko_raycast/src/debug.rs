@@ -10,8 +10,8 @@ pub(crate) fn spawn_debug_pointer(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    commands
-        .spawn_bundle(PbrBundle {
+    commands.spawn((
+        PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Capsule {
                 radius: 0.05,
                 depth: 0.5,
@@ -24,8 +24,9 @@ pub(crate) fn spawn_debug_pointer(
             }),
             transform: Transform::from_xyz(0.0, 1.0, 0.0).with_scale(Vec3::ZERO),
             ..Default::default()
-        })
-        .insert(DebugPointer);
+        },
+        DebugPointer,
+    ));
 }
 
 pub(crate) fn update_debug_pointer<T: Component + Default>(

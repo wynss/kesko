@@ -49,10 +49,7 @@ mod tests {
         let world = &mut app.world;
         let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
         let material = materials.add(Color::GOLD.into());
-        world
-            .spawn()
-            .insert(OriginalMaterial::default())
-            .insert(material);
+        world.spawn((OriginalMaterial::default(), material));
 
         let mut stage = SystemStage::parallel();
         stage.add_system(set_initial_interaction_material);
