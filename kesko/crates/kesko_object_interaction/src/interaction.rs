@@ -6,7 +6,7 @@ use kesko_raycast::{RayCastMethod, RayCastSource};
 
 const CURSOR_MOVE_LIMIT: f32 = 0.5;
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub(crate) struct GlobalDragState {
     dragged: bool,
     block_drag: bool,
