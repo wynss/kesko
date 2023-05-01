@@ -55,7 +55,7 @@ impl KeskoApp {
 
     pub fn init_default(&mut self) {
         self.app
-            .add_plugins_with(CorePlugins, |group| group.disable::<UIPlugin>())
+            .add_plugins(CorePlugins.disable::<UIPlugin>())
             .add_plugin(CarPlugin)
             .add_plugin(WheelyPlugin)
             .add_startup_system(start_scene);

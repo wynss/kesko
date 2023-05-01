@@ -15,14 +15,15 @@ pub use kesko_ui::UIPlugin;
 
 pub struct CorePlugins;
 impl PluginGroup for CorePlugins {
-    fn build(&mut self, group: &mut PluginGroupBuilder) {
-        group.add(CorePlugin);
-        group.add(UIPlugin);
-        group.add(MainCameraPlugin);
-        group.add(DefaultPhysicsPlugin);
-        group.add(InteractionPlugin::<GroupDynamic>::default());
-        group.add(InteractionPlugin::<GroupStatic>::default());
-        group.add(ModelPlugin);
+    fn build(self) -> PluginGroupBuilder {
+        PluginGroupBuilder::start::<Self>()
+            .add(CorePlugin)
+            .add(UIPlugin)
+            .add(MainCameraPlugin)
+            .add(DefaultPhysicsPlugin)
+            .add(InteractionPlugin::<GroupDynamic>::default())
+            .add(InteractionPlugin::<GroupStatic>::default())
+            .add(ModelPlugin)
     }
 }
 
@@ -31,13 +32,14 @@ pub struct HeadlessRenderPlugins {
     pub initial_physic_state: kesko_physics::PhysicState,
 }
 impl PluginGroup for HeadlessRenderPlugins {
-    fn build(&mut self, group: &mut PluginGroupBuilder) {
-        group.add(CoreHeadlessPlugin);
-        group.add(kesko_physics::PhysicsPlugin {
-            initial_state: self.initial_physic_state,
-            ..default()
-        });
-        group.add(ModelPlugin);
+    fn build(self) -> PluginGroupBuilder {
+        PluginGroupBuilder::start::<Self>()
+            .add(CorePlugin)
+            .add(kesko_physics::PhysicsPlugin {
+                initial_state: self.initial_physic_state,
+                ..default()
+            })
+            .add(ModelPlugin)
     }
 }
 

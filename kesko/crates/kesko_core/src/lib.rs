@@ -7,7 +7,7 @@ pub mod orbit_camera;
 pub mod shape;
 pub mod transform;
 
-use bevy::prelude::*;
+use bevy::{log::LogPlugin, prelude::*};
 use kesko_physics::event::PhysicRequestEvent;
 
 use crate::{
@@ -21,9 +21,9 @@ use crate::{
 use bevy::{
     app::{App, Plugin},
     core_pipeline::clear_color::ClearColor,
-    log::{Level, LogSettings},
+    log::Level,
     render::{color::Color, view::Msaa},
-    window::{MonitorSelection, WindowDescriptor, WindowPosition},
+    window::{MonitorSelection, WindowDescriptor, WindowPlugin, WindowPosition},
     DefaultPlugins,
 };
 
@@ -32,21 +32,28 @@ pub struct CorePlugin;
 impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
-            .insert_resource(WindowDescriptor {
-                title: String::from("Kesko 0.0.4"),
-                width: 1920.0,
-                height: 1080.0,
-                position: WindowPosition::Centered(MonitorSelection::Primary),
-                fit_canvas_to_parent: true,
-                canvas: Some("#kesko-wasm".to_string()),
-                ..Default::default()
-            })
             .insert_resource(Msaa { samples: 4 })
-            .insert_resource(LogSettings {
-                level: Level::INFO,
-                ..default()
-            })
-            .add_plugins(DefaultPlugins)
+            .add_plugins(
+                DefaultPlugins
+                    .set(WindowPlugin {
+                        window: WindowDescriptor {
+                            title: String::from("Kesko 0.0.4"),
+                            width: 1920.0,
+                            height: 1080.0,
+                            position: WindowPosition::Centered(MonitorSelection::Primary),
+                            fit_canvas_to_parent: true,
+                            canvas: Some("#kesko-wasm".to_string()),
+                            ..Default::default()
+                        },
+                        add_primary_window: true,
+                        exit_on_all_closed: true,
+                        close_when_requested: true,
+                    })
+                    .set(LogPlugin {
+                        level: Level::INFO,
+                        ..default()
+                    }),
+            )
             .add_plugin(GrabablePlugin::<GroupDynamic>::default())
             // vertical marker systems
             .add_system(handle_vertical_marker_spawning::<GroupStatic>)
@@ -72,16 +79,18 @@ impl Plugin for CorePlugin {
 pub struct CoreHeadlessPlugin;
 impl Plugin for CoreHeadlessPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(LogSettings {
-            level: Level::INFO,
-            ..default()
-        })
-        // bevy plugins
-        .add_plugins_with(DefaultPlugins, |group| {
-            group.disable::<bevy::winit::WinitPlugin>()
-        })
+        // Bevy plugins
+        app.add_plugins(
+            DefaultPlugins
+                .build()
+                .disable::<bevy::winit::WinitPlugin>()
+                .set(LogPlugin {
+                    level: Level::INFO,
+                    ..default()
+                }),
+        )
         .set_runner(headless_runner)
-        // simulator system events
+        // Simulator system events
         .add_event::<event::SimulatorRequestEvent>()
         .add_event::<event::SimulatorResponseEvent>()
         .add_system_set_to_stage(
