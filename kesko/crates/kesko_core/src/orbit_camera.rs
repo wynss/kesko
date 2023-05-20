@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
     render::camera::Projection,
@@ -151,11 +152,11 @@ fn send_camera_mouse_events(
 
 fn handle_camera_events(
     time: Res<Time>,
-    windows: Res<Windows>,
+    windows: Query<&Window, With<PrimaryWindow>>,
     mut camera_events: EventReader<PanOrbitCameraEvents>,
     mut query: Query<(&mut PanOrbitCamera, &mut Transform, &Projection)>,
 ) {
-    let window = windows.get_primary().unwrap();
+    let window = windows.get_single().unwrap();
     let window_size = Vec2::new(window.width(), window.height());
 
     if let Ok((mut camera, mut transform, projection)) = query.get_single_mut() {

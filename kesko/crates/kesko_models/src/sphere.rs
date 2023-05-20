@@ -20,10 +20,14 @@ impl Sphere {
         commands.spawn((
             PbrBundle {
                 material,
-                mesh: meshes.add(Mesh::from(shape::Icosphere {
-                    radius: 0.2,
-                    subdivisions: 5,
-                })),
+                mesh: meshes.add(
+                    shape::Icosphere {
+                        radius: 0.2,
+                        subdivisions: 5,
+                    }
+                    .try_into()
+                    .unwrap(),
+                ),
                 transform,
                 ..default()
             },

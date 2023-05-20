@@ -162,31 +162,41 @@ impl Shape {
             Self::Sphere {
                 radius,
                 subdivisions,
-            } => Some(Mesh::from(shape::Icosphere {
-                radius: *radius,
-                subdivisions: *subdivisions,
-            })),
+            } => Some(
+                shape::Icosphere {
+                    radius: *radius,
+                    subdivisions: *subdivisions,
+                }
+                .try_into()
+                .unwrap(),
+            ),
             Self::Box {
                 x_length,
                 y_length,
                 z_length,
-            } => Some(Mesh::from(shape::Box::new(*x_length, *y_length, *z_length))),
+            } => Some(shape::Box::new(*x_length, *y_length, *z_length).into()),
             Self::Cylinder {
                 radius,
                 length,
                 resolution,
-            } => Some(Mesh::from(Cylinder {
-                radius: *radius,
-                height: *length,
-                resolution: *resolution,
-                ..Default::default()
-            })),
-            Self::Capsule { radius, length } => Some(Mesh::from(shape::Capsule {
-                radius: *radius,
-                depth: *length,
-                ..Default::default()
-            })),
-            Self::Cube { size } => Some(Mesh::from(shape::Box::new(*size, *size, *size))),
+            } => Some(
+                Cylinder {
+                    radius: *radius,
+                    height: *length,
+                    resolution: *resolution,
+                    ..Default::default()
+                }
+                .into(),
+            ),
+            Self::Capsule { radius, length } => Some(
+                shape::Capsule {
+                    radius: *radius,
+                    depth: *length,
+                    ..Default::default()
+                }
+                .into(),
+            ),
+            Self::Cube { size } => Some(shape::Box::new(*size, *size, *size).into()),
         }
     }
 

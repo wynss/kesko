@@ -32,10 +32,14 @@ fn setup(
     commands.spawn((
         PbrBundle {
             material: materials.add(Color::PURPLE.into()),
-            mesh: meshes.add(Mesh::from(shape::Icosphere {
-                radius: 0.2,
-                subdivisions: 5,
-            })),
+            mesh: meshes.add(
+                shape::Icosphere {
+                    radius: 0.2,
+                    subdivisions: 5,
+                }
+                .try_into()
+                .unwrap(),
+            ),
             transform: Transform::from_translation(Vec3::new(0.0, 4.0, 0.0)),
             ..default()
         },

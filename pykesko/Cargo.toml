@@ -8,8 +8,8 @@ name = "pykesko"
 crate-type = ["cdylib"]
 
 [dependencies]
-bevy = { version = "0.9.1", default-features = false, features = ["render", "bevy_winit", "bevy_scene", "x11"] }
+bevy = { version = "0.10.1", default-features = false, features = ["bevy_render", "bevy_winit", "bevy_scene", "x11"] }
 kesko = { path = "../kesko"}
-pyo3 = { version = "0.17.2", features = ["extension-module"] }
+pyo3 = { version = "0.18.3", features = ["extension-module"] }
 serde = { version = "1.0.137" }
 serde_json = "1.0.81"

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 
 pub(crate) enum AboutEvent {
     Open,
@@ -11,7 +11,7 @@ pub(crate) struct AboutComponent {
 }
 impl AboutComponent {
     pub(crate) fn update_system(
-        mut egui_context: ResMut<EguiContext>,
+        mut egui_context: EguiContexts,
         mut event_reader: EventReader<AboutEvent>,
         mut comp: Query<&mut Self>,
     ) {

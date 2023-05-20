@@ -7,7 +7,7 @@ use bevy_egui::{
         plot::{Legend, Line, PlotPoints},
         Color32,
     },
-    EguiContext,
+    EguiContexts,
 };
 
 const HISTORY_LEN: usize = 20;
@@ -54,10 +54,7 @@ impl FPSComponent {
         }
     }
 
-    pub(crate) fn show_and_send_system(
-        mut egui_context: ResMut<EguiContext>,
-        mut comp: Query<&mut Self>,
-    ) {
+    pub(crate) fn show_and_send_system(mut egui_context: EguiContexts, mut comp: Query<&mut Self>) {
         let mut comp = comp.get_single_mut().unwrap();
         comp.show(egui_context.ctx_mut());
     }

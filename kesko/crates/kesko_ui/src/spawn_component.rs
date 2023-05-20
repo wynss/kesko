@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 
 use kesko_models::{Model, SpawnEvent};
 
@@ -46,7 +46,7 @@ impl SpawnComponent {
     }
 
     pub(crate) fn show_and_send_system(
-        mut egui_context: ResMut<EguiContext>,
+        mut egui_context: EguiContexts,
         mut spawn_event_writer: EventWriter<SpawnEvent>,
         mut comp: Query<&mut Self>,
     ) {

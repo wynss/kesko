@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 pub struct ModelPlugin;
 impl Plugin for ModelPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(CoreStage::First, spawn_system)
+        app.add_system(spawn_system.in_base_set(CoreSet::First))
             .add_event::<SpawnEvent>();
     }
 }

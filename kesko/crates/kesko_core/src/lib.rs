@@ -23,7 +23,7 @@ use bevy::{
     core_pipeline::clear_color::ClearColor,
     log::Level,
     render::{color::Color, view::Msaa},
-    window::{WindowDescriptor, WindowPlugin, WindowPosition},
+    window::{WindowPlugin, WindowPosition},
     DefaultPlugins,
 };
 
@@ -32,7 +32,7 @@ pub struct CorePlugin;
 impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
-            .insert_resource(Msaa { samples: 4 })
+            .insert_resource(Msaa::Sample4)
             .add_plugins(
                 DefaultPlugins
                     .set(WindowPlugin {
@@ -65,12 +65,13 @@ impl Plugin for CorePlugin {
             // simulator system events
             .add_event::<event::SimulatorRequestEvent>()
             .add_event::<event::SimulatorResponseEvent>()
-            .add_system_set_to_stage(
-                CoreStage::Last,
-                SystemSet::new()
-                    .with_system(event::handle_system_events)
-                    .with_system(event::handle_serializable_state_request)
-                    .with_system(event::handle_motor_command_requests),
+            .add_systems(
+                (
+                    event::handle_system_events,
+                    event::handle_serializable_state_request,
+                    event::handle_motor_command_requests,
+                )
+                    .in_base_set(CoreSet::LastFlush),
             );
     }
 }
@@ -92,12 +93,13 @@ impl Plugin for CoreHeadlessPlugin {
         // Simulator system events
         .add_event::<event::SimulatorRequestEvent>()
         .add_event::<event::SimulatorResponseEvent>()
-        .add_system_set_to_stage(
-            CoreStage::Last,
-            SystemSet::new()
-                .with_system(event::handle_system_events)
-                .with_system(event::handle_serializable_state_request)
-                .with_system(event::handle_motor_command_requests),
+        .add_systems(
+            (
+                event::handle_system_events,
+                event::handle_serializable_state_request,
+                event::handle_motor_command_requests,
+            )
+                .in_base_set(CoreSet::LastFlush),
         );
     }
 }

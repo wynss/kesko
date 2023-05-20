@@ -11,13 +11,13 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use bevy::prelude::*;
 use bevy::render::{camera::Projection, primitives::Aabb};
+use bevy::{prelude::*, window::PrimaryWindow};
 
 use intersect::{aabb_intersection, mesh_intersection, RayHit};
 use ray::Ray;
 
-#[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash, SystemSet)]
 pub enum RayCastSystems {
     CreateRays,
     CalcIntersections,
@@ -47,20 +47,15 @@ where
     T: Component + Default,
 {
     fn build(&self, app: &mut App) {
-        app.add_system_set_to_stage(
-            CoreStage::Update,
-            SystemSet::new()
-                .with_system(create_rays_system::<T>.label(RayCastSystems::CreateRays))
-                .with_system(
-                    calc_intersections_system::<T>
-                        .label(RayCastSystems::CalcIntersections)
-                        .after(RayCastSystems::CreateRays),
-                ),
+        app.add_systems(
+            (create_rays_system::<T>, calc_intersections_system::<T>)
+                .chain()
+                .in_base_set(CoreSet::Update),
         );
 
         if self.debug {
             app.add_startup_system(debug::spawn_debug_pointer);
-            app.add_system_to_stage(CoreStage::First, debug::update_debug_pointer::<T>);
+            app.add_system(debug::update_debug_pointer::<T>.in_base_set(CoreSet::First));
         }
     }
 }
@@ -126,7 +121,7 @@ pub struct RayVisible<T> {
 
 #[allow(clippy::type_complexity)]
 fn create_rays_system<T: Component + Default>(
-    windows: Res<Windows>,
+    windows: Query<&Window, With<PrimaryWindow>>,
     mut ray_source_query: Query<(
         &mut RayCastSource<T>,
         Option<&Camera>,
@@ -134,7 +129,7 @@ fn create_rays_system<T: Component + Default>(
         Option<&GlobalTransform>,
     )>,
 ) {
-    let window = windows.get_primary().unwrap();
+    let window = windows.get_single().unwrap();
     for (mut ray_source, camera, perspective_projection, transform) in ray_source_query.iter_mut() {
         // todo: Remove this and make a separate reset system that can be triggered
         if let Some(ray_hit) = &ray_source.ray_hit {
@@ -174,7 +169,7 @@ fn create_rays_system<T: Component + Default>(
                             ray_source.ray = Some(Ray::from_screen_space(
                                 window,
                                 camera,
-                                perspective_projection,
+                                &perspective_projection,
                                 transform,
                                 cursor_position,
                             ));
@@ -220,12 +215,14 @@ fn calc_intersections_system<T: Component + Default>(
                         // check visibility, both user defined and computed
                         match source.method {
                             RayCastMethod::ScreenSpace => {
-                                if !visibility.is_visible && !computed_visibility.is_visible() {
+                                if visibility != Visibility::Visible
+                                    && !computed_visibility.is_visible()
+                                {
                                     return None;
                                 }
                             }
                             _ => {
-                                if !visibility.is_visible {
+                                if visibility != Visibility::Visible {
                                     return None;
                                 }
                             }
@@ -248,21 +245,24 @@ fn calc_intersections_system<T: Component + Default>(
 
             let ray_hits = Arc::new(Mutex::new(Vec::new()));
 
-            visible_query.par_for_each(num_cpus::get(), |(entity, mesh_handle, transform)| {
-                if culled_entities.contains(&entity) {
-                    if let Some(mesh) = meshes.get(mesh_handle) {
-                        let mesh_to_world = transform.compute_matrix();
-                        if let Some(intersection) = mesh_intersection(mesh, ray, &mesh_to_world) {
-                            ray_hits.lock().unwrap().push(RayHit {
-                                entity,
-                                intersection,
-                            });
+            visible_query
+                .par_iter()
+                .for_each(|(entity, mesh_handle, transform)| {
+                    if culled_entities.contains(&entity) {
+                        if let Some(mesh) = meshes.get(mesh_handle) {
+                            let mesh_to_world = transform.compute_matrix();
+                            if let Some(intersection) = mesh_intersection(mesh, ray, &mesh_to_world)
+                            {
+                                ray_hits.lock().unwrap().push(RayHit {
+                                    entity,
+                                    intersection,
+                                });
+                            }
+                        } else {
+                            error!("No mesh for mesh handle");
                         }
-                    } else {
-                        error!("No mesh for mesh handle");
                     }
-                }
-            });
+                });
 
             // todo: improve this
             let mut min_distance = f32::MAX;

@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 bevy = { workspace = true }
 serde = { version = "1.0.137", features = ["derive"] }
-serde_traitobject = "0.2.7"
 
 kesko_physics = { path = "../kesko_physics" }
 kesko_object_interaction = { path = "../kesko_object_interaction"}

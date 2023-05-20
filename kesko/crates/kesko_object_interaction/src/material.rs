@@ -37,32 +37,36 @@ pub(crate) fn set_initial_interaction_material(
 mod tests {
     use crate::{set_initial_interaction_material, OriginalMaterial};
     use bevy::asset::AssetPlugin;
-    use bevy::core::CorePlugin;
+    use bevy::core::{TaskPoolPlugin, TypeRegistrationPlugin};
     use bevy::prelude::*;
 
     #[test]
     fn test_set_initial_material() {
         let mut app = App::new();
-        app.add_plugin(CorePlugin::default())
+        app.add_plugin(TaskPoolPlugin::default())
+            .add_plugin(TypeRegistrationPlugin::default())
             .add_plugin(AssetPlugin::default())
             .add_plugin(MaterialPlugin::<StandardMaterial>::default());
 
-        let world = &mut app.world;
-        let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
+        let mut materials = app.world.resource_mut::<Assets<StandardMaterial>>();
         let material = materials.add(Color::GOLD.into());
-        world.spawn((OriginalMaterial::default(), material));
+        app.world.spawn((OriginalMaterial::default(), material));
 
-        let mut stage = SystemStage::parallel();
-        stage.add_system(set_initial_interaction_material);
-
-        stage.run(world);
+        app.add_system(set_initial_interaction_material);
+        app.update();
 
         // only 1 entity
-        assert_eq!(world.query::<&OriginalMaterial>().iter(world).len(), 1);
+        assert_eq!(
+            app.world
+                .query::<&OriginalMaterial>()
+                .iter(&app.world)
+                .len(),
+            1
+        );
 
-        world
+        app.world
             .query::<(&OriginalMaterial, &Handle<StandardMaterial>)>()
-            .for_each(world, |(original_material, material)| {
+            .for_each(&app.world, |(original_material, material)| {
                 // assert we have a material set
                 assert!(original_material.0.is_some());
 

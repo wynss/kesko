@@ -28,6 +28,7 @@ pub enum PhysicState {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemSet)]
+#[system_set(base)]
 pub enum PhysicStage {
     AddRigidBodies,
     AddJoints,
@@ -110,15 +111,20 @@ impl Plugin for PhysicsPlugin {
                 )
                     .chain(),
             )
-            .add_system(rigid_body::add_rigid_bodies.in_set(PhysicStage::AddRigidBodies))
-            .add_system(collider::add_colliders.in_set(PhysicStage::AddColliders))
-            .add_system(joint::add_multibody_joints.in_set(PhysicStage::AddJoints))
-            .add_system(multibody::add_multibodies.in_set(PhysicStage::AddMultibodies))
+            .add_system(rigid_body::add_rigid_bodies.in_base_set(PhysicStage::AddRigidBodies))
+            .add_system(apply_system_buffers.in_base_set(PhysicStage::AddRigidBodies))
+            .add_system(collider::add_colliders.in_base_set(PhysicStage::AddColliders))
+            .add_system(apply_system_buffers.in_base_set(PhysicStage::AddColliders))
+            .add_system(joint::add_multibody_joints.in_base_set(PhysicStage::AddJoints))
+            .add_system(apply_system_buffers.in_base_set(PhysicStage::AddJoints))
+            .add_system(multibody::add_multibodies.in_base_set(PhysicStage::AddMultibodies))
+            .add_system(apply_system_buffers.in_base_set(PhysicStage::AddMultibodies))
             .add_system(
                 physics_pipeline_step
-                    .in_set(PhysicStage::PipelineStep)
+                    .in_base_set(PhysicStage::PipelineStep)
                     .run_if(in_state(PhysicState::Running)),
             )
+            .add_system(apply_system_buffers.in_base_set(PhysicStage::PipelineStep))
             .add_systems(
                 (
                     update_bevy_world,
@@ -132,8 +138,9 @@ impl Plugin for PhysicsPlugin {
                     event::collision::send_collision_events_system,
                     event::spawn::send_spawned_events,
                 )
-                    .in_set(PhysicStage::PostPipeline),
-            );
+                    .in_base_set(PhysicStage::PostPipeline),
+            )
+            .add_system(apply_system_buffers.in_base_set(PhysicStage::PostPipeline));
     }
 }
 
