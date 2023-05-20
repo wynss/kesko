@@ -52,20 +52,22 @@ pub fn spawn(
 
     // Frame
     let body = commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
-            RigidBody::Dynamic,
-            Shape::Sphere {
-                radius: body_radius,
-                subdivisions: 7,
-            },
-            material.clone(),
-            transform,
-            meshes,
+        .spawn((
+            MeshPhysicBodyBundle::from(
+                RigidBody::Dynamic,
+                Shape::Sphere {
+                    radius: body_radius,
+                    subdivisions: 7,
+                },
+                material.clone(),
+                transform,
+                meshes,
+            ),
+            InteractiveBundle::<GroupDynamic>::default(),
+            Mass { val: mass_body },
+            Name::new(NAME),
+            GenerateCollisionEvents,
         ))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Mass { val: mass_body })
-        .insert(Name::new(NAME))
-        .insert(GenerateCollisionEvents)
         .id();
 
     // left front leg x
@@ -77,18 +79,18 @@ pub fn spawn(
     let world_transform =
         world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
     let left_front_x = commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
-            RigidBody::Dynamic,
-            Shape::Sphere {
-                radius: leg_radius,
-                subdivisions: 5,
-            },
-            material.clone(),
-            world_transform,
-            meshes,
-        ))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(
+        .spawn((
+            MeshPhysicBodyBundle::from(
+                RigidBody::Dynamic,
+                Shape::Sphere {
+                    radius: leg_radius,
+                    subdivisions: 5,
+                },
+                material.clone(),
+                world_transform,
+                meshes,
+            ),
+            InteractiveBundle::<GroupDynamic>::default(),
             RevoluteJoint::attach_to(body)
                 .with_parent_anchor(parent_anchor)
                 .with_child_anchor(child_anchor)
@@ -96,16 +98,16 @@ pub fn spawn(
                 .with_motor_params(leg_stiffness, leg_damping)
                 .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
                 .with_max_motor_force(max_motor_force),
-        )
-        .insert(Mass { val: mass_leg })
-        .insert(Name::new(LEFT_FRONT_X))
+            Mass { val: mass_leg },
+            Name::new(LEFT_FRONT_X),
+        ))
         .id();
 
     // left front leg z
     let parent_anchor = Transform::default();
     let child_anchor = Transform::from_translation((dist_z) * Vec3::Y);
-    commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
+    commands.spawn((
+        MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Capsule {
                 radius: leg_radius,
@@ -114,19 +116,18 @@ pub fn spawn(
             material.clone(),
             world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
             meshes,
-        ))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(
-            RevoluteJoint::attach_to(left_front_x)
-                .with_parent_anchor(parent_anchor)
-                .with_child_anchor(child_anchor)
-                .with_axis(KeskoAxis::Z)
-                .with_motor_params(leg_stiffness, leg_damping)
-                .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
-                .with_max_motor_force(max_motor_force),
-        )
-        .insert(Mass { val: mass_leg })
-        .insert(Name::new(LEFT_FRONT_Z));
+        ),
+        InteractiveBundle::<GroupDynamic>::default(),
+        RevoluteJoint::attach_to(left_front_x)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Z)
+            .with_motor_params(leg_stiffness, leg_damping)
+            .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+            .with_max_motor_force(max_motor_force),
+        Mass { val: mass_leg },
+        Name::new(LEFT_FRONT_Z),
+    ));
 
     // right front leg x
     let parent_anchor =
@@ -139,18 +140,18 @@ pub fn spawn(
     let world_transform =
         world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
     let right_front_x = commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
-            RigidBody::Dynamic,
-            Shape::Sphere {
-                radius: leg_radius,
-                subdivisions: 5,
-            },
-            material.clone(),
-            world_transform,
-            meshes,
-        ))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(
+        .spawn((
+            MeshPhysicBodyBundle::from(
+                RigidBody::Dynamic,
+                Shape::Sphere {
+                    radius: leg_radius,
+                    subdivisions: 5,
+                },
+                material.clone(),
+                world_transform,
+                meshes,
+            ),
+            InteractiveBundle::<GroupDynamic>::default(),
             RevoluteJoint::attach_to(body)
                 .with_parent_anchor(parent_anchor)
                 .with_child_anchor(child_anchor)
@@ -158,16 +159,16 @@ pub fn spawn(
                 .with_motor_params(leg_stiffness, leg_damping)
                 .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
                 .with_max_motor_force(max_motor_force),
-        )
-        .insert(Mass { val: mass_leg })
-        .insert(Name::new(RIGHT_FRONT_X))
+            Mass { val: mass_leg },
+            Name::new(RIGHT_FRONT_X),
+        ))
         .id();
 
     // right front leg z
     let parent_anchor = Transform::default();
     let child_anchor = Transform::from_translation((dist_z) * Vec3::Y);
-    commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
+    commands.spawn((
+        MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Capsule {
                 radius: leg_radius,
@@ -176,19 +177,18 @@ pub fn spawn(
             material.clone(),
             world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
             meshes,
-        ))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(
-            RevoluteJoint::attach_to(right_front_x)
-                .with_parent_anchor(parent_anchor)
-                .with_child_anchor(child_anchor)
-                .with_axis(KeskoAxis::Z)
-                .with_motor_params(leg_stiffness, leg_damping)
-                .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
-                .with_max_motor_force(max_motor_force),
-        )
-        .insert(Mass { val: mass_leg })
-        .insert(Name::new(RIGHT_FRONT_Z));
+        ),
+        InteractiveBundle::<GroupDynamic>::default(),
+        RevoluteJoint::attach_to(right_front_x)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Z)
+            .with_motor_params(leg_stiffness, leg_damping)
+            .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+            .with_max_motor_force(max_motor_force),
+        Mass { val: mass_leg },
+        Name::new(RIGHT_FRONT_Z),
+    ));
 
     // left rear leg x
     let parent_anchor =
@@ -201,18 +201,18 @@ pub fn spawn(
     let world_transform =
         world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
     let left_rear_leg_x = commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
-            RigidBody::Dynamic,
-            Shape::Sphere {
-                radius: leg_radius,
-                subdivisions: 5,
-            },
-            material.clone(),
-            world_transform,
-            meshes,
-        ))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(
+        .spawn((
+            MeshPhysicBodyBundle::from(
+                RigidBody::Dynamic,
+                Shape::Sphere {
+                    radius: leg_radius,
+                    subdivisions: 5,
+                },
+                material.clone(),
+                world_transform,
+                meshes,
+            ),
+            InteractiveBundle::<GroupDynamic>::default(),
             RevoluteJoint::attach_to(body)
                 .with_parent_anchor(parent_anchor)
                 .with_child_anchor(child_anchor)
@@ -220,16 +220,16 @@ pub fn spawn(
                 .with_motor_params(leg_stiffness, leg_damping)
                 .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
                 .with_max_motor_force(max_motor_force),
-        )
-        .insert(Mass { val: mass_leg })
-        .insert(Name::new(LEFT_REAR_X))
+            Mass { val: mass_leg },
+            Name::new(LEFT_REAR_X),
+        ))
         .id();
 
     // left rear leg z
     let parent_anchor = Transform::default();
     let child_anchor = Transform::from_translation((dist_z) * Vec3::Y);
-    commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
+    commands.spawn((
+        MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Capsule {
                 radius: leg_radius,
@@ -238,19 +238,18 @@ pub fn spawn(
             material.clone(),
             world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
             meshes,
-        ))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(
-            RevoluteJoint::attach_to(left_rear_leg_x)
-                .with_parent_anchor(parent_anchor)
-                .with_child_anchor(child_anchor)
-                .with_axis(KeskoAxis::Z)
-                .with_motor_params(leg_stiffness, leg_damping)
-                .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
-                .with_max_motor_force(max_motor_force),
-        )
-        .insert(Mass { val: mass_leg })
-        .insert(Name::new(LEFT_REAR_Z));
+        ),
+        InteractiveBundle::<GroupDynamic>::default(),
+        RevoluteJoint::attach_to(left_rear_leg_x)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Z)
+            .with_motor_params(leg_stiffness, leg_damping)
+            .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+            .with_max_motor_force(max_motor_force),
+        Mass { val: mass_leg },
+        Name::new(LEFT_REAR_Z),
+    ));
 
     // right rear leg x
     let parent_anchor =
@@ -263,18 +262,18 @@ pub fn spawn(
     let world_transform =
         world_transform_from_joint_anchors(&transform, &parent_anchor, &child_anchor);
     let right_rear_leg_x = commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
-            RigidBody::Dynamic,
-            Shape::Sphere {
-                radius: leg_radius,
-                subdivisions: 5,
-            },
-            material.clone(),
-            world_transform,
-            meshes,
-        ))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(
+        .spawn((
+            MeshPhysicBodyBundle::from(
+                RigidBody::Dynamic,
+                Shape::Sphere {
+                    radius: leg_radius,
+                    subdivisions: 5,
+                },
+                material.clone(),
+                world_transform,
+                meshes,
+            ),
+            InteractiveBundle::<GroupDynamic>::default(),
             RevoluteJoint::attach_to(body)
                 .with_parent_anchor(parent_anchor)
                 .with_child_anchor(child_anchor)
@@ -282,16 +281,16 @@ pub fn spawn(
                 .with_motor_params(leg_stiffness, leg_damping)
                 .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
                 .with_max_motor_force(max_motor_force),
-        )
-        .insert(Mass { val: mass_leg })
-        .insert(Name::new(RIGHT_REAR_X))
+            Mass { val: mass_leg },
+            Name::new(RIGHT_REAR_X),
+        ))
         .id();
 
     // right rear leg z
     let parent_anchor = Transform::default();
     let child_anchor = Transform::from_translation((dist_z) * Vec3::Y);
-    commands
-        .spawn_bundle(MeshPhysicBodyBundle::from(
+    commands.spawn((
+        MeshPhysicBodyBundle::from(
             RigidBody::Dynamic,
             Shape::Capsule {
                 radius: leg_radius,
@@ -300,17 +299,16 @@ pub fn spawn(
             material,
             world_transform_from_joint_anchors(&world_transform, &parent_anchor, &child_anchor),
             meshes,
-        ))
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(
-            RevoluteJoint::attach_to(right_rear_leg_x)
-                .with_parent_anchor(parent_anchor)
-                .with_child_anchor(child_anchor)
-                .with_axis(KeskoAxis::Z)
-                .with_motor_params(leg_stiffness, leg_damping)
-                .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
-                .with_max_motor_force(max_motor_force),
-        )
-        .insert(Mass { val: mass_leg })
-        .insert(Name::new(RIGHT_REAR_Z));
+        ),
+        InteractiveBundle::<GroupDynamic>::default(),
+        RevoluteJoint::attach_to(right_rear_leg_x)
+            .with_parent_anchor(parent_anchor)
+            .with_child_anchor(child_anchor)
+            .with_axis(KeskoAxis::Z)
+            .with_motor_params(leg_stiffness, leg_damping)
+            .with_limits(Vec2::new(-FRAC_PI_4, FRAC_PI_4))
+            .with_max_motor_force(max_motor_force),
+        Mass { val: mass_leg },
+        Name::new(RIGHT_REAR_Z),
+    ));
 }

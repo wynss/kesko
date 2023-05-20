@@ -15,8 +15,8 @@ pub fn handle_vertical_marker_spawning<T: Component + Default>(
     for event in event_reader.iter() {
         match event {
             InteractionEvent::DragStarted(entity) => {
-                commands
-                    .spawn_bundle(PbrBundle {
+                commands.spawn((
+                    PbrBundle {
                         mesh: meshes.add(Mesh::from(shape::Box::new(1.0, 1.0, 1.0))),
                         material: materials.add(StandardMaterial {
                             base_color: Color::rgba(1.0, 1.0, 1.0, 0.4),
@@ -26,8 +26,9 @@ pub fn handle_vertical_marker_spawning<T: Component + Default>(
                         }),
                         transform: Transform::from_scale(Vec3::ZERO),
                         ..default()
-                    })
-                    .insert(VerticalMarker(*entity));
+                    },
+                    VerticalMarker(*entity),
+                ));
 
                 commands
                     .entity(*entity)

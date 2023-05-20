@@ -29,8 +29,8 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
     // spawn sphere that will generate collision events
-    commands
-        .spawn_bundle(PbrBundle {
+    commands.spawn((
+        PbrBundle {
             material: materials.add(Color::PURPLE.into()),
             mesh: meshes.add(Mesh::from(shape::Icosphere {
                 radius: 0.2,
@@ -38,17 +38,18 @@ fn setup(
             })),
             transform: Transform::from_translation(Vec3::new(0.0, 4.0, 0.0)),
             ..default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(ColliderShape::Sphere { radius: 0.2 })
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Force::default())
-        .insert(GravityScale::default())
-        .insert(GenerateCollisionEvents)
-        .insert(ColliderPhysicalProperties {
+        },
+        RigidBody::Dynamic,
+        ColliderShape::Sphere { radius: 0.2 },
+        InteractiveBundle::<GroupDynamic>::default(),
+        Force::default(),
+        GravityScale::default(),
+        GenerateCollisionEvents,
+        ColliderPhysicalProperties {
             restitution: 0.8,
             ..default()
-        });
+        },
+    ));
 
     kesko_models::plane::spawn(
         &mut commands,

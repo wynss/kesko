@@ -18,7 +18,6 @@ pub struct PhysicBodyBundle {
     gravity_scale: GravityScale,
     can_sleep: CanSleep,
 
-    #[bundle]
     transform_bundle: TransformBundle,
 }
 
@@ -53,7 +52,6 @@ pub struct MeshPhysicBodyBundle {
     gravity_scale: GravityScale,
     can_sleep: CanSleep,
 
-    #[bundle]
     pbr_bundle: PbrBundle,
 }
 

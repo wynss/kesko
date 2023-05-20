@@ -102,7 +102,7 @@ mod tests {
     #[derive(Component, Default)]
     struct TestGroup;
 
-    #[derive(PartialEq)]
+    #[derive(PartialEq, Resource)]
     enum TestStep {
         // This is needed to ignore the first run when the components are being considered 'added'
         Initial,
@@ -114,16 +114,17 @@ mod tests {
 
     fn get_world_and_entity() -> (World, Entity) {
         let mut app = App::new();
-        app.add_plugin(CorePlugin);
+        app.add_plugin(CorePlugin::default());
         app.add_event::<InteractionEvent>();
         app.add_event::<SelectEvent>();
 
         let mut world = app.world;
         let entity = world
-            .spawn()
-            .insert(Hover::<TestGroup>::default())
-            .insert(Drag::<TestGroup>::default())
-            .insert(Select::<TestGroup>::default())
+            .spawn((
+                Hover::<TestGroup>::default(),
+                Drag::<TestGroup>::default(),
+                Select::<TestGroup>::default(),
+            ))
             .id();
 
         (world, entity)

@@ -1,13 +1,15 @@
 use std::collections::BTreeMap;
 
-use crate::rapier_extern::rapier::prelude as rapier;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use kesko_types::resource::KeskoRes;
+
+use crate::rapier_extern::rapier::prelude as rapier;
 use crate::{
     conversions::IntoBevy,
     joint::JointState,
-    rigid_body::{BodyHandle2Entity, Entity2BodyHandle, RigidBodyHandle},
+    rigid_body::{Body2Entity, Entity2Body, RigidBodyHandle},
 };
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -56,8 +58,8 @@ pub struct MultibodyChild {
 #[allow(clippy::type_complexity)]
 pub(crate) fn add_multibodies(
     mut commands: Commands,
-    multibody_joint_set: Res<rapier::MultibodyJointSet>,
-    body_2_entity: Res<BodyHandle2Entity>,
+    multibody_joints: Res<KeskoRes<rapier::MultibodyJointSet>>,
+    body2entity: Res<KeskoRes<Body2Entity>>,
     rigid_body_query: Query<
         (Entity, &RigidBodyHandle, Option<&Name>),
         (
@@ -69,9 +71,9 @@ pub(crate) fn add_multibodies(
 ) {
     for (entity, handle, body_name) in rigid_body_query.iter() {
         // get the multibodyjoint link for the rigidbody handle.
-        if let Some(body_joint_link) = multibody_joint_set.rigid_body_link(handle.0) {
+        if let Some(body_joint_link) = multibody_joints.rigid_body_link(handle.0) {
             // get the multibody of the joint link
-            if let Some(multibody) = multibody_joint_set.get_multibody(body_joint_link.multibody) {
+            if let Some(multibody) = multibody_joints.get_multibody(body_joint_link.multibody) {
                 // build a hash map with names and entity to store in the component.
                 // the component can later be used to easy get hold of different links and joints
                 let mut joints = BTreeMap::<String, Entity>::new();
@@ -87,7 +89,7 @@ pub(crate) fn add_multibodies(
                         continue;
                     }
 
-                    let link_entity = body_2_entity
+                    let link_entity = body2entity
                         .get(&link.rigid_body_handle())
                         .expect("body should be in body to entity map");
 
@@ -96,7 +98,7 @@ pub(crate) fn add_multibodies(
                             if let Some(name) = name {
                                 joints.insert(name.to_string(), *link_entity);
                             } else {
-                                joints.insert(link_entity.id().to_string(), *link_entity);
+                                joints.insert(link_entity.index().to_string(), *link_entity);
                             }
                         }
                         Err(e) => error!("{e}"),
@@ -107,13 +109,13 @@ pub(crate) fn add_multibodies(
                     body_name.to_string()
                 } else {
                     // if we don't have a name use the entity id
-                    entity.id().to_string()
+                    entity.index().to_string()
                 };
 
                 if handle.0 == multibody.root().rigid_body_handle() {
                     // We have a root
                     // make the name unique by combining the name and entity id
-                    name = format!("{}-{}", name, entity.id());
+                    name = format!("{}-{}", name, entity.index());
                     commands.entity(entity).insert(MultibodyRoot {
                         name,
                         linvel: Vec3::ZERO,
@@ -123,7 +125,7 @@ pub(crate) fn add_multibodies(
                 } else {
                     // not a root
                     let root_rigid_body_handle = multibody.root().rigid_body_handle();
-                    let root_entity = body_2_entity
+                    let root_entity = body2entity
                         .get(&root_rigid_body_handle)
                         .expect("Every rigid body should be connected to an entity");
                     commands.entity(entity).insert(MultibodyChild {
@@ -138,13 +140,13 @@ pub(crate) fn add_multibodies(
 }
 
 pub(crate) fn update_multibody_vel_angvel(
-    rigid_body_set: ResMut<rapier::RigidBodySet>,
-    e2b: Res<Entity2BodyHandle>,
+    rigid_bodies: ResMut<KeskoRes<rapier::RigidBodySet>>,
+    entity2body: Res<KeskoRes<Entity2Body>>,
     mut multibodies: Query<(Entity, &mut MultibodyRoot)>,
 ) {
     for (e, mut multibody) in multibodies.iter_mut() {
-        if let Some(handle) = e2b.get(&e) {
-            if let Some(rigid_body) = rigid_body_set.get(*handle) {
+        if let Some(handle) = entity2body.get(&e) {
+            if let Some(rigid_body) = rigid_bodies.get(*handle) {
                 multibody.linvel = rigid_body.linvel().into_bevy();
                 multibody.angvel = rigid_body.angvel().into_bevy();
             }
@@ -180,32 +182,33 @@ mod tests {
                     )
             });
 
-        app.init_resource::<rapier::RigidBodySet>();
-        app.init_resource::<rapier::MultibodyJointSet>();
-        app.init_resource::<joint::Entity2JointHandle>();
-        app.init_resource::<rigid_body::Entity2BodyHandle>();
-        app.init_resource::<rigid_body::BodyHandle2Entity>();
+        app.init_resource::<KeskoRes<rapier::RigidBodySet>>();
+        app.init_resource::<KeskoRes<rapier::MultibodyJointSet>>();
+        app.init_resource::<KeskoRes<joint::Entity2JointHandle>>();
+        app.init_resource::<KeskoRes<rigid_body::Entity2Body>>();
+        app.init_resource::<KeskoRes<rigid_body::Body2Entity>>();
 
         // add root
         let root_entity = app
             .world
-            .spawn()
-            .insert_bundle(TransformBundle::default())
-            .insert(rigid_body::RigidBody::Dynamic)
-            .insert(Name::new("Root".to_owned()))
+            .spawn((
+                TransformBundle::default(),
+                rigid_body::RigidBody::Dynamic,
+                Name::new("Root".to_owned()),
+            ))
             .id();
 
         // attach a child
-        app.world
-            .spawn()
-            .insert_bundle(TransformBundle::default())
-            .insert(rigid_body::RigidBody::Dynamic)
-            .insert(joint::fixed::FixedJoint::attach_to(root_entity));
+        app.world.spawn((
+            TransformBundle::default(),
+            rigid_body::RigidBody::Dynamic,
+            joint::fixed::FixedJoint::attach_to(root_entity),
+        ));
 
         app.update();
 
         // assert expected name
-        let expected_name = format!("Root-{}", root_entity.id());
+        let expected_name = format!("Root-{}", root_entity.index());
         let root_comp = app.world.get::<MultibodyRoot>(root_entity).unwrap();
         assert_eq!(*root_comp.name, expected_name)
     }

@@ -3,6 +3,7 @@ use bevy::prelude::*;
 #[derive(Component, Default)]
 pub(crate) struct OriginalMaterial(pub(crate) Option<Handle<StandardMaterial>>);
 
+#[derive(Resource)]
 pub(crate) struct InteractionMaterials {
     pub(crate) hovered: Handle<StandardMaterial>,
     pub(crate) dragged: Handle<StandardMaterial>,
@@ -42,17 +43,14 @@ mod tests {
     #[test]
     fn test_set_initial_material() {
         let mut app = App::new();
-        app.add_plugin(CorePlugin)
-            .add_plugin(AssetPlugin)
+        app.add_plugin(CorePlugin::default())
+            .add_plugin(AssetPlugin::default())
             .add_plugin(MaterialPlugin::<StandardMaterial>::default());
 
         let world = &mut app.world;
         let mut materials = world.resource_mut::<Assets<StandardMaterial>>();
         let material = materials.add(Color::GOLD.into());
-        world
-            .spawn()
-            .insert(OriginalMaterial::default())
-            .insert(material);
+        world.spawn((OriginalMaterial::default(), material));
 
         let mut stage = SystemStage::parallel();
         stage.add_system(set_initial_interaction_material);

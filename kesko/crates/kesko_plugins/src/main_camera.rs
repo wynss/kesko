@@ -25,14 +25,15 @@ pub fn spawn_camera(mut commands: Commands) {
 
     let camera_transform = Transform::from_translation(camera_pos).looking_at(Vec3::ZERO, Vec3::Y);
 
-    commands
-        .spawn_bundle(Camera3dBundle {
+    commands.spawn((
+        Camera3dBundle {
             transform: camera_transform,
             ..Default::default()
-        })
-        .insert(PanOrbitCamera {
+        },
+        PanOrbitCamera {
             dist_to_center: distance,
             ..Default::default()
-        })
-        .insert_bundle(InteractorBundle::<GroupDynamic>::default());
+        },
+        InteractorBundle::<GroupDynamic>::default(),
+    ));
 }

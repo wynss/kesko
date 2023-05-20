@@ -71,8 +71,8 @@ fn setup(
         let sphere_radius = 0.05 * (1.0 + i_f);
         let z = -1.0 + 8.0 * sphere_radius;
 
-        commands
-            .spawn_bundle(MeshPhysicBodyBundle::from(
+        commands.spawn((
+            MeshPhysicBodyBundle::from(
                 RigidBody::Dynamic,
                 Shape::Sphere {
                     radius: sphere_radius,
@@ -81,27 +81,29 @@ fn setup(
                 materials.add(Color::hex("66BB6A").unwrap().into()),
                 Transform::from_xyz(-1.0, 4.0, z),
                 &mut meshes,
-            ))
-            .insert_bundle(InteractiveBundle::<GroupDynamic>::default());
+            ),
+            InteractiveBundle::<GroupDynamic>::default(),
+        ));
     }
 
     // camera
     let camera_pos = Vec3::new(-9.0, 5.0, 9.0);
     let distance = camera_pos.length();
     let camera_transform = Transform::from_translation(camera_pos).looking_at(Vec3::ZERO, Vec3::Y);
-    commands
-        .spawn_bundle(Camera3dBundle {
+    commands.spawn((
+        Camera3dBundle {
             transform: camera_transform,
             ..Default::default()
-        })
-        .insert(PanOrbitCamera {
+        },
+        PanOrbitCamera {
             dist_to_center: distance,
             ..Default::default()
-        })
-        .insert_bundle(InteractorBundle::<GroupDynamic>::default());
+        },
+        InteractorBundle::<GroupDynamic>::default(),
+    ));
 
     // Light
-    commands.spawn_bundle(DirectionalLightBundle {
+    commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 50000.0,
             ..Default::default()

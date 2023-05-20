@@ -82,8 +82,8 @@ fn test_scene(
     );
 
     // spawn sphere that will generate collision events
-    commands
-        .spawn_bundle(PbrBundle {
+    commands.spawn((
+        PbrBundle {
             material: materials.add(Color::PURPLE.into()),
             mesh: meshes.add(Mesh::from(shape::Icosphere {
                 radius: 0.2,
@@ -91,17 +91,18 @@ fn test_scene(
             })),
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
             ..default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(ColliderShape::Sphere { radius: 0.2 })
-        .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-        .insert(Force::default())
-        .insert(GravityScale::default())
-        .insert(GenerateCollisionEvents);
+        },
+        RigidBody::Dynamic,
+        ColliderShape::Sphere { radius: 0.2 },
+        InteractiveBundle::<GroupDynamic>::default(),
+        Force::default(),
+        GravityScale::default(),
+        GenerateCollisionEvents,
+    ));
 
     // Light
     const HALF_SIZE: f32 = 10.0;
-    commands.spawn_bundle(DirectionalLightBundle {
+    commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 100_000.0,
             // Configure the projection to better fit the scene

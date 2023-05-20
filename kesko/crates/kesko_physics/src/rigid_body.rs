@@ -1,11 +1,13 @@
-use crate::{mass::Mass, rapier_extern::rapier::prelude as rapier};
 use bevy::prelude::*;
 use fnv::FnvHashMap;
 
-use crate::{conversions::IntoRapier, gravity::GravityScale};
+use kesko_types::resource::KeskoRes;
 
-pub type Entity2BodyHandle = FnvHashMap<Entity, rapier::RigidBodyHandle>;
-pub type BodyHandle2Entity = FnvHashMap<rapier::RigidBodyHandle, Entity>;
+use crate::{conversions::IntoRapier, gravity::GravityScale};
+use crate::{mass::Mass, rapier_extern::rapier::prelude as rapier};
+
+pub type Entity2Body = FnvHashMap<Entity, rapier::RigidBodyHandle>;
+pub type Body2Entity = FnvHashMap<rapier::RigidBodyHandle, Entity>;
 
 #[derive(Component)]
 pub enum RigidBody {
@@ -22,9 +24,9 @@ pub struct RigidBodyHandle(pub rapier::RigidBodyHandle);
 
 #[allow(clippy::type_complexity)]
 pub(crate) fn add_rigid_bodies(
-    mut rigid_body_set: ResMut<rapier::RigidBodySet>,
-    mut entity_2_body_handle: ResMut<Entity2BodyHandle>,
-    mut body_handle_2_entity: ResMut<BodyHandle2Entity>,
+    mut rigid_bodies: ResMut<KeskoRes<rapier::RigidBodySet>>,
+    mut entity2body: ResMut<KeskoRes<Entity2Body>>,
+    mut body2entity: ResMut<KeskoRes<Body2Entity>>,
     mut commands: Commands,
     query: Query<
         (
@@ -60,9 +62,9 @@ pub(crate) fn add_rigid_bodies(
             .build();
 
         // insert and add to map
-        let rigid_body_handle = rigid_body_set.insert(rigid_body);
-        entity_2_body_handle.insert(entity, rigid_body_handle);
-        body_handle_2_entity.insert(rigid_body_handle, entity);
+        let rigid_body_handle = rigid_bodies.insert(rigid_body);
+        entity2body.insert(entity, rigid_body_handle);
+        body2entity.insert(rigid_body_handle, entity);
 
         // Add the rigid body component to the entity
         commands
@@ -77,9 +79,10 @@ mod tests {
     use crate::conversions::IntoBevy;
     use crate::rapier_extern::rapier::prelude as rapier;
     use crate::rigid_body::{
-        add_rigid_bodies, BodyHandle2Entity, Entity2BodyHandle, RigidBody, RigidBodyHandle,
+        add_rigid_bodies, Body2Entity, Entity2Body, RigidBody, RigidBodyHandle,
     };
     use bevy::prelude::*;
+    use kesko_types::resource::KeskoRes;
 
     #[test]
     fn add_rigid_body() {
@@ -88,24 +91,25 @@ mod tests {
         let mut test_stage = SystemStage::single_threaded();
         test_stage.add_system(add_rigid_bodies);
 
-        world.init_resource::<Entity2BodyHandle>();
-        world.init_resource::<BodyHandle2Entity>();
-        world.init_resource::<rapier::RigidBodySet>();
+        world.init_resource::<KeskoRes<Entity2Body>>();
+        world.init_resource::<KeskoRes<Body2Entity>>();
+        world.init_resource::<KeskoRes<rapier::RigidBodySet>>();
 
         let entity = world
-            .spawn()
-            .insert(RigidBody::Fixed)
-            .insert(
+            .spawn((
+                RigidBody::Fixed,
                 Transform::from_translation(Vec3::new(0.0, 0.0, 1.0))
                     .with_rotation(Quat::from_xyzw(1.0, 0.0, 0.0, 0.0)),
-            )
+            ))
             .id();
 
         test_stage.run(&mut world);
 
-        let body_map = world.get_resource::<Entity2BodyHandle>().unwrap();
+        let body_map = world.get_resource::<KeskoRes<Entity2Body>>().unwrap();
         let body_handle = body_map.get(&entity).unwrap();
-        let body_set = world.get_resource::<rapier::RigidBodySet>().unwrap();
+        let body_set = world
+            .get_resource::<KeskoRes<rapier::RigidBodySet>>()
+            .unwrap();
 
         // only one rigid body
         assert_eq!(body_map.len(), 1);

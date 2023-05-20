@@ -55,7 +55,7 @@ impl KeskoApp {
 
     pub fn init_default(&mut self) {
         self.app
-            .add_plugins_with(CorePlugins, |group| group.disable::<UIPlugin>())
+            .add_plugins(CorePlugins.build().disable::<UIPlugin>())
             .add_plugin(CarPlugin)
             .add_plugin(WheelyPlugin)
             .add_startup_system(start_scene);
@@ -185,7 +185,7 @@ impl Default for KeskoApp {
 fn start_scene(mut commands: Commands) {
     // Light
     const HALF_SIZE: f32 = 10.0;
-    commands.spawn_bundle(DirectionalLightBundle {
+    commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 100_000.0,
             // Configure the projection to better fit the scene

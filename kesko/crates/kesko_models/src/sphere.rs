@@ -17,8 +17,8 @@ impl Sphere {
         transform: Transform,
         meshes: &mut Assets<Mesh>,
     ) {
-        commands
-            .spawn_bundle(PbrBundle {
+        commands.spawn((
+            PbrBundle {
                 material,
                 mesh: meshes.add(Mesh::from(shape::Icosphere {
                     radius: 0.2,
@@ -26,15 +26,16 @@ impl Sphere {
                 })),
                 transform,
                 ..default()
-            })
-            .insert(RigidBody::Dynamic)
-            .insert(ColliderShape::Sphere { radius: 0.2 })
-            .insert_bundle(InteractiveBundle::<GroupDynamic>::default())
-            .insert(Force::default())
-            .insert(ColliderPhysicalProperties {
+            },
+            RigidBody::Dynamic,
+            ColliderShape::Sphere { radius: 0.2 },
+            InteractiveBundle::<GroupDynamic>::default(),
+            Force::default(),
+            ColliderPhysicalProperties {
                 restitution: 0.7,
                 ..default()
-            })
-            .insert(GravityScale::default());
+            },
+            GravityScale::default(),
+        ));
     }
 }

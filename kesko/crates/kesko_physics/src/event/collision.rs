@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use kesko_types::resource::KeskoRes;
+
 use crate::rapier_extern::rapier;
 
 /// Component to indicate if an entity should generate collision events
@@ -21,6 +23,7 @@ pub struct CollisionData {
 }
 
 // Responsible for fetching collision events from Rapier and propagate them to Bevy
+#[derive(Resource)]
 pub(crate) struct CollisionEventHandler {
     collision_send: crossbeam::channel::Sender<rapier::geometry::CollisionEvent>,
     collision_recv: crossbeam::channel::Receiver<rapier::geometry::CollisionEvent>,
@@ -99,7 +102,7 @@ impl CollisionEventHandler {
 /// System for propagating collision events to Bevy from Rapier
 /// Should be executed after the rapier pipeline step in order to capture the latest events
 pub(crate) fn send_collision_events_system(
-    colliders: Res<rapier::geometry::ColliderSet>,
+    colliders: Res<KeskoRes<rapier::geometry::ColliderSet>>,
     collision_event_manager: Res<CollisionEventHandler>,
     mut event_writer: EventWriter<CollisionEvent>,
 ) {

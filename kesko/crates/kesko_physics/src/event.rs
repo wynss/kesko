@@ -7,12 +7,13 @@ use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::rapier_extern::rapier::prelude as rapier;
+use kesko_types::resource::KeskoRes;
 
+use crate::rapier_extern::rapier::prelude as rapier;
 use crate::{
     joint::JointInfo,
     multibody::MultibodyRoot,
-    rigid_body::{Entity2BodyHandle, RigidBodyHandle},
+    rigid_body::{Entity2Body, RigidBodyHandle},
     PhysicState,
 };
 
@@ -44,12 +45,12 @@ pub enum PhysicResponseEvent {
 
 #[allow(clippy::type_complexity, clippy::too_many_arguments)]
 pub(crate) fn handle_events(
-    mut rigid_body_set: ResMut<rapier::RigidBodySet>,
-    mut collider_set: ResMut<rapier::ColliderSet>,
-    mut impulse_set: ResMut<rapier::ImpulseJointSet>,
-    mut multibody_joint_set: ResMut<rapier::MultibodyJointSet>,
-    mut islands: ResMut<rapier::IslandManager>,
-    entity_2_body_handle: Res<Entity2BodyHandle>,
+    mut rigid_body_set: ResMut<KeskoRes<rapier::RigidBodySet>>,
+    mut collider_set: ResMut<KeskoRes<rapier::ColliderSet>>,
+    mut impulse_set: ResMut<KeskoRes<rapier::ImpulseJointSet>>,
+    mut multibody_joint_set: ResMut<KeskoRes<rapier::MultibodyJointSet>>,
+    mut islands: ResMut<KeskoRes<rapier::IslandManager>>,
+    entity_2_body_handle: Res<KeskoRes<Entity2Body>>,
     mut commands: Commands,
     current_physic_state: Res<CurrentState<PhysicState>>,
     mut request_events: EventReader<PhysicRequestEvent>,

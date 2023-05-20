@@ -1,7 +1,11 @@
-use crate::rapier_extern::rapier::prelude as rapier;
-use crate::rigid_body::RigidBodyHandle;
 use bevy::prelude::*;
 
+use kesko_types::resource::KeskoRes;
+
+use crate::rapier_extern::rapier::prelude as rapier;
+use crate::rigid_body::RigidBodyHandle;
+
+#[derive(Resource)]
 pub struct Gravity(Vec3);
 
 impl Gravity {
@@ -48,7 +52,7 @@ impl GravityScale {
 }
 
 pub(crate) fn update_gravity_scale_system(
-    mut rigid_bodies: ResMut<rapier::RigidBodySet>,
+    mut rigid_bodies: ResMut<KeskoRes<rapier::RigidBodySet>>,
     query: Query<(&RigidBodyHandle, &GravityScale), Changed<GravityScale>>,
 ) {
     for (body_handle, gravity_scale) in query.iter() {
