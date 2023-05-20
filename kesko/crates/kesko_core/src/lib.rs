@@ -36,24 +36,23 @@ impl Plugin for CorePlugin {
             .add_plugins(
                 DefaultPlugins
                     .set(WindowPlugin {
-                        window: WindowDescriptor {
+                        primary_window: Some(Window {
+                            position: WindowPosition::Centered(MonitorSelection::Primary),
+                            resolution: (1920., 1080.).into(),
                             title: String::from("Kesko 0.0.4"),
-                            width: 1920.0,
-                            height: 1080.0,
-                            position: WindowPosition::Centered,
-                            fit_canvas_to_parent: true,
                             canvas: Some("#kesko-wasm".to_string()),
-                            ..Default::default()
-                        },
-                        add_primary_window: true,
-                        exit_on_all_closed: true,
+                            fit_canvas_to_parent: true,
+                            ..default()
+                        }),
                         close_when_requested: true,
+                        ..default()
                     })
                     .set(LogPlugin {
                         level: Level::INFO,
                         ..default()
                     }),
             )
+            // ability to grab bodies
             .add_plugin(GrabablePlugin::<GroupDynamic>::default())
             // vertical marker systems
             .add_system(handle_vertical_marker_spawning::<GroupStatic>)

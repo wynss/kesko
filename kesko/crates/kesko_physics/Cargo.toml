@@ -9,7 +9,6 @@ f32 = ["dep:rapier3d"]
 
 [dependencies]
 bevy = { workspace = true }
-iyes_loopless = "0.9.1"
 rapier3d-f64 = { git = "https://github.com/wynss/rapier.git", optional = true, features = ["serde-serialize"]}
 rapier3d = { git = "https://github.com/wynss/rapier.git", optional = true, features = ["serde-serialize"] }
 nalgebra = "0.31.0"

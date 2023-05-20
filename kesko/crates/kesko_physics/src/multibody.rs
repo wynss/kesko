@@ -165,22 +165,14 @@ mod tests {
         let mut app = App::new();
 
         // add systems and resources for building a multibody
-        app.add_stage("Test", Schedule::default())
-            .stage("Test", |stage: &mut Schedule| {
-                stage
-                    .add_stage(
-                        "Add bodies",
-                        SystemStage::single_threaded().with_system(rigid_body::add_rigid_bodies),
-                    )
-                    .add_stage(
-                        "Add joints",
-                        SystemStage::single_threaded().with_system(joint::add_multibody_joints),
-                    )
-                    .add_stage(
-                        "Add multi",
-                        SystemStage::single_threaded().with_system(add_multibodies),
-                    )
-            });
+        app.add_systems(
+            (
+                rigid_body::add_rigid_bodies,
+                joint::add_multibody_joints,
+                add_multibodies,
+            )
+                .chain(),
+        );
 
         app.init_resource::<KeskoRes<rapier::RigidBodySet>>();
         app.init_resource::<KeskoRes<rapier::MultibodyJointSet>>();
