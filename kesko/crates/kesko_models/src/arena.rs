@@ -28,7 +28,7 @@ pub fn spawn(
             Transform::from_xyz(0.0, -0.25, 0.0),
             meshes,
         ),
-        insert(RayVisible::<GroupStatic>::default()),
+        RayVisible::<GroupStatic>::default(),
     ));
 
     // right wall
@@ -80,8 +80,8 @@ pub fn spawn(
     ));
 
     // front wall
-    commands
-        .spawn((MeshPhysicBodyBundle::from(
+    commands.spawn((
+        MeshPhysicBodyBundle::from(
             RigidBody::Fixed,
             Shape::Box {
                 x_length: length,
@@ -92,6 +92,6 @@ pub fn spawn(
             Transform::from_xyz(0.0, wall_height / 2.0, width / 2.0 - half_wall_width),
             meshes,
         ),
-        RayVisible::<GroupStatic>::default()
+        RayVisible::<GroupStatic>::default(),
     ));
 }

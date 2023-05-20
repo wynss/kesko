@@ -9,7 +9,7 @@ use self::event::DebugEventPlugin;
 
 pub struct DiagnosticsPlugins;
 impl PluginGroup for DiagnosticsPlugins {
-    fn build() -> PluginGroupBuilder {
+    fn build(self) -> PluginGroupBuilder {
         PluginGroupBuilder::start::<Self>()
             .add(FrameTimeDiagnosticsPlugin)
             .add(LogDiagnosticsPlugin::default())

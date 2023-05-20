@@ -1,0 +1,8 @@
+
+[package]
+name = "kesko_types"
+version = "0.0.4"
+edition = "2021"
+
+[dependencies]
+bevy = { workspace = true }

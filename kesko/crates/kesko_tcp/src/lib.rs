@@ -6,6 +6,8 @@ use std::net::TcpListener;
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 
+use kesko_types::resource::KeskoRes;
+
 const URL: &str = "127.0.0.1:8080";
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -34,8 +36,8 @@ impl Plugin for TcpPlugin {
         match TcpListener::bind(URL) {
             Ok(listener) => {
                 app.add_loopless_state(TcpConnectionState::NotConnected)
-                    .insert_resource(listener)
-                    .insert_resource(TcpBuffer::new())
+                    .insert_resource(KeskoRes(listener))
+                    .insert_resource(KeskoRes(TcpBuffer::new()))
                     .add_stage_before(
                         CoreStage::First,
                         TCP_REQUEST_STAGE,
@@ -70,7 +72,10 @@ impl Plugin for TcpPlugin {
     }
 }
 
-pub(crate) fn handle_incoming_connections(mut commands: Commands, listener: Res<TcpListener>) {
+pub(crate) fn handle_incoming_connections(
+    mut commands: Commands,
+    listener: Res<KeskoRes<TcpListener>>,
+) {
     info!("Waiting for TCP connection...");
     match listener.accept() {
         Ok((stream, _)) => {
@@ -82,7 +87,7 @@ pub(crate) fn handle_incoming_connections(mut commands: Commands, listener: Res<
             info!("TCP connection established with {}!", ip);
 
             commands.insert_resource(NextState(TcpConnectionState::Connected));
-            commands.insert_resource(stream);
+            commands.insert_resource(KeskoRes(stream));
         }
         Err(e) => error!("{}", e),
     }

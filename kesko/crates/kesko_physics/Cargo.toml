@@ -9,7 +9,7 @@ f32 = ["dep:rapier3d"]
 
 [dependencies]
 bevy = { workspace = true }
-iyes_loopless = "0.8"
+iyes_loopless = "0.9.1"
 rapier3d-f64 = { git = "https://github.com/wynss/rapier.git", optional = true, features = ["serde-serialize"]}
 rapier3d = { git = "https://github.com/wynss/rapier.git", optional = true, features = ["serde-serialize"] }
 nalgebra = "0.31.0"
@@ -19,3 +19,5 @@ serde = { version = "1.0.137", features = ["derive"] }
 serde_json = "1.0.81"
 serde_traitobject = "0.2.7"
 pyo3 = { version = "0.17.2", features = ["extension-module"] }
+
+kesko_types = { path = "../kesko_types" }

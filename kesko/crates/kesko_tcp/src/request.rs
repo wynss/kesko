@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use kesko_core::event::SimulatorRequestEvent;
 use kesko_models::{Model, SpawnEvent};
 use kesko_physics::event::PhysicRequestEvent;
+use kesko_types::resource::KeskoRes;
 
 use super::TcpBuffer;
 
@@ -63,8 +64,8 @@ impl HttpRequest {
 }
 
 pub(crate) fn handle_requests(
-    mut tcp_stream: ResMut<TcpStream>,
-    mut tcp_buffer: ResMut<TcpBuffer>,
+    mut tcp_stream: ResMut<KeskoRes<TcpStream>>,
+    mut tcp_buffer: ResMut<KeskoRes<TcpBuffer>>,
     mut system_event_writer: EventWriter<SimulatorRequestEvent>,
     mut spawn_event_writer: EventWriter<SpawnEvent>,
     mut physic_event_writer: EventWriter<PhysicRequestEvent>,
@@ -138,7 +139,7 @@ pub(crate) fn handle_requests(
             Err(e) => {
                 error!("Could not read tcp stream: {}", e);
                 system_event_writer.send(SimulatorRequestEvent::ExitApp);
-                return
+                return;
             }
         }
     }

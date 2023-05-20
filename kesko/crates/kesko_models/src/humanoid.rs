@@ -511,7 +511,7 @@ impl Humanoid {
             InteractiveBundle::<GroupDynamic>::default(),
             Name::new(RIGHT_ELBOW_X),
             Mass { val: ARM_MASS },
-        ))
+        ));
     }
 
     fn build_legs(

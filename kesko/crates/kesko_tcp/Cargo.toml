@@ -8,8 +8,9 @@ bevy = { workspace = true }
 serde = "1.0.137"
 serde_json = "1.0.81"
 serde_traitobject = "0.2.7"
-iyes_loopless = "0.8"
+iyes_loopless = "0.9.1"
 
 kesko_core = { path = "../kesko_core" }
 kesko_physics = { path = "../kesko_physics" }
 kesko_models = { path = "../kesko_models" }
+kesko_types = { path = "../kesko_types" }

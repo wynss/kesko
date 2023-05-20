@@ -1,6 +1,8 @@
-use crate::rapier_extern::rapier::prelude as rapier;
 use bevy::prelude::*;
 
+use kesko_types::resource::KeskoRes;
+
+use crate::rapier_extern::rapier::prelude as rapier;
 use crate::{conversions::IntoRapier, rigid_body::RigidBodyHandle};
 
 /// Component to apply force to a rigid body
@@ -31,7 +33,7 @@ impl Default for Force {
 /// System to apply a force to a rigid body
 #[allow(clippy::type_complexity)]
 pub(crate) fn update_force_system(
-    mut rigid_bodies: ResMut<rapier::RigidBodySet>,
+    mut rigid_bodies: ResMut<KeskoRes<rapier::RigidBodySet>>,
     changed_force: Query<(&RigidBodyHandle, &Force), (Changed<Force>, With<RigidBodyHandle>)>,
 ) {
     for (body_handle, force) in changed_force.iter() {

@@ -23,7 +23,7 @@ use bevy::{
     core_pipeline::clear_color::ClearColor,
     log::Level,
     render::{color::Color, view::Msaa},
-    window::{MonitorSelection, WindowDescriptor, WindowPlugin, WindowPosition},
+    window::{WindowDescriptor, WindowPlugin, WindowPosition},
     DefaultPlugins,
 };
 
@@ -40,7 +40,7 @@ impl Plugin for CorePlugin {
                             title: String::from("Kesko 0.0.4"),
                             width: 1920.0,
                             height: 1080.0,
-                            position: WindowPosition::Centered(MonitorSelection::Primary),
+                            position: WindowPosition::Centered,
                             fit_canvas_to_parent: true,
                             canvas: Some("#kesko-wasm".to_string()),
                             ..Default::default()

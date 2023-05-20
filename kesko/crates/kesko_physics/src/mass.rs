@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use kesko_types::resource::KeskoRes;
+
 use crate::rapier_extern::rapier::prelude as rapier;
 use crate::rigid_body::RigidBodyHandle;
 
@@ -20,12 +22,12 @@ pub struct MultibodyMass {
 /// to the body mass
 pub(crate) fn update_multibody_mass_system(
     mut commands: Commands,
-    multibody_set: Res<rapier::MultibodyJointSet>,
-    bodies: Res<rapier::RigidBodySet>,
+    multibody_joints: Res<KeskoRes<rapier::MultibodyJointSet>>,
+    rigid_bodies: Res<KeskoRes<rapier::RigidBodySet>>,
     query: Query<(Entity, &RigidBodyHandle), Without<MultibodyMass>>,
 ) {
     for (entity, handle) in query.iter() {
-        let mass = mass_of_attached(&handle.0, &multibody_set, &bodies, None);
+        let mass = mass_of_attached(&handle.0, &multibody_joints, &rigid_bodies, None);
         commands.entity(entity).insert(MultibodyMass { val: mass });
     }
 }

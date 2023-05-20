@@ -3,13 +3,15 @@ pub mod prismatic;
 pub mod revolute;
 pub mod spherical;
 
-use crate::rapier_extern::rapier::prelude as rapier;
 use bevy::prelude::*;
 use fnv::FnvHashMap;
 use serde::{Deserialize, Serialize};
 
+use kesko_types::resource::KeskoRes;
+
 use crate::conversions::IntoBevy;
-use crate::rigid_body::{Entity2BodyHandle, RigidBodyHandle};
+use crate::rapier_extern::rapier::prelude as rapier;
+use crate::rigid_body::{Entity2Body, RigidBodyHandle};
 
 use self::prismatic::PrismaticJoint;
 use self::revolute::RevoluteJoint;
@@ -117,9 +119,9 @@ pub struct MultibodyJointHandle(pub(crate) rapier::MultibodyJointHandle);
 #[allow(clippy::type_complexity, clippy::too_many_arguments)]
 pub(crate) fn add_multibody_joints(
     mut commands: Commands,
-    mut entity_2_joint_handle: ResMut<Entity2JointHandle>,
-    mut multibody_joint_set: ResMut<rapier::MultibodyJointSet>,
-    entity_body_map: Res<Entity2BodyHandle>,
+    mut entity_2_joint_handle: ResMut<KeskoRes<Entity2JointHandle>>,
+    mut multibody_joint_set: ResMut<KeskoRes<rapier::MultibodyJointSet>>,
+    entity_body_map: Res<KeskoRes<Entity2Body>>,
     revolute_joints: Query<
         (Entity, &revolute::RevoluteJoint),
         (With<RigidBodyHandle>, Without<MultibodyJointHandle>),
@@ -202,8 +204,8 @@ pub(crate) fn add_multibody_joints(
 /// System that updates the joints positions and velocities
 #[allow(clippy::type_complexity)]
 pub(crate) fn update_joint_pos_system(
-    physics_params: Res<rapier::IntegrationParameters>,
-    multibody_joint_set: Res<rapier::MultibodyJointSet>,
+    physics_params: Res<KeskoRes<rapier::IntegrationParameters>>,
+    multibody_joint_set: Res<KeskoRes<rapier::MultibodyJointSet>>,
     mut revolute_joints: Query<
         (&mut RevoluteJoint, &MultibodyJointHandle),
         (With<MultibodyJointHandle>, With<RevoluteJoint>),
@@ -282,7 +284,7 @@ pub enum MotorCommand {
 #[allow(clippy::type_complexity)]
 pub(crate) fn update_joint_motors_system(
     mut joint_event: EventReader<JointMotorEvent>,
-    mut joint_set: ResMut<rapier::MultibodyJointSet>,
+    mut joint_set: ResMut<KeskoRes<rapier::MultibodyJointSet>>,
     mut query: Query<
         (
             Option<&RevoluteJoint>,
@@ -524,8 +526,8 @@ mod tests {
         let mut test_stage = SystemStage::parallel();
         test_stage.add_system(add_multibody_joints);
 
-        world.init_resource::<rapier::MultibodyJointSet>();
-        world.init_resource::<Entity2JointHandle>();
+        world.init_resource::<KeskoRes<rapier::MultibodyJointSet>>();
+        world.init_resource::<KeskoRes<Entity2JointHandle>>();
 
         let parent_body_handle = rapier::RigidBodyHandle::from_raw_parts(1, 0);
         let parent_entity = world.spawn(RigidBodyHandle(parent_body_handle)).id();
@@ -542,15 +544,15 @@ mod tests {
             .spawn((joint, RigidBodyHandle(child_body_handle)))
             .id();
 
-        let mut entity_body_map = Entity2BodyHandle::default();
+        let mut entity_body_map = Entity2Body::default();
         entity_body_map.insert(parent_entity, parent_body_handle);
         entity_body_map.insert(child_entity, child_body_handle);
-        world.insert_resource(entity_body_map);
+        world.insert_resource(KeskoRes(entity_body_map));
 
         test_stage.run(&mut world);
 
         let multibody_joint_set = world
-            .get_resource::<rapier::MultibodyJointSet>()
+            .get_resource::<KeskoRes<rapier::MultibodyJointSet>>()
             .expect("Could not get ImpulseJointSet")
             .clone();
 
@@ -626,7 +628,7 @@ mod tests {
             .insert(body_handle1, body_handle2, joint, true)
             .unwrap();
 
-        world.insert_resource(joint_set);
+        world.insert_resource(KeskoRes(joint_set));
         let entity = world.spawn(MultibodyJointHandle(joint_handle)).id();
 
         // Setup and send test event for setting the velocity
@@ -648,7 +650,7 @@ mod tests {
 
         // get result
         let res_set = world
-            .get_resource::<rapier::MultibodyJointSet>()
+            .get_resource::<KeskoRes<rapier::MultibodyJointSet>>()
             .expect("Could not get impulse joint set");
         let (multibody, link_id) = res_set
             .get(joint_handle)
@@ -696,7 +698,7 @@ mod tests {
             .insert(body_handle1, body_handle2, joint, true)
             .unwrap();
 
-        world.insert_resource(joint_set);
+        world.insert_resource(KeskoRes(joint_set));
         let entity = world.spawn(MultibodyJointHandle(joint_handle)).id();
 
         events.send(JointMotorEvent {
@@ -717,7 +719,7 @@ mod tests {
 
         // get result
         let res_set = world
-            .get_resource::<rapier::MultibodyJointSet>()
+            .get_resource::<KeskoRes<rapier::MultibodyJointSet>>()
             .expect("Could not get impulse joint set");
         let (multibody, link_id) = res_set
             .get(joint_handle)
@@ -772,7 +774,7 @@ mod tests {
             .insert(body_handle1, body_handle2, joint, true)
             .unwrap();
 
-        world.insert_resource(joint_set);
+        world.insert_resource(KeskoRes(joint_set));
         let entity = world.spawn(MultibodyJointHandle(joint_handle)).id();
 
         // Setup and send test event for setting the velocity
@@ -794,7 +796,7 @@ mod tests {
 
         // get result
         let res_set = world
-            .get_resource::<rapier::MultibodyJointSet>()
+            .get_resource::<KeskoRes<rapier::MultibodyJointSet>>()
             .expect("Could not get impulse joint set");
         let (multibody, link_id) = res_set
             .get(joint_handle)
@@ -847,7 +849,7 @@ mod tests {
             .insert(body_handle1, body_handle2, joint, true)
             .unwrap();
 
-        world.insert_resource(joint_set);
+        world.insert_resource(KeskoRes(joint_set));
         let entity = world.spawn(MultibodyJointHandle(joint_handle)).id();
 
         // Setup and send test event for setting the velocity
@@ -869,7 +871,7 @@ mod tests {
 
         // get result
         let res_set = world
-            .get_resource::<rapier::MultibodyJointSet>()
+            .get_resource::<KeskoRes<rapier::MultibodyJointSet>>()
             .expect("Could not get impulse joint set");
         let (multibody, link_id) = res_set
             .get(joint_handle)

@@ -5,10 +5,11 @@ use bevy::prelude::*;
 
 use kesko_core::event::SimulatorResponseEvent;
 use kesko_physics::event::{collision::CollisionEvent, PhysicResponseEvent};
+use kesko_types::resource::KeskoRes;
 
 pub(crate) fn handle_responses(
     mut commands: Commands,
-    mut tcp_stream: ResMut<TcpStream>,
+    mut tcp_stream: ResMut<KeskoRes<TcpStream>>,
     mut response_events: EventReader<SimulatorResponseEvent>,
     mut physic_events: EventReader<PhysicResponseEvent>,
     mut collision_events: EventReader<CollisionEvent>,
@@ -44,12 +45,12 @@ pub(crate) fn handle_responses(
                 // send response
                 if let Err(e) = tcp_stream.write(response.as_bytes()) {
                     error!("{:?}", e);
-                    return
+                    return;
                 }
 
                 if let Err(e) = tcp_stream.flush() {
                     error!("{:?}", e);
-                    return
+                    return;
                 }
             }
             Err(e) => error!("{:?}", e),
@@ -61,6 +62,6 @@ pub(crate) fn handle_responses(
         tcp_stream
             .shutdown(Shutdown::Both)
             .expect("tcp stream shutdown failed");
-        commands.remove_resource::<TcpListener>();
+        commands.remove_resource::<KeskoRes<TcpListener>>();
     }
 }
