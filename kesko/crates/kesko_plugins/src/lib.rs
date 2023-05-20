@@ -8,7 +8,7 @@ use bevy::{
 
 use self::{main_camera::MainCameraPlugin, physics::DefaultPhysicsPlugin};
 use kesko_core::interaction::groups::{GroupDynamic, GroupStatic};
-use kesko_core::{CoreHeadlessPlugin, CorePlugin};
+use kesko_core::CorePlugin;
 use kesko_models::ModelPlugin;
 pub use kesko_object_interaction::InteractionPlugin;
 pub use kesko_ui::UIPlugin;

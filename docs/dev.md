@@ -1,3 +1,19 @@
+# Development Documentation
+
+## Testing
+
+### Kesko
+in the `kesko` folder run
+```bash
+cargo test --all
+```
+
+### PyKesko
+in the `pykesko` folder run
+```bash
+cargo test --all
+```
+
 ## Profiling
 
 ### Tracing

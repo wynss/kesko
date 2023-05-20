@@ -551,6 +551,14 @@ mod tests {
 
         test_stage.run(&mut world);
 
+        // only one entity with joint handle, should only be the child
+        let mut query = world.query::<&MultibodyJointHandle>();
+        assert_eq!(query.iter(&world).len(), 1);
+
+        let joint_handle = query
+            .get(&world, child_entity)
+            .expect("Failed to get JointHandle from query");
+
         let multibody_joint_set = world
             .get_resource::<KeskoRes<rapier::MultibodyJointSet>>()
             .expect("Could not get ImpulseJointSet")
@@ -569,14 +577,6 @@ mod tests {
                 .count(),
             1
         );
-
-        // only one entity with joint handle, should only be the child
-        let mut query = world.query::<&MultibodyJointHandle>();
-        assert_eq!(query.iter(&world).len(), 1);
-
-        let joint_handle = query
-            .get(&world, child_entity)
-            .expect("Failed to get JointHandle from query");
 
         let (multibody, link_id) = multibody_joint_set
             .get(joint_handle.0)
