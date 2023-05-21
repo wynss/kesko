@@ -31,7 +31,7 @@ use bevy::{
 pub struct CorePlugin;
 impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
+        app.insert_resource(ClearColor(Color::hex("000000").unwrap()))
             .insert_resource(Msaa::Sample4)
             .add_plugins(
                 DefaultPlugins

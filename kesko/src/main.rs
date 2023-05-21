@@ -1,3 +1,4 @@
+use bevy::pbr::CascadeShadowConfigBuilder;
 use bevy::prelude::*;
 
 use kesko::diagnostic::DiagnosticsPlugins;
@@ -22,14 +23,13 @@ fn test_scene(
     kesko_models::plane::spawn(
         &mut commands,
         materials.add(StandardMaterial {
-            base_color: Color::WHITE,
+            base_color: Color::DARK_GRAY,
             ..default()
         }),
         &mut meshes,
     );
 
     // Light
-    const HALF_SIZE: f32 = 10.0;
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 100_000.0,
@@ -42,6 +42,11 @@ fn test_scene(
             rotation: Quat::from_rotation_x(-std::f32::consts::FRAC_PI_4),
             ..default()
         },
+        cascade_shadow_config: CascadeShadowConfigBuilder {
+            num_cascades: 10,
+            ..default()
+        }
+        .build(),
         ..default()
     });
 }

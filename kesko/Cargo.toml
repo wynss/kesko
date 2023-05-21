@@ -9,7 +9,7 @@ members = [
     "crates/kesko_plugins",
     "crates/kesko_ui",
     "crates/kesko_diagnostic",
-    # "crates/kesko_tcp"
+    "crates/kesko_tcp"
 ]
 
 [package]
@@ -24,8 +24,8 @@ path = "src/main.rs"
 [lib]
 name = "kesko"
 
-# [[bin]]
-# name = "kesko_tcp"
+[[bin]]
+name = "kesko_tcp"
 
 [[bin]]
 name = "kesko_tcp_headless"
@@ -60,4 +60,4 @@ kesko_raycast = { path = "crates/kesko_raycast" }
 kesko_models = { path = "crates/kesko_models" }
 kesko_plugins = { path="crates/kesko_plugins" }
 kesko_diagnostic = { path="crates/kesko_diagnostic" }
-# kesko_tcp = { path = "crates/kesko_tcp" }
+kesko_tcp = { path = "crates/kesko_tcp" }

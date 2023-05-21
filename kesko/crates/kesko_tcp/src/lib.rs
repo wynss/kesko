@@ -4,16 +4,23 @@ mod response;
 use std::net::TcpListener;
 
 use bevy::prelude::*;
-use iyes_loopless::prelude::*;
 
 use kesko_types::resource::KeskoRes;
 
 const URL: &str = "127.0.0.1:8080";
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Hash, States)]
 enum TcpConnectionState {
+    #[default]
     NotConnected,
     Connected,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, SystemSet)]
+#[system_set(base)]
+enum TcpSet {
+    Request,
+    Response,
 }
 
 struct TcpBuffer {
@@ -35,30 +42,32 @@ impl Plugin for TcpPlugin {
 
         match TcpListener::bind(URL) {
             Ok(listener) => {
-                app.add_loopless_state(TcpConnectionState::NotConnected)
+                app.add_state::<TcpConnectionState>()
                     .insert_resource(KeskoRes(listener))
                     .insert_resource(KeskoRes(TcpBuffer::new()))
-                    .add_stage_before(
-                        CoreStage::First,
-                        TCP_REQUEST_STAGE,
-                        SystemStage::single_threaded(),
+                    .configure_sets(
+                        (
+                            TcpSet::Request,
+                            CoreSet::FirstFlush,
+                            TcpSet::Response,
+                            CoreSet::LastFlush,
+                        )
+                            .chain(),
                     )
-                    .add_stage_after(
-                        CoreStage::Last,
-                        TCP_RESPONSE_STAGE,
-                        SystemStage::single_threaded(),
+                    .add_system(
+                        handle_incoming_connections
+                            .run_if(in_state(TcpConnectionState::NotConnected))
+                            .in_base_set(TcpSet::Request),
                     )
-                    .add_system_to_stage(
-                        TCP_REQUEST_STAGE,
-                        handle_incoming_connections.run_in_state(TcpConnectionState::NotConnected),
+                    .add_system(
+                        request::handle_requests
+                            .run_if(in_state(TcpConnectionState::Connected))
+                            .in_base_set(TcpSet::Request),
                     )
-                    .add_system_to_stage(
-                        TCP_REQUEST_STAGE,
-                        request::handle_requests.run_in_state(TcpConnectionState::Connected),
-                    )
-                    .add_system_to_stage(
-                        TCP_RESPONSE_STAGE,
-                        response::handle_responses.run_in_state(TcpConnectionState::Connected),
+                    .add_system(
+                        response::handle_responses
+                            .run_if(in_state(TcpConnectionState::Connected))
+                            .in_base_set(TcpSet::Response),
                     );
             }
             Err(e) => {
@@ -73,6 +82,7 @@ impl Plugin for TcpPlugin {
 }
 
 pub(crate) fn handle_incoming_connections(
+    mut next_connection_state: ResMut<NextState<TcpConnectionState>>,
     mut commands: Commands,
     listener: Res<KeskoRes<TcpListener>>,
 ) {
@@ -86,7 +96,7 @@ pub(crate) fn handle_incoming_connections(
 
             info!("TCP connection established with {}!", ip);
 
-            commands.insert_resource(NextState(TcpConnectionState::Connected));
+            next_connection_state.set(TcpConnectionState::Connected);
             commands.insert_resource(KeskoRes(stream));
         }
         Err(e) => error!("{}", e),

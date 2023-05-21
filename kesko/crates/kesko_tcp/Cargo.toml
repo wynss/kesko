@@ -7,7 +7,7 @@ edition = "2021"
 bevy = { workspace = true }
 serde = "1.0.137"
 serde_json = "1.0.81"
-iyes_loopless = "0.9.1"
+serde_traitobject = "0.2.8"
 
 kesko_core = { path = "../kesko_core" }
 kesko_physics = { path = "../kesko_physics" }

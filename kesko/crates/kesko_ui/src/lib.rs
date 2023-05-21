@@ -7,12 +7,6 @@ pub(crate) mod spawn_component;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 
-#[derive(SystemSet, Debug, PartialEq, Eq, Clone, Hash)]
-#[system_set(base)]
-enum UISystems {
-    MainMenu,
-}
-
 /// Plugin responsible to add all UI components and resources
 pub struct UIPlugin;
 impl Plugin for UIPlugin {

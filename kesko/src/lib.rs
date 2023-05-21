@@ -20,6 +20,6 @@ pub mod diagnostic {
     pub use kesko_diagnostic::*;
 }
 
-// pub mod tcp {
-//     pub use kesko_tcp::*;
-// }
+pub mod tcp {
+    pub use kesko_tcp::*;
+}
