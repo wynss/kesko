@@ -37,7 +37,7 @@ pub(crate) fn set_initial_interaction_material(
 mod tests {
     use crate::{set_initial_interaction_material, OriginalMaterial};
     use bevy::asset::AssetPlugin;
-    use bevy::core::{TaskPoolPlugin, TypeRegistrationPlugin};
+    use bevy::core::TypeRegistrationPlugin;
     use bevy::prelude::*;
 
     #[test]
@@ -46,7 +46,7 @@ mod tests {
         app.add_plugin(TaskPoolPlugin::default())
             .add_plugin(TypeRegistrationPlugin::default())
             .add_plugin(AssetPlugin::default())
-            .add_plugin(MaterialPlugin::<StandardMaterial>::default());
+            .add_asset::<StandardMaterial>();
 
         let mut materials = app.world.resource_mut::<Assets<StandardMaterial>>();
         let material = materials.add(Color::GOLD.into());

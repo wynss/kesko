@@ -11,7 +11,7 @@ use kesko_core::{
 use kesko_models::ModelPlugin;
 use kesko_physics::PhysicsPlugin;
 use kesko_plugins::{main_camera::MainCameraPlugin, InteractionPlugin, UIPlugin};
-// use kesko_tcp::TcpPlugin;
+use kesko_tcp::TcpPlugin;
 
 fn main() {
     App::new()
@@ -28,14 +28,13 @@ fn main() {
         .add_plugin(InteractionPlugin::<GroupStatic>::default())
         .add_plugin(FrameTimeDiagnosticsPlugin)
         .add_plugin(LogDiagnosticsPlugin::default())
-        // .add_plugin(TcpPlugin)
+        .add_plugin(TcpPlugin)
         .add_startup_system(setup)
         .run();
 }
 
 fn setup(mut commands: Commands) {
     // Light
-    const HALF_SIZE: f32 = 10.0;
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 100_000.0,

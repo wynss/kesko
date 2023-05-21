@@ -42,36 +42,26 @@ pub(crate) fn handle_select_events<T: Component + Default>(
 pub(crate) fn send_interaction_events<T: Component + Default>(
     mut event_writer: EventWriter<InteractionEvent>,
     interaction_query: Query<
-        (
-            Entity,
-            &Hover<T>,
-            &Drag<T>,
-            &Select<T>,
-            ChangeTrackers<Hover<T>>,
-            ChangeTrackers<Drag<T>>,
-            ChangeTrackers<Select<T>>,
-        ),
+        (Entity, Ref<Hover<T>>, Ref<Drag<T>>, Ref<Select<T>>),
         Or<(Changed<Hover<T>>, Changed<Drag<T>>, Changed<Select<T>>)>,
     >,
 ) {
-    for (entity, hover, drag, select, hover_track, drag_track, select_track) in
-        interaction_query.iter()
-    {
-        if drag_track.is_changed() && !drag_track.is_added() {
+    for (entity, hover, drag, select) in interaction_query.iter() {
+        if drag.is_changed() && !drag.is_added() {
             event_writer.send(match drag.dragged {
                 true => InteractionEvent::DragStarted(entity),
                 false => InteractionEvent::DragStopped(entity),
             });
         }
 
-        if select_track.is_changed() && !select_track.is_added() {
+        if select.is_changed() && !select.is_added() {
             event_writer.send(match select.selected {
                 true => InteractionEvent::Selected(entity),
                 false => InteractionEvent::Deselected(entity),
             });
         }
 
-        if hover_track.is_changed() && !hover_track.is_added() {
+        if hover.is_changed() && !hover.is_added() {
             event_writer.send(match hover.hovered {
                 true => InteractionEvent::HoverStarted(entity),
                 false => InteractionEvent::HoverStopped(entity),
@@ -81,9 +71,9 @@ pub(crate) fn send_interaction_events<T: Component + Default>(
         if !hover.hovered
             && !drag.dragged
             && !select.selected
-            && !select_track.is_added()
-            && !hover_track.is_added()
-            && !drag_track.is_added()
+            && !select.is_added()
+            && !hover.is_added()
+            && !drag.is_added()
         {
             event_writer.send(InteractionEvent::NoInteraction(entity))
         }
@@ -94,7 +84,6 @@ pub(crate) fn send_interaction_events<T: Component + Default>(
 mod tests {
     use crate::event::{send_interaction_events, InteractionEvent};
     use crate::interaction::{Drag, Hover, Select};
-    use bevy::core::{FrameCountPlugin, TaskPoolPlugin, TypeRegistrationPlugin};
     use bevy::prelude::*;
 
     use super::{handle_select_events, SelectEvent};
@@ -114,7 +103,6 @@ mod tests {
 
     fn get_world_and_entity() -> (App, Entity) {
         let mut app = App::new();
-        app.add_plugin(TaskPoolPlugin::default());
         app.add_event::<InteractionEvent>();
         app.add_event::<SelectEvent>();
 

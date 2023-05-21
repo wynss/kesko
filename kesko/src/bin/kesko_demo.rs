@@ -105,7 +105,6 @@ fn test_scene(
     ));
 
     // Light
-    const HALF_SIZE: f32 = 10.0;
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 100_000.0,

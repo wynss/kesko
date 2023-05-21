@@ -37,9 +37,6 @@ impl TcpBuffer {
 pub struct TcpPlugin;
 impl Plugin for TcpPlugin {
     fn build(&self, app: &mut App) {
-        static TCP_REQUEST_STAGE: &str = "tcp_request_stage";
-        static TCP_RESPONSE_STAGE: &str = "tcp_response_stage";
-
         match TcpListener::bind(URL) {
             Ok(listener) => {
                 app.add_state::<TcpConnectionState>()

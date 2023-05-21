@@ -158,27 +158,12 @@ pub(crate) fn update_multibody_vel_angvel(
 mod tests {
 
     use super::*;
-    use crate::{joint, rigid_body};
+    use crate::{joint, rigid_body, PhysicsPlugin};
 
     #[test]
     fn test_name() {
         let mut app = App::new();
-
-        // add systems and resources for building a multibody
-        app.add_systems(
-            (
-                rigid_body::add_rigid_bodies,
-                joint::add_multibody_joints,
-                add_multibodies,
-            )
-                .chain(),
-        );
-
-        app.init_resource::<KeskoRes<rapier::RigidBodySet>>();
-        app.init_resource::<KeskoRes<rapier::MultibodyJointSet>>();
-        app.init_resource::<KeskoRes<joint::Entity2JointHandle>>();
-        app.init_resource::<KeskoRes<rigid_body::Entity2Body>>();
-        app.init_resource::<KeskoRes<rigid_body::Body2Entity>>();
+        app.add_plugin(PhysicsPlugin::default());
 
         // add root
         let root_entity = app
