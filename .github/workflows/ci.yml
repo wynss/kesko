@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   CARGO_TERM_COLOR: always
@@ -14,43 +14,40 @@ jobs:
     name: "Build and test Kesko"
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      - name: Install latest Rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2022-11-25
+          override: true
 
-    - name: Install latest Rust nightly
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly-2022-11-05
-        override: true
+      - name: Kesko - Build
+        run: cargo build --verbose
+        working-directory: ./kesko
 
-    - name: Kesko - Build
-      run: cargo build --verbose
-      working-directory: ./kesko
+      - name: Kesko - Run tests
+        run: cargo test --all --verbose
+        working-directory: ./kesko
 
-    - name: Kesko - Run tests
-      run: cargo test --all --verbose
-      working-directory: ./kesko
-  
   build-pykesko:
     name: "Build and test PyKesko"
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      - name: Install latest Rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly-2022-11-25
+          override: true
 
-    - name: Install latest Rust nightly
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly-2022-11-05
-        override: true
+      - name: PyKesko - Build
+        run: cargo build --verbose
+        working-directory: ./pykesko
 
-    - name: PyKesko - Build
-      run: cargo build --verbose
-      working-directory: ./pykesko
-
-    - name: PyKesko - Run tests
-      run: cargo test --all --verbose
-      working-directory: ./pykesko
-    
+      - name: PyKesko - Run tests
+        run: cargo test --all --verbose
+        working-directory: ./pykesko

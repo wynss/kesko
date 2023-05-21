@@ -71,7 +71,7 @@ impl Plugin for CorePlugin {
                     event::handle_serializable_state_request,
                     event::handle_motor_command_requests,
                 )
-                    .in_base_set(CoreSet::LastFlush),
+                    .in_base_set(CoreSet::Last),
             );
     }
 }

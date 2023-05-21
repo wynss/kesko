@@ -32,10 +32,8 @@ class BindingBackend:
             self.kesko.init_default()
 
     def step(self, commands: list[Command]) -> KeskoResponse:
-
         # apply all the commands
         for command in commands:
-
             if isinstance(command, DespawnAll):
                 self.kesko.despawn_all()
 
@@ -48,9 +46,13 @@ class BindingBackend:
                 elif isinstance(command.color, Rgba):
                     color = command.color.to_list()
                 else:
-                    raise ValueError(f"Spawn had an invalid color type, {type(command.color)}")
+                    raise ValueError(
+                        f"Spawn had an invalid color type, {type(command.color)}"
+                    )
 
-                self.kesko.spawn(model=command.model, position=command.position, color=color)
+                self.kesko.spawn(
+                    model=command.model, position=command.position, color=color
+                )
 
             elif isinstance(command, RunPhysics):
                 self.kesko.start_physics()
@@ -85,11 +87,15 @@ class BindingBackend:
             collision_events = json.loads(collision_events)
             for ev in collision_events:
                 if CollisionStarted.__name__ in ev:
-                    collision_started = CollisionStarted(**ev[CollisionStarted.__name__])
+                    collision_started = CollisionStarted(
+                        **ev[CollisionStarted.__name__]
+                    )
                     responses.append(collision_started)
 
                 elif CollisionStopped.__name__ in ev:
-                    collision_stopped = CollisionStopped(**ev[CollisionStopped.__name__])
+                    collision_stopped = CollisionStopped(
+                        **ev[CollisionStopped.__name__]
+                    )
                     responses.append(collision_stopped)
 
         return KeskoResponse(responses)

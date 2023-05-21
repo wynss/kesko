@@ -59,12 +59,20 @@ impl KeskoApp {
             .add_plugin(CarPlugin)
             .add_plugin(WheelyPlugin)
             .add_startup_system(start_scene);
+        self.app.setup();
     }
 
     pub fn init_headless(&mut self) {
         self.app
             .add_plugins(HeadlessRenderPlugins::default())
             .add_startup_system(start_scene);
+    }
+
+    pub fn step(&mut self) {
+        self.app
+            .world
+            .send_event::<SimulatorRequestEvent>(SimulatorRequestEvent::GetState);
+        self.app.update();
     }
 
     pub fn spawn(&mut self, model: Model, position: Vec<f32>, color: Vec<f32>) {
@@ -120,13 +128,6 @@ impl KeskoApp {
         Ok(Some(
             serde_json::to_string_pretty(&events_vec).expect("Could not serialize events"),
         ))
-    }
-
-    pub fn step(&mut self) {
-        self.app
-            .world
-            .send_event::<SimulatorRequestEvent>(SimulatorRequestEvent::GetState);
-        self.app.update();
     }
 
     pub fn apply_motor_commands(&mut self, command: BTreeMap<u64, f32>) {
