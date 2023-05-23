@@ -17,11 +17,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install latest Rust nightly
-        uses: actions-rs/toolchain@v1
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly-2022-11-25
-          override: true
+          toolchain: nightly-2023-04-20
 
       - name: Kesko - Build
         run: cargo build --verbose
@@ -38,11 +37,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install latest Rust nightly
-        uses: actions-rs/toolchain@v1
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly-2022-11-25
-          override: true
+          toolchain: nightly-2023-04-20
 
       - name: PyKesko - Build
         run: cargo build --verbose

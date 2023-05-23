@@ -15,10 +15,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
       - name: Install Rust nightly
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly-2022-11-25
-          override: true
+          toolchain: nightly-2023-04-20
       - name: Build wheels
         run: |
           bash ../.github/workflows/build-wheels.sh
@@ -40,10 +39,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
         with:
           targets: aarch64-apple-darwin, x86_64-apple-darwin
-          toolchain: nightly-2022-11-25
+          toolchain: nightly-2023-04-20
       - name: Setup python
         uses: actions/setup-python@v4
         with:
@@ -69,9 +68,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly-2022-11-25
+          toolchain: nightly-2023-04-20
       - name: Setup python
         uses: actions/setup-python@v4
         with:
@@ -91,7 +90,7 @@ jobs:
   publish-pypi:
     name: "Publish PyKesko to PyPi"
     runs-on: ubuntu-latest
-    if: "startsWith(github.ref, 'refs/tags/')"
+    if: startsWith(github.ref, 'refs/tags/')
     needs: [linux-wheels, windows-wheels, macos-wheels]
     steps:
       - uses: actions/download-artifact@v3
@@ -111,7 +110,7 @@ jobs:
   create-github-release:
     name: Create Github Release
     runs-on: ubuntu-latest
-    if: "startsWith(github.ref, 'refs/tags/')"
+    if: startsWith(github.ref, 'refs/tags/')
     needs: [linux-wheels, windows-wheels, macos-wheels, publish-pypi]
     steps:
       - name: Checkout code
