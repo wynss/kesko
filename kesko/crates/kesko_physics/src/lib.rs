@@ -172,6 +172,7 @@ fn physics_pipeline_step(
         &mut impulse_joints,
         &mut multibody_joints,
         &mut ccd_solver,
+        None,
         &(),
         &*collision_event_handler,
     );

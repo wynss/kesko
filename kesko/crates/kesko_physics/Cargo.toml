@@ -9,9 +9,9 @@ f32 = ["dep:rapier3d"]
 
 [dependencies]
 bevy = { workspace = true }
-rapier3d-f64 = { git = "https://github.com/wynss/rapier.git", optional = true, features = ["serde-serialize"]}
-rapier3d = { git = "https://github.com/wynss/rapier.git", optional = true, features = ["serde-serialize"] }
-nalgebra = "0.31.0"
+rapier3d-f64 = { git = "https://github.com/wynss/rapier.git", branch = "master", optional = true, features = ["serde-serialize"]}
+rapier3d = { git = "https://github.com/wynss/rapier.git", branch = "master", optional = true, features = ["serde-serialize"] }
+nalgebra = "0.32.2"
 fnv = "1.0.7"
 crossbeam = "0.8.1"
 serde = { version = "1.0.137", features = ["derive"] }
