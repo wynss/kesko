@@ -1,3 +1,4 @@
+import logging
 import json
 
 from ..color import Color, Rgba
@@ -22,8 +23,8 @@ from ..pykesko import KeskoApp
 
 
 class BindingBackend:
-    def __init__(self):
-        self.kesko = KeskoApp()
+    def __init__(self, log_level: int):
+        self.kesko = KeskoApp(log_level)
 
     def initialize(self, render_mode: RenderMode):
         if render_mode == RenderMode.HEADLESS:

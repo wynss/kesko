@@ -27,8 +27,18 @@ use bevy::{
     DefaultPlugins,
 };
 
-#[derive(Default)]
-pub struct CorePlugin;
+pub struct CorePlugin {
+    pub log_level: Level,
+}
+
+impl Default for CorePlugin {
+    fn default() -> Self {
+        Self {
+            log_level: Level::INFO,
+        }
+    }
+}
+
 impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ClearColor(Color::hex("000000").unwrap()))
@@ -48,7 +58,7 @@ impl Plugin for CorePlugin {
                         ..default()
                     })
                     .set(LogPlugin {
-                        level: Level::INFO,
+                        level: self.log_level,
                         ..default()
                     }),
             )
@@ -76,7 +86,18 @@ impl Plugin for CorePlugin {
     }
 }
 
-pub struct CoreHeadlessPlugin;
+pub struct CoreHeadlessPlugin {
+    log_level: Level,
+}
+
+impl Default for CoreHeadlessPlugin {
+    fn default() -> Self {
+        Self {
+            log_level: Level::INFO,
+        }
+    }
+}
+
 impl Plugin for CoreHeadlessPlugin {
     fn build(&self, app: &mut App) {
         // Bevy plugins
@@ -85,7 +106,7 @@ impl Plugin for CoreHeadlessPlugin {
                 .build()
                 .disable::<bevy::winit::WinitPlugin>()
                 .set(LogPlugin {
-                    level: Level::INFO,
+                    level: self.log_level,
                     ..default()
                 }),
         )

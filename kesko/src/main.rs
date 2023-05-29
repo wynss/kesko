@@ -7,7 +7,7 @@ use kesko::plugins::CorePlugins;
 
 fn main() {
     App::new()
-        .add_plugins(CorePlugins)
+        .add_plugins(CorePlugins::default())
         .add_plugins(DiagnosticsPlugins)
         .add_plugin(CarPlugin)
         .add_plugin(WheelyPlugin)

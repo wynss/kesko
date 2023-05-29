@@ -1,6 +1,8 @@
 use std::collections::BTreeMap;
 
+use bevy::log::Level;
 use bevy::prelude::*;
+use phf::phf_map;
 use pyo3::prelude::*;
 
 use kesko::core::event::{SimulatorRequestEvent, SimulatorResponseEvent};
@@ -12,6 +14,13 @@ use kesko::physics::{
 use kesko::plugins::{CorePlugins, HeadlessRenderPlugins, UIPlugin};
 use kesko::tcp::TcpPlugin;
 
+static PYTHON_LOG_TO_BEVY_LOG_LEVEL: phf::Map<i32, Level> = phf_map! {
+    10i32 => Level::DEBUG,
+    20i32 => Level::INFO,
+    30i32 => Level::WARN,
+    40i32 => Level::ERROR,
+};
+
 #[pymodule]
 fn pykesko(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<KeskoApp>()?;
@@ -22,10 +31,14 @@ fn pykesko(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
 
 /// Function to start Kesko with tcp communication
 #[pyfunction]
-fn run_kesko_tcp(window: bool) {
+fn run_kesko_tcp(window: bool, log_level: i32) {
+    let bevy_log_level = PYTHON_LOG_TO_BEVY_LOG_LEVEL.get(&log_level).unwrap();
+
     if window {
         App::new()
-            .add_plugins(CorePlugins)
+            .add_plugins(CorePlugins {
+                log_level: *bevy_log_level,
+            })
             .add_plugin(CarPlugin)
             .add_plugin(WheelyPlugin)
             .add_plugin(TcpPlugin)
@@ -44,18 +57,29 @@ fn run_kesko_tcp(window: bool) {
 #[pyclass(unsendable)]
 pub struct KeskoApp {
     app: App,
+    log_level: Level,
 }
 
 #[pymethods]
 impl KeskoApp {
     #[new]
-    pub fn new() -> Self {
-        Self { app: App::new() }
+    pub fn new(log_level: i32) -> Self {
+        let bevy_log_level = PYTHON_LOG_TO_BEVY_LOG_LEVEL.get(&log_level).unwrap();
+        Self {
+            app: App::new(),
+            log_level: *bevy_log_level,
+        }
     }
 
     pub fn init_default(&mut self) {
         self.app
-            .add_plugins(CorePlugins.build().disable::<UIPlugin>())
+            .add_plugins(
+                CorePlugins {
+                    log_level: self.log_level,
+                }
+                .build()
+                .disable::<UIPlugin>(),
+            )
             .add_plugin(CarPlugin)
             .add_plugin(WheelyPlugin)
             .add_startup_system(start_scene);
@@ -179,7 +203,10 @@ impl KeskoApp {
 
 impl Default for KeskoApp {
     fn default() -> Self {
-        Self::new()
+        Self {
+            app: App::new(),
+            log_level: Level::INFO,
+        }
     }
 }
 

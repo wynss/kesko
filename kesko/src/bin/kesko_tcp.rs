@@ -15,7 +15,7 @@ use kesko_tcp::TcpPlugin;
 
 fn main() {
     App::new()
-        .add_plugin(CorePlugin)
+        .add_plugin(CorePlugin::default())
         .add_plugin(UIPlugin)
         .add_plugin(ModelPlugin)
         .add_plugin(MainCameraPlugin)
