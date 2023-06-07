@@ -29,15 +29,21 @@ pub enum PhysicState {
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemSet)]
 #[system_set(base)]
-pub enum PhysicStage {
+pub enum PhysicSets {
     AddRigidBodies,
+    AddRigidBodiesFlush,
     AddJoints,
+    AddJointsFlush,
     AddColliders,
+    AddCollidersFlush,
     AddMultibodies,
+    AddMultibodiesFlush,
 
     PipelineStep,
+    PipelineStepFlush,
 
     PostPipeline,
+    PostPipelineFlush,
 }
 
 pub struct PhysicsPlugin {
@@ -101,30 +107,36 @@ impl Plugin for PhysicsPlugin {
             .configure_sets(
                 (
                     CoreSet::UpdateFlush,
-                    PhysicStage::AddRigidBodies,
-                    PhysicStage::AddColliders,
-                    PhysicStage::AddJoints,
-                    PhysicStage::AddMultibodies,
-                    PhysicStage::PipelineStep,
-                    PhysicStage::PostPipeline,
+                    PhysicSets::AddRigidBodies,
+                    PhysicSets::AddRigidBodiesFlush,
+                    PhysicSets::AddColliders,
+                    PhysicSets::AddCollidersFlush,
+                    PhysicSets::AddJoints,
+                    PhysicSets::AddJointsFlush,
+                    PhysicSets::AddMultibodies,
+                    PhysicSets::AddMultibodiesFlush,
+                    PhysicSets::PipelineStep,
+                    PhysicSets::PipelineStepFlush,
+                    PhysicSets::PostPipeline,
+                    PhysicSets::PostPipelineFlush,
                     CoreSet::PostUpdate,
                 )
                     .chain(),
             )
-            .add_system(rigid_body::add_rigid_bodies.in_base_set(PhysicStage::AddRigidBodies))
-            .add_system(apply_system_buffers.in_base_set(PhysicStage::AddRigidBodies))
-            .add_system(collider::add_colliders.in_base_set(PhysicStage::AddColliders))
-            .add_system(apply_system_buffers.in_base_set(PhysicStage::AddColliders))
-            .add_system(joint::add_multibody_joints.in_base_set(PhysicStage::AddJoints))
-            .add_system(apply_system_buffers.in_base_set(PhysicStage::AddJoints))
-            .add_system(multibody::add_multibodies.in_base_set(PhysicStage::AddMultibodies))
-            .add_system(apply_system_buffers.in_base_set(PhysicStage::AddMultibodies))
+            .add_system(rigid_body::add_rigid_bodies.in_base_set(PhysicSets::AddRigidBodies))
+            .add_system(apply_system_buffers.in_base_set(PhysicSets::AddRigidBodiesFlush))
+            .add_system(collider::add_colliders.in_base_set(PhysicSets::AddColliders))
+            .add_system(apply_system_buffers.in_base_set(PhysicSets::AddCollidersFlush))
+            .add_system(joint::add_multibody_joints.in_base_set(PhysicSets::AddJoints))
+            .add_system(apply_system_buffers.in_base_set(PhysicSets::AddJointsFlush))
+            .add_system(multibody::add_multibodies.in_base_set(PhysicSets::AddMultibodies))
+            .add_system(apply_system_buffers.in_base_set(PhysicSets::AddMultibodiesFlush))
             .add_system(
                 physics_pipeline_step
-                    .in_base_set(PhysicStage::PipelineStep)
+                    .in_base_set(PhysicSets::PipelineStep)
                     .run_if(in_state(PhysicState::Running)),
             )
-            .add_system(apply_system_buffers.in_base_set(PhysicStage::PipelineStep))
+            .add_system(apply_system_buffers.in_base_set(PhysicSets::PipelineStepFlush))
             .add_systems(
                 (
                     update_bevy_world,
@@ -138,9 +150,9 @@ impl Plugin for PhysicsPlugin {
                     event::collision::send_collision_events_system,
                     event::spawn::send_spawned_events,
                 )
-                    .in_base_set(PhysicStage::PostPipeline),
+                    .in_base_set(PhysicSets::PostPipeline),
             )
-            .add_system(apply_system_buffers.in_base_set(PhysicStage::PostPipeline));
+            .add_system(apply_system_buffers.in_base_set(PhysicSets::PostPipelineFlush));
     }
 }
 

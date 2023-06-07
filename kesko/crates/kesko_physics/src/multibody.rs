@@ -105,17 +105,16 @@ pub(crate) fn add_multibodies(
                     }
                 }
 
-                let mut name = if let Some(body_name) = body_name {
-                    body_name.to_string()
+                let name = if let Some(body_name) = body_name {
+                    // make the name unique by combining the name and entity id
+                    format!("{}-{}", body_name, entity.index())
                 } else {
                     // if we don't have a name use the entity id
                     entity.index().to_string()
                 };
 
                 if handle.0 == multibody.root().rigid_body_handle() {
-                    // We have a root
-                    // make the name unique by combining the name and entity id
-                    name = format!("{}-{}", name, entity.index());
+                    // we have a root
                     commands.entity(entity).insert(MultibodyRoot {
                         name,
                         linvel: Vec3::ZERO,
@@ -123,7 +122,7 @@ pub(crate) fn add_multibodies(
                         child_map: joints,
                     });
                 } else {
-                    // not a root
+                    // a child, not a root
                     let root_rigid_body_handle = multibody.root().rigid_body_handle();
                     let root_entity = body2entity
                         .get(&root_rigid_body_handle)

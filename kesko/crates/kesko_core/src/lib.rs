@@ -8,6 +8,7 @@ pub mod shape;
 pub mod transform;
 
 use bevy::{log::LogPlugin, prelude::*};
+
 use kesko_physics::event::PhysicRequestEvent;
 
 use crate::{
@@ -41,8 +42,8 @@ impl Default for CorePlugin {
 
 impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(ClearColor(Color::hex("000000").unwrap()))
-            .insert_resource(Msaa::Sample4)
+        app.insert_resource(Msaa::Sample4)
+            .insert_resource(ClearColor(Color::hex("000000").unwrap()))
             .add_plugins(
                 DefaultPlugins
                     .set(WindowPlugin {

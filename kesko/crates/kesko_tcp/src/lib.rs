@@ -45,12 +45,14 @@ impl Plugin for TcpPlugin {
                     .configure_sets(
                         (
                             TcpSet::Request,
-                            CoreSet::FirstFlush,
-                            TcpSet::Response,
+                            CoreSet::First,
                             CoreSet::LastFlush,
+                            TcpSet::Response,
                         )
                             .chain(),
                     )
+                    .add_system(apply_system_buffers.in_base_set(TcpSet::Request))
+                    .add_system(apply_system_buffers.in_base_set(TcpSet::Response))
                     .add_system(
                         handle_incoming_connections
                             .run_if(in_state(TcpConnectionState::NotConnected))
