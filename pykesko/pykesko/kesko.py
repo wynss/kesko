@@ -14,13 +14,18 @@ logger = logging.getLogger(__name__)
 
 
 class Kesko:
-    """Class responsible to communicate with Kesko"""
+    """Class responsible to communicate with Kesko."""
 
-    def __init__(self, render_mode: RenderMode = RenderMode.WINDOW, backend_type: BackendType = BackendType.TCP) -> None:
-
+    def __init__(
+        self,
+        render_mode: RenderMode = RenderMode.WINDOW,
+        backend_type: BackendType = BackendType.TCP,
+        log_level: int = logging.INFO,
+    ) -> None:
         self.render_mode = render_mode
+        self.log_level = log_level
         if backend_type == BackendType.TCP:
-            self.backend: Backend = TcpBackend(url=URL)
+            self.backend: Backend = TcpBackend(url=URL, log_level=self.log_level)
         else:
             self.backend: Backend = BindingBackend()
 
@@ -31,7 +36,6 @@ class Kesko:
         self.backend.initialize(self.render_mode)
 
     def send(self, commands: Union[list[Command], Command]) -> KeskoResponse:
-
         if not isinstance(commands, list):
             commands = [commands]
         commands = self._prepare_commands(commands)
@@ -58,7 +62,10 @@ class Kesko:
                 if isinstance(action.values, np.ndarray):
                     # convert array to dict
                     action.values = {
-                        joint_id: val for joint_id, val in zip(self.bodies[action.body_id].joints, action.values.tolist())
+                        joint_id: val
+                        for joint_id, val in zip(
+                            self.bodies[action.body_id].joints, action.values.tolist()
+                        )
                     }
             elif isinstance(action, DespawnAll) or action == DespawnAll:
                 self.bodies = {}

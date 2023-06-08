@@ -11,7 +11,7 @@ fn main() {
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(RayCastPlugin::<RayCastGroup>::default())
-        .insert_resource(Msaa { samples: 4 })
+        .insert_resource(Msaa::Sample4)
         .add_startup_system(setup)
         .add_system(bevy::window::close_on_esc)
         .run();
@@ -26,10 +26,14 @@ fn setup(
     commands.spawn((
         PbrBundle {
             //mesh: meshes.add(Mesh::from(shape::Icosphere { radius: 1.0, subdivisions: 1})),
-            mesh: meshes.add(Mesh::from(shape::Icosphere {
-                radius: 2.0,
-                subdivisions: 5,
-            })),
+            mesh: meshes.add(
+                shape::Icosphere {
+                    radius: 2.0,
+                    subdivisions: 5,
+                }
+                .try_into()
+                .unwrap(),
+            ),
             material: materials.add(Color::GOLD.into()),
             transform: Transform::from_xyz(0.0, 0.0, -3.0),
             ..Default::default()

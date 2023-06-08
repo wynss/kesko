@@ -105,17 +105,16 @@ pub(crate) fn add_multibodies(
                     }
                 }
 
-                let mut name = if let Some(body_name) = body_name {
-                    body_name.to_string()
+                let name = if let Some(body_name) = body_name {
+                    // make the name unique by combining the name and entity id
+                    format!("{}-{}", body_name, entity.index())
                 } else {
                     // if we don't have a name use the entity id
                     entity.index().to_string()
                 };
 
                 if handle.0 == multibody.root().rigid_body_handle() {
-                    // We have a root
-                    // make the name unique by combining the name and entity id
-                    name = format!("{}-{}", name, entity.index());
+                    // we have a root
                     commands.entity(entity).insert(MultibodyRoot {
                         name,
                         linvel: Vec3::ZERO,
@@ -123,7 +122,7 @@ pub(crate) fn add_multibodies(
                         child_map: joints,
                     });
                 } else {
-                    // not a root
+                    // a child, not a root
                     let root_rigid_body_handle = multibody.root().rigid_body_handle();
                     let root_entity = body2entity
                         .get(&root_rigid_body_handle)
@@ -158,35 +157,12 @@ pub(crate) fn update_multibody_vel_angvel(
 mod tests {
 
     use super::*;
-    use crate::{joint, rigid_body};
+    use crate::{joint, rigid_body, PhysicsPlugin};
 
     #[test]
     fn test_name() {
         let mut app = App::new();
-
-        // add systems and resources for building a multibody
-        app.add_stage("Test", Schedule::default())
-            .stage("Test", |stage: &mut Schedule| {
-                stage
-                    .add_stage(
-                        "Add bodies",
-                        SystemStage::single_threaded().with_system(rigid_body::add_rigid_bodies),
-                    )
-                    .add_stage(
-                        "Add joints",
-                        SystemStage::single_threaded().with_system(joint::add_multibody_joints),
-                    )
-                    .add_stage(
-                        "Add multi",
-                        SystemStage::single_threaded().with_system(add_multibodies),
-                    )
-            });
-
-        app.init_resource::<KeskoRes<rapier::RigidBodySet>>();
-        app.init_resource::<KeskoRes<rapier::MultibodyJointSet>>();
-        app.init_resource::<KeskoRes<joint::Entity2JointHandle>>();
-        app.init_resource::<KeskoRes<rigid_body::Entity2Body>>();
-        app.init_resource::<KeskoRes<rigid_body::Body2Entity>>();
+        app.add_plugin(PhysicsPlugin::default());
 
         // add root
         let root_entity = app

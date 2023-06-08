@@ -4,7 +4,6 @@ pub mod spawn;
 use std::collections::BTreeMap;
 
 use bevy::prelude::*;
-use iyes_loopless::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use kesko_types::resource::KeskoRes;
@@ -52,7 +51,8 @@ pub(crate) fn handle_events(
     mut islands: ResMut<KeskoRes<rapier::IslandManager>>,
     entity_2_body_handle: Res<KeskoRes<Entity2Body>>,
     mut commands: Commands,
-    current_physic_state: Res<CurrentState<PhysicState>>,
+    physic_state: Res<State<PhysicState>>,
+    mut next_physic_state: ResMut<NextState<PhysicState>>,
     mut request_events: EventReader<PhysicRequestEvent>,
     mut response_events: EventWriter<PhysicResponseEvent>,
     query: Query<(Entity, Option<&MultibodyRoot>), With<RigidBodyHandle>>,
@@ -60,20 +60,20 @@ pub(crate) fn handle_events(
     for event in request_events.iter() {
         match event {
             PhysicRequestEvent::PausePhysics => {
-                commands.insert_resource(NextState(PhysicState::Stopped));
+                next_physic_state.set(PhysicState::Stopped);
                 response_events.send(PhysicResponseEvent::StoppedPhysics);
             }
             PhysicRequestEvent::RunPhysics => {
-                commands.insert_resource(NextState(PhysicState::Running));
+                next_physic_state.set(PhysicState::Running);
                 response_events.send(PhysicResponseEvent::StartedPhysics);
             }
-            PhysicRequestEvent::TogglePhysics => match current_physic_state.0 {
+            PhysicRequestEvent::TogglePhysics => match physic_state.0 {
                 PhysicState::Stopped => {
-                    commands.insert_resource(NextState(PhysicState::Running));
+                    next_physic_state.set(PhysicState::Running);
                     response_events.send(PhysicResponseEvent::StartedPhysics);
                 }
                 PhysicState::Running => {
-                    commands.insert_resource(NextState(PhysicState::Stopped));
+                    next_physic_state.set(PhysicState::Stopped);
                     response_events.send(PhysicResponseEvent::StoppedPhysics);
                 }
             },

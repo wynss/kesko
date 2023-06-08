@@ -18,7 +18,7 @@
     Experimental robotics simulator written in Rust.
     <br />
     <br />
-    <img alt="CI Action Status" src="https://img.shields.io/github/workflow/status/wynss/kesko/CI?style=flat-square">
+    <img alt="CI Action Status" src="https://img.shields.io/github/actions/workflow/status/wynss/kesko/ci.yml?style=flat-square">
     <img alt="PyPI Version" src="https://img.shields.io/pypi/v/pykesko?style=flat-square">
     <img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/pykesko?style=flat-square">
     <img alt="GitHub" src="https://img.shields.io/github/license/wynss/kesko?style=flat-square">

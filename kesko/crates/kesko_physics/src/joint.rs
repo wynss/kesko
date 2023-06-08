@@ -522,15 +522,14 @@ mod tests {
 
     #[test]
     fn test_add_one_joint() {
-        let mut world = World::default();
-        let mut test_stage = SystemStage::parallel();
-        test_stage.add_system(add_multibody_joints);
+        let mut app = App::new();
+        app.add_system(add_multibody_joints);
 
-        world.init_resource::<KeskoRes<rapier::MultibodyJointSet>>();
-        world.init_resource::<KeskoRes<Entity2JointHandle>>();
+        app.init_resource::<KeskoRes<rapier::MultibodyJointSet>>();
+        app.init_resource::<KeskoRes<Entity2JointHandle>>();
 
         let parent_body_handle = rapier::RigidBodyHandle::from_raw_parts(1, 0);
-        let parent_entity = world.spawn(RigidBodyHandle(parent_body_handle)).id();
+        let parent_entity = app.world.spawn(RigidBodyHandle(parent_body_handle)).id();
 
         let expected_transform = Transform::from_translation(Vec3::X);
         let joint = FixedJoint {
@@ -540,26 +539,28 @@ mod tests {
         };
 
         let child_body_handle = rapier::RigidBodyHandle::from_raw_parts(2, 0);
-        let child_entity = world
+        let child_entity = app
+            .world
             .spawn((joint, RigidBodyHandle(child_body_handle)))
             .id();
 
         let mut entity_body_map = Entity2Body::default();
         entity_body_map.insert(parent_entity, parent_body_handle);
         entity_body_map.insert(child_entity, child_body_handle);
-        world.insert_resource(KeskoRes(entity_body_map));
+        app.insert_resource(KeskoRes(entity_body_map));
 
-        test_stage.run(&mut world);
+        app.update();
 
         // only one entity with joint handle, should only be the child
-        let mut query = world.query::<&MultibodyJointHandle>();
-        assert_eq!(query.iter(&world).len(), 1);
+        let mut query = app.world.query::<&MultibodyJointHandle>();
+        assert_eq!(query.iter(&app.world).len(), 1);
 
         let joint_handle = query
-            .get(&world, child_entity)
+            .get(&app.world, child_entity)
             .expect("Failed to get JointHandle from query");
 
-        let multibody_joint_set = world
+        let multibody_joint_set = app
+            .world
             .get_resource::<KeskoRes<rapier::MultibodyJointSet>>()
             .expect("Could not get ImpulseJointSet")
             .clone();
@@ -595,13 +596,10 @@ mod tests {
     }
 
     fn setup_joint_motor() -> (
-        World,
         rapier::RigidBodyHandle,
         rapier::RigidBodyHandle,
         rapier::MultibodyJointSet,
     ) {
-        let world = World::new();
-
         let joint_set = rapier::MultibodyJointSet::default();
         let mut body_set = rapier::RigidBodySet::default();
 
@@ -611,12 +609,12 @@ mod tests {
         let body_handle1 = body_set.insert(body1);
         let body_handle2 = body_set.insert(body2);
 
-        return (world, body_handle1, body_handle2, joint_set);
+        return (body_handle1, body_handle2, joint_set);
     }
 
     #[test]
     fn test_set_joint_velocity_revolute() {
-        let (mut world, body_handle1, body_handle2, mut joint_set) = setup_joint_motor();
+        let (body_handle1, body_handle2, mut joint_set) = setup_joint_motor();
 
         // create and insert joint
         let expected_vel = 2.3;
@@ -628,8 +626,9 @@ mod tests {
             .insert(body_handle1, body_handle2, joint, true)
             .unwrap();
 
-        world.insert_resource(KeskoRes(joint_set));
-        let entity = world.spawn(MultibodyJointHandle(joint_handle)).id();
+        let mut app = App::new();
+        app.insert_resource(KeskoRes(joint_set));
+        let entity = app.world.spawn(MultibodyJointHandle(joint_handle)).id();
 
         // Setup and send test event for setting the velocity
         let mut events = Events::<JointMotorEvent>::default();
@@ -640,16 +639,15 @@ mod tests {
                 damping: None,
             },
         });
-        world.insert_resource(events);
+        app.world.insert_resource(events);
 
-        // Run stage
-        let test_stage = SystemStage::parallel();
-        test_stage
-            .with_system(update_joint_motors_system)
-            .run(&mut world);
+        // add system and run
+        app.add_system(update_joint_motors_system);
+        app.update();
 
         // get result
-        let res_set = world
+        let res_set = app
+            .world
             .get_resource::<KeskoRes<rapier::MultibodyJointSet>>()
             .expect("Could not get impulse joint set");
         let (multibody, link_id) = res_set
@@ -682,7 +680,7 @@ mod tests {
 
     #[test]
     fn test_set_joint_position_revolute() {
-        let (mut world, body_handle1, body_handle2, mut joint_set) = setup_joint_motor();
+        let (body_handle1, body_handle2, mut joint_set) = setup_joint_motor();
 
         // Setup and send test event for setting the velocity
         let expected_pos = 2.3;
@@ -698,8 +696,9 @@ mod tests {
             .insert(body_handle1, body_handle2, joint, true)
             .unwrap();
 
-        world.insert_resource(KeskoRes(joint_set));
-        let entity = world.spawn(MultibodyJointHandle(joint_handle)).id();
+        let mut app = App::new();
+        app.insert_resource(KeskoRes(joint_set));
+        let entity = app.world.spawn(MultibodyJointHandle(joint_handle)).id();
 
         events.send(JointMotorEvent {
             entity,
@@ -709,16 +708,15 @@ mod tests {
                 damping: None,
             },
         });
-        world.insert_resource(events);
+        app.insert_resource(events);
 
-        // Run stage
-        let test_stage = SystemStage::parallel();
-        test_stage
-            .with_system(update_joint_motors_system)
-            .run(&mut world);
+        // add system and run
+        app.add_system(update_joint_motors_system);
+        app.update();
 
         // get result
-        let res_set = world
+        let res_set = app
+            .world
             .get_resource::<KeskoRes<rapier::MultibodyJointSet>>()
             .expect("Could not get impulse joint set");
         let (multibody, link_id) = res_set
@@ -761,7 +759,7 @@ mod tests {
 
     #[test]
     fn test_set_joint_velocity_spherical() {
-        let (mut world, body_handle1, body_handle2, mut joint_set) = setup_joint_motor();
+        let (body_handle1, body_handle2, mut joint_set) = setup_joint_motor();
 
         // create and insert joint
         let expected_vel = 2.3;
@@ -774,8 +772,9 @@ mod tests {
             .insert(body_handle1, body_handle2, joint, true)
             .unwrap();
 
-        world.insert_resource(KeskoRes(joint_set));
-        let entity = world.spawn(MultibodyJointHandle(joint_handle)).id();
+        let mut app = App::new();
+        app.insert_resource(KeskoRes(joint_set));
+        let entity = app.world.spawn(MultibodyJointHandle(joint_handle)).id();
 
         // Setup and send test event for setting the velocity
         let mut events = Events::<JointMotorEvent>::default();
@@ -786,16 +785,15 @@ mod tests {
                 axis: test_axis,
             },
         });
-        world.insert_resource(events);
+        app.insert_resource(events);
 
         // Run stage
-        let test_stage = SystemStage::parallel();
-        test_stage
-            .with_system(update_joint_motors_system)
-            .run(&mut world);
+        app.add_system(update_joint_motors_system);
+        app.update();
 
         // get result
-        let res_set = world
+        let res_set = app
+            .world
             .get_resource::<KeskoRes<rapier::MultibodyJointSet>>()
             .expect("Could not get impulse joint set");
         let (multibody, link_id) = res_set
@@ -828,7 +826,7 @@ mod tests {
 
     #[test]
     fn test_set_joint_position_spherical() {
-        let (mut world, body_handle1, body_handle2, mut joint_set) = setup_joint_motor();
+        let (body_handle1, body_handle2, mut joint_set) = setup_joint_motor();
 
         let expected_pos = 2.3;
         let expected_damping = 3.4;
@@ -849,8 +847,9 @@ mod tests {
             .insert(body_handle1, body_handle2, joint, true)
             .unwrap();
 
-        world.insert_resource(KeskoRes(joint_set));
-        let entity = world.spawn(MultibodyJointHandle(joint_handle)).id();
+        let mut app = App::new();
+        app.insert_resource(KeskoRes(joint_set));
+        let entity = app.world.spawn(MultibodyJointHandle(joint_handle)).id();
 
         // Setup and send test event for setting the velocity
         let mut events = Events::<JointMotorEvent>::default();
@@ -861,16 +860,15 @@ mod tests {
                 axis: test_axis,
             },
         });
-        world.insert_resource(events);
+        app.insert_resource(events);
 
-        // Run stage
-        let test_stage = SystemStage::parallel();
-        test_stage
-            .with_system(update_joint_motors_system)
-            .run(&mut world);
+        // add system and run
+        app.add_system(update_joint_motors_system);
+        app.update();
 
         // get result
-        let res_set = world
+        let res_set = app
+            .world
             .get_resource::<KeskoRes<rapier::MultibodyJointSet>>()
             .expect("Could not get impulse joint set");
         let (multibody, link_id) = res_set

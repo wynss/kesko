@@ -14,7 +14,7 @@ use kesko_physics::{
 
 fn main() {
     App::new()
-        .add_plugins(CorePlugins)
+        .add_plugins(CorePlugins::default())
         .add_plugins(DiagnosticsPlugins)
         .add_plugin(CarPlugin)
         .add_plugin(WheelyPlugin)
@@ -85,10 +85,14 @@ fn test_scene(
     commands.spawn((
         PbrBundle {
             material: materials.add(Color::PURPLE.into()),
-            mesh: meshes.add(Mesh::from(shape::Icosphere {
-                radius: 0.2,
-                subdivisions: 5,
-            })),
+            mesh: meshes.add(
+                shape::Icosphere {
+                    radius: 0.2,
+                    subdivisions: 5,
+                }
+                .try_into()
+                .unwrap(),
+            ),
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
             ..default()
         },
@@ -101,20 +105,10 @@ fn test_scene(
     ));
 
     // Light
-    const HALF_SIZE: f32 = 10.0;
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 100_000.0,
             // Configure the projection to better fit the scene
-            shadow_projection: OrthographicProjection {
-                left: -HALF_SIZE,
-                right: HALF_SIZE,
-                bottom: -HALF_SIZE,
-                top: HALF_SIZE,
-                near: -10.0 * HALF_SIZE,
-                far: 10.0 * HALF_SIZE,
-                ..default()
-            },
             shadows_enabled: true,
             ..default()
         },

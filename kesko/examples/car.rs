@@ -7,7 +7,7 @@ use kesko_plugins::CorePlugins;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(CorePlugins)
+        .add_plugins(CorePlugins::default())
         .add_plugin(DebugEventPlugin)
         .add_startup_system(setup_scene)
         .add_plugin(models::car::CarPlugin)

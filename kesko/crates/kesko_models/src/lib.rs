@@ -11,11 +11,28 @@ use bevy::prelude::*;
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+#[system_set(base)]
+pub enum SpawnSet {
+    Spawn,
+    SpawnFlush,
+}
+
 pub struct ModelPlugin;
 impl Plugin for ModelPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_to_stage(CoreStage::First, spawn_system)
-            .add_event::<SpawnEvent>();
+        app.configure_sets(
+            (
+                CoreSet::FirstFlush,
+                SpawnSet::Spawn,
+                SpawnSet::SpawnFlush,
+                CoreSet::PreUpdate,
+            )
+                .chain(),
+        )
+        .add_system(spawn_system.in_base_set(SpawnSet::Spawn))
+        .add_system(apply_system_buffers.in_base_set(SpawnSet::SpawnFlush))
+        .add_event::<SpawnEvent>();
     }
 }
 

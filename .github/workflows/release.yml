@@ -7,7 +7,6 @@ on:
       - "v*"
 
 jobs:
-
   linux-wheels:
     name: Build wheels for Linux (3.7-3.11)
     runs-on: ubuntu-latest
@@ -16,10 +15,9 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
       - name: Install Rust nightly
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly-2022-11-05
-          override: true
+          toolchain: nightly-2023-04-20
       - name: Build wheels
         run: |
           bash ../.github/workflows/build-wheels.sh
@@ -29,22 +27,22 @@ jobs:
         with:
           name: wheels
           path: pykesko/wheelhouse/
-  
+
   macos-wheels:
     name: Build wheels for MacOS
     runs-on: macos-latest
     strategy:
       fail-fast: true
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
         with:
           targets: aarch64-apple-darwin, x86_64-apple-darwin
-          toolchain: nightly-2022-11-05
+          toolchain: nightly-2023-04-20
       - name: Setup python
         uses: actions/setup-python@v4
         with:
@@ -65,14 +63,14 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly-2022-11-05
+          toolchain: nightly-2023-04-20
       - name: Setup python
         uses: actions/setup-python@v4
         with:
@@ -88,11 +86,11 @@ jobs:
         with:
           name: wheels
           path: pykesko/target/wheels
-    
+
   publish-pypi:
     name: "Publish PyKesko to PyPi"
     runs-on: ubuntu-latest
-    if: "startsWith(github.ref, 'refs/tags/')"
+    if: startsWith(github.ref, 'refs/tags/')
     needs: [linux-wheels, windows-wheels, macos-wheels]
     steps:
       - uses: actions/download-artifact@v3
@@ -100,7 +98,7 @@ jobs:
           name: wheels
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
@@ -108,11 +106,11 @@ jobs:
         run: |
           pip install --upgrade twine
           twine upload --skip-existing *
-  
+
   create-github-release:
     name: Create Github Release
     runs-on: ubuntu-latest
-    if: "startsWith(github.ref, 'refs/tags/')"
+    if: startsWith(github.ref, 'refs/tags/')
     needs: [linux-wheels, windows-wheels, macos-wheels, publish-pypi]
     steps:
       - name: Checkout code

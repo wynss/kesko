@@ -21,16 +21,15 @@ logger = logging.getLogger(__name__)
 
 
 class TcpBackend:
-    def __init__(self, url: str):
+    def __init__(self, url: str, log_level: int):
         self.com = Communicator(url=url)
         self.process: Optional[Process] = None
+        self.log_level = log_level
 
     def initialize(self, render_mode: RenderMode):
         self.process = Process(
             target=run_kesko_tcp,
-            args=[
-                render_mode == RenderMode.WINDOW,
-            ],
+            args=[render_mode == RenderMode.WINDOW, self.log_level],
         )
         self.process.start()
 
@@ -63,21 +62,26 @@ class TcpBackend:
 
         response_objs = []
         for response in json_response:
-
             if MultibodySpawned.__name__ in response:
                 multibody = MultibodySpawned(**response[MultibodySpawned.__name__])
                 response_objs.append(multibody)
 
             elif CollisionStarted.__name__ in response:
-                collision_started = CollisionStarted(**response[CollisionStarted.__name__])
+                collision_started = CollisionStarted(
+                    **response[CollisionStarted.__name__]
+                )
                 response_objs.append(collision_started)
 
             elif CollisionStopped.__name__ in response:
-                collision_stopped = CollisionStopped(**response[CollisionStopped.__name__])
+                collision_stopped = CollisionStopped(
+                    **response[CollisionStopped.__name__]
+                )
                 response_objs.append(collision_stopped)
 
             elif MultibodyStates.__name__ in response:
-                multibody_states = [MultibodyStates(**mb) for mb in response[MultibodyStates.__name__]]
+                multibody_states = [
+                    MultibodyStates(**mb) for mb in response[MultibodyStates.__name__]
+                ]
                 response_objs.extend(multibody_states)
 
         return KeskoResponse(response_objs)

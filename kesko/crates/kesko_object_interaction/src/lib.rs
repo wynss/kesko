@@ -13,13 +13,7 @@ use crate::{
 use bevy::prelude::*;
 use event::SelectEvent;
 use interaction::Select;
-use kesko_raycast::{RayCastPlugin, RayCastSource, RayCastSystems, RayVisible};
-
-#[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
-enum InteractionSystems {
-    UpdateInteractions,
-    SendEvents,
-}
+use kesko_raycast::{RayCastPlugin, RayCastSource, RayVisible};
 
 #[derive(Default)]
 pub struct InteractionPlugin<T>
@@ -38,25 +32,16 @@ where
             .add_event::<SelectEvent>()
             .init_resource::<GlobalDragState>()
             .add_plugin(RayCastPlugin::<T>::default())
-            .add_system_set_to_stage(
-                CoreStage::Update,
-                SystemSet::new()
-                    .with_system(
-                        update_interactions::<T>
-                            .label(InteractionSystems::UpdateInteractions)
-                            .after(RayCastSystems::CalcIntersections),
-                    )
-                    .with_system(event::handle_select_events::<T>)
-                    .with_system(
-                        event::send_interaction_events::<T>
-                            .label(InteractionSystems::SendEvents)
-                            .after(InteractionSystems::UpdateInteractions),
-                    )
-                    .with_system(
-                        debug::update_interaction_material::<T>
-                            .after(InteractionSystems::SendEvents),
-                    )
-                    .with_system(set_initial_interaction_material),
+            .add_systems(
+                (
+                    update_interactions::<T>,
+                    event::send_interaction_events::<T>,
+                    event::handle_select_events::<T>,
+                    debug::update_interaction_material::<T>,
+                    set_initial_interaction_material,
+                )
+                    .chain()
+                    .in_base_set(CoreSet::Update),
             );
     }
 }

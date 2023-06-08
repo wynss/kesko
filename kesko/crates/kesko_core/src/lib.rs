@@ -8,6 +8,7 @@ pub mod shape;
 pub mod transform;
 
 use bevy::{log::LogPlugin, prelude::*};
+
 use kesko_physics::event::PhysicRequestEvent;
 
 use crate::{
@@ -23,37 +24,46 @@ use bevy::{
     core_pipeline::clear_color::ClearColor,
     log::Level,
     render::{color::Color, view::Msaa},
-    window::{WindowDescriptor, WindowPlugin, WindowPosition},
+    window::{WindowPlugin, WindowPosition},
     DefaultPlugins,
 };
 
-#[derive(Default)]
-pub struct CorePlugin;
+pub struct CorePlugin {
+    pub log_level: Level,
+}
+
+impl Default for CorePlugin {
+    fn default() -> Self {
+        Self {
+            log_level: Level::INFO,
+        }
+    }
+}
+
 impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
-            .insert_resource(Msaa { samples: 4 })
+        app.insert_resource(Msaa::Sample4)
+            .insert_resource(ClearColor(Color::hex("000000").unwrap()))
             .add_plugins(
                 DefaultPlugins
                     .set(WindowPlugin {
-                        window: WindowDescriptor {
+                        primary_window: Some(Window {
+                            position: WindowPosition::Centered(MonitorSelection::Primary),
+                            resolution: (1920., 1080.).into(),
                             title: String::from("Kesko 0.0.4"),
-                            width: 1920.0,
-                            height: 1080.0,
-                            position: WindowPosition::Centered,
-                            fit_canvas_to_parent: true,
                             canvas: Some("#kesko-wasm".to_string()),
-                            ..Default::default()
-                        },
-                        add_primary_window: true,
-                        exit_on_all_closed: true,
+                            fit_canvas_to_parent: true,
+                            ..default()
+                        }),
                         close_when_requested: true,
+                        ..default()
                     })
                     .set(LogPlugin {
-                        level: Level::INFO,
+                        level: self.log_level,
                         ..default()
                     }),
             )
+            // ability to grab bodies
             .add_plugin(GrabablePlugin::<GroupDynamic>::default())
             // vertical marker systems
             .add_system(handle_vertical_marker_spawning::<GroupStatic>)
@@ -66,17 +76,29 @@ impl Plugin for CorePlugin {
             // simulator system events
             .add_event::<event::SimulatorRequestEvent>()
             .add_event::<event::SimulatorResponseEvent>()
-            .add_system_set_to_stage(
-                CoreStage::Last,
-                SystemSet::new()
-                    .with_system(event::handle_system_events)
-                    .with_system(event::handle_serializable_state_request)
-                    .with_system(event::handle_motor_command_requests),
+            .add_systems(
+                (
+                    event::handle_system_events,
+                    event::handle_serializable_state_request,
+                    event::handle_motor_command_requests,
+                )
+                    .in_base_set(CoreSet::Last),
             );
     }
 }
 
-pub struct CoreHeadlessPlugin;
+pub struct CoreHeadlessPlugin {
+    log_level: Level,
+}
+
+impl Default for CoreHeadlessPlugin {
+    fn default() -> Self {
+        Self {
+            log_level: Level::INFO,
+        }
+    }
+}
+
 impl Plugin for CoreHeadlessPlugin {
     fn build(&self, app: &mut App) {
         // Bevy plugins
@@ -85,7 +107,7 @@ impl Plugin for CoreHeadlessPlugin {
                 .build()
                 .disable::<bevy::winit::WinitPlugin>()
                 .set(LogPlugin {
-                    level: Level::INFO,
+                    level: self.log_level,
                     ..default()
                 }),
         )
@@ -93,12 +115,13 @@ impl Plugin for CoreHeadlessPlugin {
         // Simulator system events
         .add_event::<event::SimulatorRequestEvent>()
         .add_event::<event::SimulatorResponseEvent>()
-        .add_system_set_to_stage(
-            CoreStage::Last,
-            SystemSet::new()
-                .with_system(event::handle_system_events)
-                .with_system(event::handle_serializable_state_request)
-                .with_system(event::handle_motor_command_requests),
+        .add_systems(
+            (
+                event::handle_system_events,
+                event::handle_serializable_state_request,
+                event::handle_motor_command_requests,
+            )
+                .in_base_set(CoreSet::LastFlush),
         );
     }
 }

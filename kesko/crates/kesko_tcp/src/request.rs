@@ -11,6 +11,7 @@ use kesko_types::resource::KeskoRes;
 
 use super::TcpBuffer;
 
+/// Commands that can be requested by http clients
 #[derive(Deserialize, Serialize, Debug)]
 pub(crate) enum TcpCommand {
     Close,
@@ -34,6 +35,7 @@ pub(crate) enum TcpCommand {
     IsAlive,
 }
 
+/// Holds parsed http requests
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct HttpRequest {
     pub(crate) commands: Vec<TcpCommand>,
@@ -70,6 +72,7 @@ pub(crate) fn handle_requests(
     mut spawn_event_writer: EventWriter<SpawnEvent>,
     mut physic_event_writer: EventWriter<PhysicRequestEvent>,
 ) {
+    info!("Waiting for request...");
     let mut got_msg = false;
     while !got_msg {
         match tcp_stream.read(&mut tcp_buffer.data) {
@@ -83,7 +86,7 @@ pub(crate) fn handle_requests(
                 let http_str = String::from_utf8_lossy(&tcp_buffer.data[..msg_len]).to_string();
                 match HttpRequest::from_http_str(http_str) {
                     Ok(mut request) => {
-                        debug!("Got Request: {:?}", request.commands);
+                        info!("Got Request: {:?}", request.commands);
 
                         for command in request.commands.drain(..) {
                             match command {

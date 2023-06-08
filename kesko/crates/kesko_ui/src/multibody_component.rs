@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, ops::RangeInclusive};
 use bevy::prelude::*;
 use bevy_egui::{
     egui::{self, Ui},
-    EguiContext,
+    EguiContexts,
 };
 
 use kesko_object_interaction::event::SelectEvent;
@@ -50,7 +50,7 @@ impl MultibodyUIComponent {
         mut physic_request_event_writer: EventWriter<PhysicRequestEvent>,
         mut select_event_writer: EventWriter<SelectEvent>,
         mut joint_motor_event_writer: EventWriter<JointMotorEvent>,
-        mut egui_context: ResMut<EguiContext>,
+        mut egui_context: EguiContexts,
         mut comp: Query<&mut Self>,
         body_query: Query<(&MultibodyRoot, Option<&ControlDescription>)>,
         revolute_joints: Query<&RevoluteJoint>,

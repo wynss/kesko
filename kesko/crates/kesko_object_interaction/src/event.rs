@@ -42,36 +42,26 @@ pub(crate) fn handle_select_events<T: Component + Default>(
 pub(crate) fn send_interaction_events<T: Component + Default>(
     mut event_writer: EventWriter<InteractionEvent>,
     interaction_query: Query<
-        (
-            Entity,
-            &Hover<T>,
-            &Drag<T>,
-            &Select<T>,
-            ChangeTrackers<Hover<T>>,
-            ChangeTrackers<Drag<T>>,
-            ChangeTrackers<Select<T>>,
-        ),
+        (Entity, Ref<Hover<T>>, Ref<Drag<T>>, Ref<Select<T>>),
         Or<(Changed<Hover<T>>, Changed<Drag<T>>, Changed<Select<T>>)>,
     >,
 ) {
-    for (entity, hover, drag, select, hover_track, drag_track, select_track) in
-        interaction_query.iter()
-    {
-        if drag_track.is_changed() && !drag_track.is_added() {
+    for (entity, hover, drag, select) in interaction_query.iter() {
+        if drag.is_changed() && !drag.is_added() {
             event_writer.send(match drag.dragged {
                 true => InteractionEvent::DragStarted(entity),
                 false => InteractionEvent::DragStopped(entity),
             });
         }
 
-        if select_track.is_changed() && !select_track.is_added() {
+        if select.is_changed() && !select.is_added() {
             event_writer.send(match select.selected {
                 true => InteractionEvent::Selected(entity),
                 false => InteractionEvent::Deselected(entity),
             });
         }
 
-        if hover_track.is_changed() && !hover_track.is_added() {
+        if hover.is_changed() && !hover.is_added() {
             event_writer.send(match hover.hovered {
                 true => InteractionEvent::HoverStarted(entity),
                 false => InteractionEvent::HoverStopped(entity),
@@ -81,9 +71,9 @@ pub(crate) fn send_interaction_events<T: Component + Default>(
         if !hover.hovered
             && !drag.dragged
             && !select.selected
-            && !select_track.is_added()
-            && !hover_track.is_added()
-            && !drag_track.is_added()
+            && !select.is_added()
+            && !hover.is_added()
+            && !drag.is_added()
         {
             event_writer.send(InteractionEvent::NoInteraction(entity))
         }
@@ -94,7 +84,6 @@ pub(crate) fn send_interaction_events<T: Component + Default>(
 mod tests {
     use crate::event::{send_interaction_events, InteractionEvent};
     use crate::interaction::{Drag, Hover, Select};
-    use bevy::core::CorePlugin;
     use bevy::prelude::*;
 
     use super::{handle_select_events, SelectEvent};
@@ -112,14 +101,13 @@ mod tests {
         StoppedEvents,
     }
 
-    fn get_world_and_entity() -> (World, Entity) {
+    fn get_world_and_entity() -> (App, Entity) {
         let mut app = App::new();
-        app.add_plugin(CorePlugin::default());
         app.add_event::<InteractionEvent>();
         app.add_event::<SelectEvent>();
 
-        let mut world = app.world;
-        let entity = world
+        let entity = app
+            .world
             .spawn((
                 Hover::<TestGroup>::default(),
                 Drag::<TestGroup>::default(),
@@ -127,7 +115,7 @@ mod tests {
             ))
             .id();
 
-        (world, entity)
+        (app, entity)
     }
 
     fn propagate_test(mut test_step: ResMut<TestStep>) {
@@ -152,8 +140,8 @@ mod tests {
 
     #[test]
     fn test_events() {
-        let (mut world, entity) = get_world_and_entity();
-        world.insert_resource(TestStep::Initial);
+        let (mut app, entity) = get_world_and_entity();
+        app.insert_resource(TestStep::Initial);
 
         let read_and_assert = move |mut events: EventReader<InteractionEvent>,
                                     test_step: ResMut<TestStep>| {
@@ -196,28 +184,29 @@ mod tests {
             }
         };
 
-        let mut stage = SystemStage::parallel();
-        stage.add_system_set(
-            SystemSet::new()
-                .with_system(trigger_events)
-                .with_system(send_interaction_events::<TestGroup>.after(trigger_events))
-                .with_system(read_and_assert.after(send_interaction_events::<TestGroup>))
-                .with_system(propagate_test.after(read_and_assert)),
+        app.add_systems(
+            (
+                trigger_events,
+                send_interaction_events::<TestGroup>,
+                read_and_assert,
+                propagate_test,
+            )
+                .chain(),
         );
 
-        stage.run(&mut world);
-        stage.run(&mut world);
-        stage.run(&mut world);
+        app.update();
+        app.update();
+        app.update();
     }
 
     #[test]
     fn test_select_events() {
-        let (mut world, entity) = get_world_and_entity();
+        let (mut app, entity) = get_world_and_entity();
 
         // make sure that the entity is not selected before running
-        let mut query = world.query::<&Select<TestGroup>>();
+        let mut query = app.world.query::<&Select<TestGroup>>();
         let select_before = query
-            .get_single(&world)
+            .get_single(&app.world)
             .expect("World should have one entity");
         assert!(
             !select_before.selected,
@@ -225,29 +214,27 @@ mod tests {
         );
 
         // setup and run systems once
-        let mut stage = SystemStage::single_threaded();
-
-        world.send_event(SelectEvent::Select(entity));
-        stage.add_system_set(SystemSet::new().with_system(handle_select_events::<TestGroup>));
-        stage.run(&mut world);
+        app.world.send_event(SelectEvent::Select(entity));
+        app.add_system(handle_select_events::<TestGroup>);
+        app.update();
 
         // check that the entity is now selected
-        let mut query = world.query::<&Select<TestGroup>>();
+        let mut query = app.world.query::<&Select<TestGroup>>();
         let select_after = query
-            .get_single(&world)
+            .get_single(&app.world)
             .expect("World should have one entity");
         assert!(
             select_after.selected,
             "Entity was deselected but should have been selected"
         );
 
-        world.send_event(SelectEvent::Deselect(entity));
-        stage.run(&mut world);
+        app.world.send_event(SelectEvent::Deselect(entity));
+        app.update();
 
         // check that the entity is now deselected
-        let mut query = world.query::<&Select<TestGroup>>();
+        let mut query = app.world.query::<&Select<TestGroup>>();
         let select_after = query
-            .get_single(&world)
+            .get_single(&app.world)
             .expect("World should have one entity");
         assert!(
             !select_after.selected,

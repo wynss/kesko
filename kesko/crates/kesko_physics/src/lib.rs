@@ -12,7 +12,6 @@ pub mod rigid_body;
 
 use bevy::math::Vec3;
 use bevy::prelude::*;
-use iyes_loopless::prelude::*;
 
 use kesko_types::resource::KeskoRes;
 
@@ -21,25 +20,30 @@ use conversions::{IntoBevy, IntoRapier};
 use gravity::Gravity;
 
 /// State to control the physics system
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 pub enum PhysicState {
+    #[default]
     Running,
     Stopped,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Hash, StageLabel)]
-struct PhysicsStage;
-
-#[derive(Debug, PartialEq, Eq, Clone, Hash, StageLabel)]
-pub enum PhysicStage {
+#[derive(Debug, PartialEq, Eq, Clone, Hash, SystemSet)]
+#[system_set(base)]
+pub enum PhysicSets {
     AddRigidBodies,
+    AddRigidBodiesFlush,
     AddJoints,
+    AddJointsFlush,
     AddColliders,
+    AddCollidersFlush,
     AddMultibodies,
+    AddMultibodiesFlush,
 
     PipelineStep,
+    PipelineStepFlush,
 
     PostPipeline,
+    PostPipelineFlush,
 }
 
 pub struct PhysicsPlugin {
@@ -75,71 +79,80 @@ impl Plugin for PhysicsPlugin {
             .init_resource::<KeskoRes<rapier::RigidBodySet>>() // Holds all the rigid bodies
             .init_resource::<KeskoRes<rapier::ColliderSet>>() // Holds all the colliders
             .insert_resource(KeskoRes(rapier::IntegrationParameters {
+                // sets the parameters that controls the simulation
+                // setting this above 0.8 can cause instabilities,
+                // if needed f64 feature should be used
                 erp: 0.75,
                 ..default()
             }))
-            // sets the parameters that controls the simulation
-            // setting this above 0.8 can cause instabilities,
-            // if needed f64 feature should be used
             .init_resource::<KeskoRes<rapier::IslandManager>>() // Keeps track of which dynamic rigid bodies that are moving and which are not
             .init_resource::<KeskoRes<rapier::BroadPhase>>() // Detects pairs of colliders that are potentially in contact
             .init_resource::<KeskoRes<rapier::NarrowPhase>>() // Calculates contact points of colliders and generate collision events
             .init_resource::<KeskoRes<rapier::ImpulseJointSet>>()
             .init_resource::<KeskoRes<rapier::MultibodyJointSet>>()
             .init_resource::<KeskoRes<rapier::CCDSolver>>()
+            // collision event related
             .insert_resource(event::collision::CollisionEventHandler::new())
             .add_event::<event::collision::CollisionEvent>()
+            // gravity
             .insert_resource(Gravity::new(self.gravity))
             // state for controlling the physics
-            .add_loopless_state(self.initial_state.clone())
+            .add_state::<PhysicState>()
             // Physics events
             .add_event::<event::PhysicRequestEvent>()
             .add_event::<event::PhysicResponseEvent>()
             .add_system(event::handle_events)
             .add_event::<joint::JointMotorEvent>()
-            .add_stage_after(CoreStage::First, PhysicsStage, Schedule::default())
-            .stage(PhysicsStage, |stage: &mut Schedule| {
-                stage
-                    .add_stage(
-                        PhysicStage::AddRigidBodies,
-                        SystemStage::single_threaded().with_system(rigid_body::add_rigid_bodies),
-                    )
-                    .add_stage(
-                        PhysicStage::AddColliders,
-                        SystemStage::single_threaded().with_system(collider::add_colliders),
-                    )
-                    .add_stage(
-                        PhysicStage::AddJoints,
-                        SystemStage::single_threaded().with_system(joint::add_multibody_joints),
-                    )
-                    .add_stage(
-                        PhysicStage::AddMultibodies,
-                        SystemStage::single_threaded().with_system(multibody::add_multibodies),
-                    )
-                    .add_stage(
-                        PhysicStage::PipelineStep,
-                        SystemStage::single_threaded()
-                            .with_system(physics_pipeline_step.run_in_state(PhysicState::Running)),
-                    )
-                    .add_stage(
-                        "post-pipeline",
-                        SystemStage::parallel().with_system_set(
-                            ConditionSet::new()
-                                // .run_in_state(PhysicState::Running)
-                                .with_system(update_bevy_world)
-                                .with_system(multibody::update_multibody_vel_angvel)
-                                .with_system(impulse::update_impulse)
-                                .with_system(force::update_force_system)
-                                .with_system(gravity::update_gravity_scale_system)
-                                .with_system(mass::update_multibody_mass_system)
-                                .with_system(joint::update_joint_motors_system)
-                                .with_system(joint::update_joint_pos_system)
-                                .with_system(event::collision::send_collision_events_system)
-                                .with_system(event::spawn::send_spawned_events)
-                                .into(),
-                        ),
-                    )
-            });
+            // configure how the physics sets are run
+            .configure_sets(
+                (
+                    CoreSet::UpdateFlush,
+                    PhysicSets::AddRigidBodies,
+                    PhysicSets::AddRigidBodiesFlush,
+                    PhysicSets::AddColliders,
+                    PhysicSets::AddCollidersFlush,
+                    PhysicSets::AddJoints,
+                    PhysicSets::AddJointsFlush,
+                    PhysicSets::AddMultibodies,
+                    PhysicSets::AddMultibodiesFlush,
+                    PhysicSets::PipelineStep,
+                    PhysicSets::PipelineStepFlush,
+                    PhysicSets::PostPipeline,
+                    PhysicSets::PostPipelineFlush,
+                    CoreSet::PostUpdate,
+                )
+                    .chain(),
+            )
+            .add_system(rigid_body::add_rigid_bodies.in_base_set(PhysicSets::AddRigidBodies))
+            .add_system(apply_system_buffers.in_base_set(PhysicSets::AddRigidBodiesFlush))
+            .add_system(collider::add_colliders.in_base_set(PhysicSets::AddColliders))
+            .add_system(apply_system_buffers.in_base_set(PhysicSets::AddCollidersFlush))
+            .add_system(joint::add_multibody_joints.in_base_set(PhysicSets::AddJoints))
+            .add_system(apply_system_buffers.in_base_set(PhysicSets::AddJointsFlush))
+            .add_system(multibody::add_multibodies.in_base_set(PhysicSets::AddMultibodies))
+            .add_system(apply_system_buffers.in_base_set(PhysicSets::AddMultibodiesFlush))
+            .add_system(
+                physics_pipeline_step
+                    .in_base_set(PhysicSets::PipelineStep)
+                    .run_if(in_state(PhysicState::Running)),
+            )
+            .add_system(apply_system_buffers.in_base_set(PhysicSets::PipelineStepFlush))
+            .add_systems(
+                (
+                    update_bevy_world,
+                    multibody::update_multibody_vel_angvel,
+                    impulse::update_impulse,
+                    force::update_force_system,
+                    gravity::update_gravity_scale_system,
+                    mass::update_multibody_mass_system,
+                    joint::update_joint_motors_system,
+                    joint::update_joint_pos_system,
+                    event::collision::send_collision_events_system,
+                    event::spawn::send_spawned_events,
+                )
+                    .in_base_set(PhysicSets::PostPipeline),
+            )
+            .add_system(apply_system_buffers.in_base_set(PhysicSets::PostPipelineFlush));
     }
 }
 
@@ -171,6 +184,7 @@ fn physics_pipeline_step(
         &mut impulse_joints,
         &mut multibody_joints,
         &mut ccd_solver,
+        None,
         &(),
         &*collision_event_handler,
     );

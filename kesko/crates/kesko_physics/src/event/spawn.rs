@@ -11,7 +11,7 @@ use crate::{
 
 pub(crate) fn send_spawned_events(
     mut event_writer: EventWriter<PhysicResponseEvent>,
-    bodies: Query<(Entity, &Name, Option<&MultibodyRoot>), Added<RigidBody>>,
+    bodies: Query<(Entity, Option<&Name>, Option<&MultibodyRoot>), Added<RigidBody>>,
     revolute_joints: Query<&RevoluteJoint>,
     prismatic_joints: Query<&PrismaticJoint>,
 ) {
@@ -46,14 +46,13 @@ pub(crate) fn send_spawned_events(
 
                     (e.to_bits(), joint_info)
                 })
-                .filter_map(|(e, joint_info)| {
-                    match joint_info {
-                        Some(joint_info) => Some((e, joint_info)),
-                        None => None
-                    }
+                .filter_map(|(e, joint_info)| match joint_info {
+                    Some(joint_info) => Some((e, joint_info)),
+                    None => None,
                 })
                 .collect::<BTreeMap<u64, JointInfo>>();
 
+            info!("Multibody spawned");
             event_writer.send(PhysicResponseEvent::MultibodySpawned {
                 id: entity.to_bits(),
                 entity,
@@ -61,9 +60,14 @@ pub(crate) fn send_spawned_events(
                 joints: joint_info_map,
             });
         } else {
+            info!("Rigid body spawned");
+            let name = match name {
+                Some(name) => name.to_string(),
+                None => entity.index().to_string(),
+            };
             event_writer.send(PhysicResponseEvent::RigidBodySpawned {
                 id: entity.to_bits(),
-                name: name.to_string(),
+                name,
             })
         }
     }

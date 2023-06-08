@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 use kesko_physics::event::PhysicRequestEvent;
 
 use super::{about::AboutEvent, fps_component::FPSComponentEvent};
@@ -21,7 +21,7 @@ pub(crate) struct MainMenuComponent {
 
 impl MainMenuComponent {
     pub(crate) fn update_system(
-        mut egui_context: ResMut<EguiContext>,
+        mut egui_context: EguiContexts,
         mut about_event_writer: EventWriter<AboutEvent>,
         mut spawn_event_writer: EventWriter<SpawnEvent>,
         mut physics_event_writer: EventWriter<PhysicRequestEvent>,

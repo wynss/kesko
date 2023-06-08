@@ -43,6 +43,7 @@ pub(crate) fn handle_responses(
                 );
 
                 // send response
+                info!("Sending response");
                 if let Err(e) = tcp_stream.write(response.as_bytes()) {
                     error!("{:?}", e);
                     return;

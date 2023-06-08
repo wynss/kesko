@@ -147,27 +147,27 @@ mod tests {
     use bevy::prelude::*;
     use kesko_types::resource::KeskoRes;
 
-    fn setup_world() -> (World, SystemStage) {
-        let mut world = World::default();
-        world.init_resource::<KeskoRes<Entity2Body>>();
-        world.init_resource::<KeskoRes<Body2Entity>>();
-        world.init_resource::<KeskoRes<Entity2Collider>>();
+    fn setup_app() -> App {
+        let mut app = App::new();
 
-        world.init_resource::<KeskoRes<rapier::RigidBodySet>>();
-        world.init_resource::<KeskoRes<rapier::ColliderSet>>();
+        app.init_resource::<KeskoRes<Entity2Body>>();
+        app.init_resource::<KeskoRes<Body2Entity>>();
+        app.init_resource::<KeskoRes<Entity2Collider>>();
 
-        let test_stage = SystemStage::single_threaded()
-            .with_system(add_rigid_bodies)
-            .with_system(add_colliders.after(add_rigid_bodies));
+        app.init_resource::<KeskoRes<rapier::RigidBodySet>>();
+        app.init_resource::<KeskoRes<rapier::ColliderSet>>();
 
-        (world, test_stage)
+        app.add_systems((add_rigid_bodies, add_colliders).chain());
+
+        app
     }
 
     #[test]
     fn add_collider_body() {
-        let (mut world, mut stage) = setup_world();
+        let mut app = setup_app();
 
-        let entity = world
+        let entity = app
+            .world
             .spawn((
                 RigidBody::Fixed,
                 ColliderShape::Cuboid {
@@ -181,12 +181,16 @@ mod tests {
             .id();
 
         // run two times so the collider is added
-        stage.run(&mut world);
-        stage.run(&mut world);
+        app.update();
+        app.update();
 
-        let collider_map = world.get_resource::<KeskoRes<Entity2Collider>>().unwrap();
+        let collider_map = app
+            .world
+            .get_resource::<KeskoRes<Entity2Collider>>()
+            .unwrap();
         let collider_handle = collider_map.get(&entity).unwrap();
-        let collider_set = world
+        let collider_set = app
+            .world
             .get_resource::<KeskoRes<rapier::ColliderSet>>()
             .unwrap();
 
@@ -195,7 +199,7 @@ mod tests {
         assert_eq!(collider_set.len(), 1);
 
         // check that collider has correct parent
-        let body_map = world.get_resource::<KeskoRes<Entity2Body>>().unwrap();
+        let body_map = app.world.get_resource::<KeskoRes<Entity2Body>>().unwrap();
         let body_handle = body_map.get(&entity).unwrap();
         let collider = collider_set.get(*collider_handle).unwrap();
         let parent_body = collider.parent().unwrap();
@@ -207,7 +211,7 @@ mod tests {
 
     #[test]
     fn collider_physic_properties() {
-        let (mut world, mut stage) = setup_world();
+        let mut app = setup_app();
 
         let physical_properties = ColliderPhysicalProperties {
             density: 2.5,
@@ -215,7 +219,8 @@ mod tests {
             restitution: 0.55,
         };
 
-        let entity = world
+        let entity = app
+            .world
             .spawn((
                 RigidBody::Fixed,
                 ColliderShape::Cuboid {
@@ -230,19 +235,22 @@ mod tests {
             .id();
 
         // run two times so the collider is added
-        stage.run(&mut world);
-        stage.run(&mut world);
+        app.update();
+        app.update();
 
-        assert!(world
+        assert!(app
+            .world
             .query::<&ColliderPhysicalProperties>()
-            .get(&world, entity)
+            .get(&app.world, entity)
             .is_ok());
 
-        let collider_handle = world
+        let collider_handle = app
+            .world
             .query::<&ColliderHandle>()
-            .get(&world, entity)
+            .get(&app.world, entity)
             .unwrap();
-        let collider_set = world
+        let collider_set = app
+            .world
             .get_resource::<KeskoRes<rapier::ColliderSet>>()
             .unwrap();
         let collider = collider_set.get(collider_handle.0).unwrap();

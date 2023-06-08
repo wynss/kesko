@@ -3,6 +3,7 @@ pub mod physics;
 
 use bevy::{
     app::{PluginGroup, PluginGroupBuilder},
+    log::Level,
     utils::default,
 };
 
@@ -13,11 +14,24 @@ use kesko_models::ModelPlugin;
 pub use kesko_object_interaction::InteractionPlugin;
 pub use kesko_ui::UIPlugin;
 
-pub struct CorePlugins;
+pub struct CorePlugins {
+    pub log_level: Level,
+}
+
+impl Default for CorePlugins {
+    fn default() -> Self {
+        Self {
+            log_level: Level::INFO,
+        }
+    }
+}
+
 impl PluginGroup for CorePlugins {
     fn build(self) -> PluginGroupBuilder {
         PluginGroupBuilder::start::<Self>()
-            .add(CorePlugin)
+            .add(CorePlugin {
+                log_level: self.log_level,
+            })
             .add(UIPlugin)
             .add(MainCameraPlugin)
             .add(DefaultPhysicsPlugin)
@@ -34,7 +48,7 @@ pub struct HeadlessRenderPlugins {
 impl PluginGroup for HeadlessRenderPlugins {
     fn build(self) -> PluginGroupBuilder {
         PluginGroupBuilder::start::<Self>()
-            .add(CorePlugin)
+            .add(CorePlugin::default())
             .add(kesko_physics::PhysicsPlugin {
                 initial_state: self.initial_physic_state,
                 ..default()

@@ -86,28 +86,28 @@ mod tests {
 
     #[test]
     fn add_rigid_body() {
-        let mut world = World::default();
+        let mut app = App::new();
 
-        let mut test_stage = SystemStage::single_threaded();
-        test_stage.add_system(add_rigid_bodies);
+        app.add_system(add_rigid_bodies);
 
-        world.init_resource::<KeskoRes<Entity2Body>>();
-        world.init_resource::<KeskoRes<Body2Entity>>();
-        world.init_resource::<KeskoRes<rapier::RigidBodySet>>();
+        app.init_resource::<KeskoRes<Entity2Body>>();
+        app.init_resource::<KeskoRes<Body2Entity>>();
+        app.init_resource::<KeskoRes<rapier::RigidBodySet>>();
 
-        let entity = world
+        let entity = app
+            .world
             .spawn((
                 RigidBody::Fixed,
                 Transform::from_translation(Vec3::new(0.0, 0.0, 1.0))
                     .with_rotation(Quat::from_xyzw(1.0, 0.0, 0.0, 0.0)),
             ))
             .id();
+        app.update();
 
-        test_stage.run(&mut world);
-
-        let body_map = world.get_resource::<KeskoRes<Entity2Body>>().unwrap();
+        let body_map = app.world.get_resource::<KeskoRes<Entity2Body>>().unwrap();
         let body_handle = body_map.get(&entity).unwrap();
-        let body_set = world
+        let body_set = app
+            .world
             .get_resource::<KeskoRes<rapier::RigidBodySet>>()
             .unwrap();
 
@@ -119,9 +119,10 @@ mod tests {
         let rigid_body = body_set.get(*body_handle).unwrap();
         let (translation, rotation) = rigid_body.position().into_bevy();
 
-        let (expected_transform, _) = world
+        let (expected_transform, _) = app
+            .world
             .query::<(&Transform, &RigidBodyHandle)>()
-            .get(&world, entity)
+            .get(&app.world, entity)
             .unwrap();
 
         assert_eq!(translation, expected_transform.translation);

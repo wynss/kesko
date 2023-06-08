@@ -16,7 +16,7 @@ use kesko_plugins::CorePlugins;
 
 fn main() {
     App::new()
-        .add_plugins(CorePlugins)
+        .add_plugins(CorePlugins::default())
         .add_startup_system(setup_scene)
         .run();
 }
