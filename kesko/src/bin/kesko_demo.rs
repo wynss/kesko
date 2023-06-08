@@ -27,13 +27,16 @@ fn test_scene(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    kesko_models::plane::spawn(
+    kesko_models::arena::spawn(
         &mut commands,
         materials.add(StandardMaterial {
             base_color: Color::WHITE,
             ..default()
         }),
         &mut meshes,
+        10.0,
+        10.0,
+        0.75,
     );
 
     kesko_models::car::Car::spawn(
