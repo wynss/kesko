@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1.0.164", features = ["derive"]}
-serde-xml-rs = { version = "0.6.0"}
+quick-xml = { version = "0.28.2", features = ["serialize",  "overlapped-lists"]}
 
