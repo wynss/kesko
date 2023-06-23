@@ -1,5 +1,6 @@
 pub mod arena;
 pub mod car;
+pub mod gltf_model;
 pub mod humanoid;
 pub mod plane;
 pub mod snake;
@@ -42,6 +43,10 @@ pub enum SpawnEvent {
         model: Model,
         transform: Transform,
         color: Color,
+    },
+    SpawnAsset {
+        asset_path: String,
+        transform: Transform,
     },
 }
 
@@ -88,6 +93,7 @@ pub fn spawn_system(
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
+    asset_server: Res<AssetServer>
 ) {
     for event in spawn_event_reader.iter() {
         if let SpawnEvent::Spawn {
@@ -134,6 +140,15 @@ pub fn spawn_system(
                 Model::Arena => arena::spawn(&mut commands, material, &mut meshes, 10.0, 10.0, 1.0),
                 Model::Plane => plane::spawn(&mut commands, material, &mut meshes),
             }
+        }
+        else if let SpawnEvent::SpawnAsset {
+            asset_path,
+            transform,
+        } = event
+        {
+            debug!("Spawning asset {:?}", asset_path);
+    
+            gltf_model::GltfModel::spawn(&mut commands, asset_path.clone(), *transform, &asset_server)
         }
     }
 }

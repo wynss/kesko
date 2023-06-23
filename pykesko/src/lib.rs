@@ -112,6 +112,15 @@ impl KeskoApp {
         })
     }
 
+    pub fn spawn_asset(&mut self, asset_path: String, position: Vec<f32>) {
+        self.app
+            .world
+            .send_event::<SpawnEvent>(SpawnEvent::SpawnAsset {
+                asset_path,
+                transform: Transform::from_xyz(position[0], position[1], position[2]),
+            })
+    }
+
     pub fn despawn(&mut self, body_id: u64) {
         self.app
             .world

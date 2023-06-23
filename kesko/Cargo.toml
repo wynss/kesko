@@ -45,10 +45,10 @@ opt-level = 3
 codegen-units = 1
 
 [workspace.dependencies]
-bevy = { version = "0.10.1", default-features = false, features = ["bevy_render", "bevy_winit", "bevy_scene", "x11", "bevy_asset", "bevy_pbr", "bevy_core_pipeline"] }
+bevy = { version = "0.10.1", default-features = false, features = ["bevy_render", "bevy_winit", "bevy_scene", "x11", "bevy_asset", "bevy_pbr", "bevy_core_pipeline", "bevy_gltf"] }
 
 [dependencies]
-bevy = { version = "0.10.1", default-features = false, features = ["bevy_render", "bevy_winit", "bevy_scene", "x11", "bevy_asset", "bevy_pbr", "bevy_core_pipeline"] }
+bevy = { version = "0.10.1", default-features = false, features = ["bevy_render", "bevy_winit", "bevy_scene", "x11", "bevy_asset", "bevy_pbr", "bevy_core_pipeline", "bevy_gltf"] }
 
 pyo3 = { version = "0.18.3", features = ["extension-module"] }
 

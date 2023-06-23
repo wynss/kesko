@@ -12,6 +12,7 @@ def run(timesteps):
     kesko.init_headless()
     kesko.spawn(model=Model.Plane, position=[0.0, 0.0, 0.0], color=[1.0, 1.0, 1.0])
     kesko.spawn(model=Model.Spider, position=[0.0, 2.0, 0.0], color=[1.0, 0.0, 0.0])
+    kesko.spawn_asset(asset_path="/home/azazdeaz/repos/temp/bevy/assets/models/FlightHelmet/FlightHelmet.gltf#Scene0", position=[0.0, 0.0, 0.0])
 
     # Will need to step since we cannot get a response directly
     kesko.step()

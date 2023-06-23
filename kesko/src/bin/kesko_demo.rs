@@ -26,6 +26,7 @@ fn test_scene(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>
 ) {
     kesko_models::arena::spawn(
         &mut commands,
@@ -82,6 +83,13 @@ fn test_scene(
         }),
         Transform::from_xyz(0.0, 2.0, 2.0).with_rotation(Quat::from_rotation_x(1.0)),
         &mut meshes,
+    );
+
+    kesko_models::gltf_model::GltfModel::spawn(
+        &mut commands,
+        "/home/azazdeaz/repos/temp/bevy/assets/models/FlightHelmet/FlightHelmet.gltf#Scene0",
+        Transform::from_xyz(-2.0, 2.0, 3.0),
+        &asset_server,
     );
 
     // spawn sphere that will generate collision events
