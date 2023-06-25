@@ -12,14 +12,14 @@ use kesko_physics::{
 pub struct GltfModel;
 impl GltfModel {
     pub fn spawn(commands: &mut Commands, asset_path: impl Into<AssetPath<'static>>, transform: Transform, asset_server: & Res<AssetServer>) {
-        let my_gltf = asset_server.load(
+        let gltf_asset = asset_server.load(
             asset_path,
-            // "/home/azazdeaz/repos/temp/bevy/assets/models/FlightHelmet/FlightHelmet.gltf#Scene0",
         );
+        // TODO: add option to select collider submeshes
 
         commands.spawn((
             SceneBundle {
-                scene: my_gltf,
+                scene: gltf_asset,
                 transform,
                 ..Default::default()
             },

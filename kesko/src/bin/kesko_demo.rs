@@ -5,7 +5,7 @@ use kesko_core::interaction::groups::GroupDynamic;
 use kesko_diagnostic::DiagnosticsPlugins;
 use kesko_plugins::CorePlugins;
 
-use kesko_models::{car::CarPlugin, wheely::WheelyPlugin};
+use kesko_models::{car::CarPlugin, wheely::WheelyPlugin, urdf_model::UrdfModel};
 use kesko_object_interaction::InteractiveBundle;
 use kesko_physics::{
     collider::ColliderShape, event::collision::GenerateCollisionEvents, force::Force,
@@ -77,7 +77,7 @@ fn test_scene(
     kesko_models::snake::Snake::spawn(
         &mut commands,
         materials.add(StandardMaterial {
-            base_color: Color::ORANGE_RED,
+            base_color: Color::ORANGE_RED,  
             perceptual_roughness: 1.0,
             ..default()
         }),
@@ -89,6 +89,13 @@ fn test_scene(
         &mut commands,
         "/home/azazdeaz/repos/temp/bevy/assets/models/FlightHelmet/FlightHelmet.gltf#Scene0",
         Transform::from_xyz(-2.0, 2.0, 3.0),
+        &asset_server,
+    );
+
+    kesko_models::urdf_model::UrdfModel::spawn(
+        &mut commands,
+        "/home/azazdeaz/repos/temp/urdf-viz/sample.urdf",
+        Transform::from_xyz(-2.0, 4.0, 3.0),
         &asset_server,
     );
 

@@ -4,6 +4,7 @@ version = "0.0.4"
 edition = "2021"
 
 [features]
+default = [ "f32" ]
 f64 = ["dep:rapier3d-f64"]
 f32 = ["dep:rapier3d"]
 

@@ -1,12 +1,13 @@
 pub mod arena;
 pub mod car;
-pub mod gltf_model;
 pub mod humanoid;
 pub mod plane;
 pub mod snake;
 pub mod sphere;
 pub mod spider;
 pub mod wheely;
+pub mod gltf_model;
+pub mod urdf_model;
 
 use bevy::prelude::*;
 use pyo3::prelude::*;
@@ -31,7 +32,10 @@ impl Plugin for ModelPlugin {
             )
                 .chain(),
         )
+        .add_asset::<urdf_model::UrdfAsset>()
+        .init_asset_loader::<urdf_model::UrdfAssetLoader>()
         .add_system(spawn_system.in_base_set(SpawnSet::Spawn))
+        .add_system(urdf_model::convert_urdf_to_components.in_base_set(SpawnSet::Spawn))
         .add_system(apply_system_buffers.in_base_set(SpawnSet::SpawnFlush))
         .add_event::<SpawnEvent>();
     }
