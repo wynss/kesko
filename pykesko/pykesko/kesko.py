@@ -27,7 +27,7 @@ class Kesko:
         if backend_type == BackendType.TCP:
             self.backend: Backend = TcpBackend(url=URL, log_level=self.log_level)
         else:
-            self.backend: Backend = BindingBackend()
+            self.backend: Backend = BindingBackend(log_level=self.log_level)
 
         # holds the bodies and their joints
         self.bodies: dict[int, MultibodySpawned] = {}

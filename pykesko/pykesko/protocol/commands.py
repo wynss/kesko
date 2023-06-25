@@ -17,11 +17,10 @@ class CheckAlive:
 
 
 class Spawn:
-    def __init__(self, model: Model, position: list[float], color: Union[Rgba, Color], asset_path: str):
+    def __init__(self, model: Model, position: list[float], color: Union[Rgba, Color]):
         self.model = model
         self.position = position
         self.color = color
-        self.asset_path = asset_path
 
     def to_json(self):
         return {
@@ -29,7 +28,19 @@ class Spawn:
                 "model": self.model.name,
                 "position": self.position,
                 "color": self.color.to_json(),
+            }
+        }
+    
+class SpawnAsset:
+    def __init__(self, asset_path: str, position: list[float]):
+        self.asset_path = asset_path
+        self.position = position
+
+    def to_json(self):
+        return {
+            "SpawnAsset": {
                 "asset_path": self.asset_path,
+                "position": self.position,
             }
         }
 

@@ -11,6 +11,7 @@ from ..protocol.commands import (
     RunPhysics,
     Spawn,
     Despawn,
+    SpawnAsset,
 )
 from ..protocol.response import (
     CollisionStarted,
@@ -53,6 +54,11 @@ class BindingBackend:
 
                 self.kesko.spawn(
                     model=command.model, position=command.position, color=color
+                )
+
+            elif isinstance(command, SpawnAsset):
+                self.kesko.spawn_asset(
+                    asset_path=command.asset_path, position=command.position
                 )
 
             elif isinstance(command, RunPhysics):
