@@ -1,3 +1,5 @@
+use std::f32::consts::FRAC_2_PI;
+
 use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
@@ -90,24 +92,29 @@ fn urdf_pose_to_transform(pose: &urdf_rs::Pose) -> Transform {
     );
     let rotation = Quat::from_euler(EulerRot::ZYX, rpy.z, rpy.y, rpy.x);
     // ROS coordinate frame is Z up, Y left, X forward
-    let transform = Transform::from_translation(xyz).with_rotation(rotation);
+    let mut transform = Transform::from_translation(xyz).with_rotation(rotation);
     // Convert to Bevy coordinate frame: Y up, X right, Z backward
 
-    Transform::from_rotation(Quat::from_rotation_z(-std::f32::consts::FRAC_PI_2))
-        * Transform::from_rotation(Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2))
-        * transform
+    // Transform::from_rotation(Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2))
+    //     // * Transform::from_rotation(Quat::from_rotation_z(-std::f32::consts::FRAC_PI_2))
+    //     * transform
+    // transform
+    // transform.rotate_local_y(-FRAC_2_PI);
+    // transform.rotate_local_z(-FRAC_2_PI);
+    transform
 }
 
 pub fn convert_urdf_to_components(
     mut commands: Commands,
     mut urdf_models: Query<(Entity, &Handle<UrdfAsset>, &mut IsUrdfSpawned)>,
-    asset_server: Res<Assets<UrdfAsset>>,
+    urdf_assets: Res<Assets<UrdfAsset>>,
+    asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     for (root_entity, urdf_asset, mut is_urdf_spawned) in urdf_models.iter_mut() {
         if !is_urdf_spawned.0 {
-            if let Some(urdf_asset) = asset_server.get(urdf_asset) {
+            if let Some(urdf_asset) = urdf_assets.get(urdf_asset) {
                 // print the parts of the robot
                 for link in &urdf_asset.robot.links {
                     println!("link: {}", link.name);
@@ -122,21 +129,27 @@ pub fn convert_urdf_to_components(
                 let urdf_robot = urdf_asset.robot.clone();
                 // let link_joint_map = k::urdf::link_to_joint_map(&urdf_robot);
                 let mut link_entity_map: HashMap<String, Entity> = HashMap::default();
-                let mut link_origin_map: HashMap<String, Transform> = HashMap::default();
 
                 for link in &urdf_robot.links {
+                    let part = commands
+                        .spawn((
+                            Name::new(link.name.clone()),
+                            RigidBody::Dynamic,
+                            TransformBundle::default(),
+                            VisibilityBundle::default(),
+                        ))
+                        .id();
+
+                    link_entity_map.insert(link.name.clone(), part);
+
                     for visual in link.visual.iter() {
-                        let part = commands
+                        let transform = urdf_pose_to_transform(&visual.origin);
+                        let visual_entity = commands
                             .spawn((
-                                Name::new(link.name.clone()),
-                                RigidBody::Dynamic,
-                                TransformBundle::default(),
+                                Name::new(visual.name.clone().unwrap_or("unnamed_visual".to_string())),
                             ))
                             .id();
-
-                        link_origin_map
-                            .insert(link.name.clone(), urdf_pose_to_transform(&visual.origin));
-                        link_entity_map.insert(link.name.clone(), part);
+                        commands.entity(part).add_child(visual_entity);
 
                         let material = if let Some(urdf_material) = visual.material.as_ref() {
                             if urdf_material.color.is_some() {
@@ -152,17 +165,17 @@ pub fn convert_urdf_to_components(
                                     .into(),
                                 )
                             } else {
-                                materials.add(Color::PINK.into())
+                                materials.add(Color::DARK_GRAY.into())
                             }
                         } else {
-                            materials.add(Color::PINK.into())
+                            materials.add(Color::DARK_GRAY.into())
                         };
 
                         print!("processing link: {}", link.name);
                         match visual.geometry {
                             urdf_rs::Geometry::Sphere { radius } => {
                                 println!("sphere radius: {}", radius);
-                                commands.entity(part).insert(PbrBundle {
+                                commands.entity(visual_entity).insert(PbrBundle {
                                     material: material.clone(),
                                     mesh: meshes.add(
                                         shape::Icosphere {
@@ -172,12 +185,13 @@ pub fn convert_urdf_to_components(
                                         .try_into()
                                         .unwrap(),
                                     ),
+                                    transform,
                                     ..default()
                                 });
                             }
                             urdf_rs::Geometry::Box { size } => {
                                 println!("box size: {:?}", size);
-                                commands.entity(part).insert(PbrBundle {
+                                commands.entity(visual_entity).insert(PbrBundle {
                                     material: material.clone(),
                                     mesh: meshes.add(
                                         shape::Box {
@@ -191,6 +205,7 @@ pub fn convert_urdf_to_components(
                                         .try_into()
                                         .unwrap(),
                                     ),
+                                    transform,
                                     ..default()
                                 });
                             }
@@ -204,7 +219,17 @@ pub fn convert_urdf_to_components(
                                 ref filename,
                                 scale,
                             } => {
+                                // replace path prefix 
+                                let filename = filename.replace("package://crane_x7_description", "/home/azazdeaz/repos/art-e-fact/wizard_separate_tests/gen/crane_x7_test_project/src/crane_x7_description");
+                                let filename = filename.replace("package://sciurus17_description", "/home/azazdeaz/repos/art-e-fact/wizard_separate_tests/gen/crane_x7_test_project/src/sciurus17_ros/sciurus17_description");
                                 println!("mesh filename: {}, scale: {:?}", filename, scale);
+                                
+                                commands.entity(visual_entity).insert(PbrBundle {
+                                    material: material.clone(),
+                                    mesh: asset_server.load(filename.as_str()),
+                                    transform,
+                                    ..default()
+                                });
                             }
                         };
                     }
@@ -241,9 +266,6 @@ pub fn convert_urdf_to_components(
                         warn!("child of joint '{}' not found: {}", joint.name, joint.child.link);
                         continue;
                     };
-                    let child_anchor = link_origin_map.get(&joint.child.link).expect(
-                        format!("child link origin not found: {}", joint.child.link).as_str(),
-                    );
                     println!("Join {} -> {}", joint.parent.link, joint.child.link);
                     match joint.joint_type {
                         // urdf_rs::JointType::Fixed => {
@@ -251,8 +273,7 @@ pub fn convert_urdf_to_components(
                             println!("Add fixed joint {} -> {:?}", joint.name, joint.origin);
                             commands.entity(*child).insert(
                                 FixedJoint::attach_to(*parent)
-                                    .with_parent_anchor(urdf_pose_to_transform(&joint.origin))
-                                    .with_child_anchor(*child_anchor),
+                                    .with_parent_anchor(urdf_pose_to_transform(&joint.origin)),
                             );
                         } // urdf_rs::JointType::Revolute => {
                           //     println!("revolute joint: {}", joint.name);

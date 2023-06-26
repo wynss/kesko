@@ -32,6 +32,7 @@ impl Plugin for ModelPlugin {
             )
                 .chain(),
         )
+        .add_plugin(bevy_stl::StlPlugin)
         .add_asset::<urdf_model::UrdfAsset>()
         .init_asset_loader::<urdf_model::UrdfAssetLoader>()
         .add_system(spawn_system.in_base_set(SpawnSet::Spawn))

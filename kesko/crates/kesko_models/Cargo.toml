@@ -8,6 +8,7 @@ bevy = { workspace = true }
 pyo3 = { version = "0.18.3", features = ["extension-module"] }
 serde = "1.0.137"
 serde_json = "1.0.81"
+bevy_stl = "0.8.0"
 urdf-rs = "0.7.2"
 k = "0.30"
 

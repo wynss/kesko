@@ -5,7 +5,7 @@ use kesko_core::interaction::groups::GroupDynamic;
 use kesko_diagnostic::DiagnosticsPlugins;
 use kesko_plugins::CorePlugins;
 
-use kesko_models::{car::CarPlugin, wheely::WheelyPlugin, urdf_model::UrdfModel};
+use kesko_models::{car::CarPlugin, wheely::WheelyPlugin};
 use kesko_object_interaction::InteractiveBundle;
 use kesko_physics::{
     collider::ColliderShape, event::collision::GenerateCollisionEvents, force::Force,
@@ -94,7 +94,9 @@ fn test_scene(
 
     kesko_models::urdf_model::UrdfModel::spawn(
         &mut commands,
-        "/home/azazdeaz/repos/temp/urdf-viz/sample.urdf",
+        // "/home/azazdeaz/repos/temp/urdf-viz/crane7.urdf",
+        "/home/azazdeaz/repos/temp/urdf-viz/sciurus17.urdf",
+        // "/home/azazdeaz/repos/temp/urdf-viz/sample.urdf",
         Transform::from_xyz(-2.0, 2.0, 3.0),
         &asset_server,
     );
