@@ -2,7 +2,7 @@ use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
     reflect::TypeUuid,
-    utils::BoxedFuture,
+    utils::{BoxedFuture, HashMap},
 };
 use serde::Deserialize;
 use urdf_rs;
@@ -13,6 +13,7 @@ use kesko_physics::{
     collider::{ColliderPhysicalProperties, ColliderShape},
     force::Force,
     gravity::GravityScale,
+    joint::fixed::FixedJoint,
     rigid_body::RigidBody,
 };
 
@@ -70,6 +71,24 @@ impl UrdfModel {
     }
 }
 
+fn urdf_pose_to_transform(pose: &urdf_rs::Pose) -> Transform {
+    // let iso3 = k::urdf::isometry_from::<f32>(&visual.origin);
+    // let transform = Transform::from_xyz(iso3.translation.vector.x, iso3.translation.vector.y, iso3.translation.vector.z)
+    //     .with_rotation(Quat::new((iso3.rotation.vector().into()));
+    let xyz = Vec3::new(
+        pose.xyz.0[0] as f32,
+        pose.xyz.0[1] as f32,
+        pose.xyz.0[2] as f32,
+    );
+    let rpy = Vec3::new(
+        pose.rpy.0[0] as f32,
+        pose.rpy.0[1] as f32,
+        pose.rpy.0[2] as f32,
+    );
+    let rotation = Quat::from_euler(EulerRot::ZYX, rpy.z, rpy.y, rpy.x);
+    Transform::from_translation(xyz).with_rotation(rotation)
+}
+
 pub fn convert_urdf_to_components(
     mut commands: Commands,
     mut urdf_models: Query<(Entity, &Handle<UrdfAsset>, &mut IsUrdfSpawned)>,
@@ -89,66 +108,134 @@ pub fn convert_urdf_to_components(
                 for material in &urdf_asset.robot.materials {
                     println!("material: {}", material.name);
                 }
-                
+
                 let urdf_robot = urdf_asset.robot.clone();
-                let link_joint_map = k::urdf::link_to_joint_map(&urdf_robot);
+                // let link_joint_map = k::urdf::link_to_joint_map(&urdf_robot);
+                let mut link_entity_map: HashMap<String, Entity> = HashMap::default();
 
                 for link in &urdf_robot.links {
                     for visual in link.visual.iter() {
-                        let xyz = Vec3::new(visual.origin.xyz.0[0] as f32, visual.origin.xyz.0[1] as f32, visual.origin.xyz.0[2] as f32);
-                        let rpy = Vec3::new(visual.origin.rpy.0[0] as f32, visual.origin.rpy.0[1] as f32, visual.origin.rpy.0[2] as f32);
-                        let rotation = Quat::from_euler(EulerRot::ZYX, rpy.z, rpy.y, rpy.x);
-                        let transform = Transform::from_translation(xyz).with_rotation(rotation);
-                        match visual.geometry {
+                        let transform = urdf_pose_to_transform(&visual.origin);
+
+                        
+                        let part = match visual.geometry {
                             urdf_rs::Geometry::Sphere { radius } => {
                                 println!("sphere radius: {}", radius);
-                                commands.spawn((
-                                    PbrBundle {
-                                        // material,
-                                        mesh: meshes.add(
-                                            shape::Icosphere {
-                                                radius: radius as f32,
-                                                subdivisions: 5,
-                                            }
-                                            .try_into()
-                                            .unwrap(),
-                                        ),
-                                        transform,
-                                        ..default()
-                                    },
-                                ));
+                                Some(
+                                    commands
+                                        .spawn((PbrBundle {
+                                            // material,
+                                            mesh: meshes.add(
+                                                shape::Icosphere {
+                                                    radius: radius as f32,
+                                                    subdivisions: 5,
+                                                }
+                                                .try_into()
+                                                .unwrap(),
+                                            ),
+                                            transform,
+                                            ..default()
+                                        },))
+                                        .id(),
+                                )
                             }
                             urdf_rs::Geometry::Box { size } => {
                                 println!("box size: {:?}", size);
-                                commands.spawn((
-                                    PbrBundle {
-                                        // material,
-                                        mesh: meshes.add(
-                                            shape::Box {
-                                                min_x: -size.0[0] as f32 / 2.0,
-                                                min_y: -size.0[1] as f32 / 2.0,
-                                                min_z: -size.0[2] as f32 / 2.0,
-                                                max_x: size.0[0] as f32 / 2.0,
-                                                max_y: size.0[1] as f32 / 2.0,
-                                                max_z: size.0[2] as f32 / 2.0,
-                                            }
-                                            .try_into()
-                                            .unwrap(),
-                                        ),
-                                        transform,
-                                        ..default()
-                                    },
-                                ));
+                                Some(
+                                    commands
+                                        .spawn((PbrBundle {
+                                            // material,
+                                            mesh: meshes.add(
+                                                shape::Box {
+                                                    min_x: -size.0[0] as f32 / 2.0,
+                                                    min_y: -size.0[1] as f32 / 2.0,
+                                                    min_z: -size.0[2] as f32 / 2.0,
+                                                    max_x: size.0[0] as f32 / 2.0,
+                                                    max_y: size.0[1] as f32 / 2.0,
+                                                    max_z: size.0[2] as f32 / 2.0,
+                                                }
+                                                .try_into()
+                                                .unwrap(),
+                                            ),
+                                            transform,
+                                            ..default()
+                                        },))
+                                        .id(),
+                                )
                             }
                             urdf_rs::Geometry::Cylinder { radius, length } => {
                                 println!("cylinder radius: {}, length: {}", radius, length);
+                                None
                             }
                             urdf_rs::Geometry::Capsule { radius, length } => {
                                 println!("capsule radius: {}, length: {}", radius, length);
+                                None
                             }
-                            urdf_rs::Geometry::Mesh { ref filename, scale } => {
+                            urdf_rs::Geometry::Mesh {
+                                ref filename,
+                                scale,
+                            } => {
                                 println!("mesh filename: {}, scale: {:?}", filename, scale);
+                                None
                             }
+                        };
+                        if let Some(part) = part {
+                            link_entity_map.insert(link.name.clone(), part);
+                        }
+                    }
+
+                    for joint in &urdf_robot.joints {
+                        let Some(parent) = link_entity_map.get(&joint.parent.link) else {
+                            warn!("parent of joint '{}' not found: {}", joint.name, joint.parent.link);
+                            continue;
+                        };
+                        let Some(child) = link_entity_map.get(&joint.child.link) else {
+                            warn!("child of joint '{}' not found: {}", joint.name, joint.child.link);
+                            continue;
+                        };
+                        match joint.joint_type {
+                            // urdf_rs::JointType::Fixed => {
+                            _ => {
+                                commands.entity(*child).insert(
+                                    FixedJoint::attach_to(*parent)
+                                        .with_parent_anchor(urdf_pose_to_transform(&joint.origin)),
+                                );
+                            } // urdf_rs::JointType::Revolute => {
+                              //     println!("revolute joint: {}", joint.name);
+                              //     let parent = parent.unwrap();
+                              //     let child = child.unwrap();
+                              //     commands.push_children(parent.0, &[child.0]);
+                              // }
+                              // urdf_rs::JointType::Continuous => {
+                              //     println!("continuous joint: {}", joint.name);
+                              //     let parent = parent.unwrap();
+                              //     let child = child.unwrap();
+                              //     commands.push_children(parent.0, &[child.0]);
+                              // }
+                              // urdf_rs::JointType::Prismatic => {
+                              //     println!("prismatic joint: {}", joint.name);
+                              //     let parent = parent.unwrap();
+                              //     let child = child.unwrap();
+                              //     commands.push_children(parent.0, &[child.0]);
+                              // }
+                              // urdf_rs::JointType::Planar => {
+                              //     println!("planar joint: {}", joint.name);
+                              //     let parent = parent.unwrap();
+                              //     let child = child.unwrap();
+                              //     commands.push_children(parent.0, &[child.0]);
+                              // }
+                              // urdf_rs::JointType::Floating => {
+                              //     println!("floating joint: {}", joint.name);
+                              //     let parent = parent.unwrap();
+                              //     let child = child.unwrap();
+                              //     commands.push_children(parent.0, &[child.0]);
+                              // }
+                              // urdf_rs::JointType::Unknown => {
+                              //     println!("unknown joint: {}", joint.name);
+                              //     let parent = parent.unwrap();
+                              //     let child = child.unwrap();
+                              //     commands.push_children(parent.0, &[child.0]);
+                              // }
                         }
                     }
                     // Add visuals
