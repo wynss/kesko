@@ -95,7 +95,7 @@ fn test_scene(
     kesko_models::urdf_model::UrdfModel::spawn(
         &mut commands,
         "/home/azazdeaz/repos/temp/urdf-viz/sample.urdf",
-        Transform::from_xyz(-2.0, 4.0, 3.0),
+        Transform::from_xyz(-2.0, 2.0, 3.0),
         &asset_server,
     );
 
