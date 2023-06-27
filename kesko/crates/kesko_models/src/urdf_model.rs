@@ -4,6 +4,7 @@ use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
     reflect::TypeUuid,
+    transform,
     utils::{BoxedFuture, HashMap},
 };
 use serde::Deserialize;
@@ -46,6 +47,11 @@ impl UrdfModel {
         let urdf_asset: Handle<UrdfAsset> = asset_server.load(asset_path);
 
         println!("urdf_asset: {:?}", urdf_asset);
+        // Convert from ROS coordinate frame is Z up, Y left, X forward
+        //   to Bevy coordinate frame: Y up, X right, Z backward
+        let transform = transform
+            * Transform::from_rotation(Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2))
+            * Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2));
 
         commands.spawn((
             UrdfBundle {
@@ -77,9 +83,6 @@ impl UrdfModel {
 }
 
 fn urdf_pose_to_transform(pose: &urdf_rs::Pose) -> Transform {
-    // let iso3 = k::urdf::isometry_from::<f32>(&visual.origin);
-    // let transform = Transform::from_xyz(iso3.translation.vector.x, iso3.translation.vector.y, iso3.translation.vector.z)
-    //     .with_rotation(Quat::new((iso3.rotation.vector().into()));
     let xyz = Vec3::new(
         pose.xyz.0[0] as f32,
         pose.xyz.0[1] as f32,
@@ -91,16 +94,7 @@ fn urdf_pose_to_transform(pose: &urdf_rs::Pose) -> Transform {
         pose.rpy.0[2] as f32,
     );
     let rotation = Quat::from_euler(EulerRot::ZYX, rpy.z, rpy.y, rpy.x);
-    // ROS coordinate frame is Z up, Y left, X forward
-    let mut transform = Transform::from_translation(xyz).with_rotation(rotation);
-    // Convert to Bevy coordinate frame: Y up, X right, Z backward
-
-    // Transform::from_rotation(Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2))
-    //     // * Transform::from_rotation(Quat::from_rotation_z(-std::f32::consts::FRAC_PI_2))
-    //     * transform
-    // transform
-    // transform.rotate_local_y(-FRAC_2_PI);
-    // transform.rotate_local_z(-FRAC_2_PI);
+    let transform = Transform::from_translation(xyz).with_rotation(rotation);
     transform
 }
 
@@ -145,9 +139,9 @@ pub fn convert_urdf_to_components(
                     for visual in link.visual.iter() {
                         let transform = urdf_pose_to_transform(&visual.origin);
                         let visual_entity = commands
-                            .spawn((
-                                Name::new(visual.name.clone().unwrap_or("unnamed_visual".to_string())),
-                            ))
+                            .spawn((Name::new(
+                                visual.name.clone().unwrap_or("unnamed_visual".to_string()),
+                            ),))
                             .id();
                         commands.entity(part).add_child(visual_entity);
 
@@ -219,11 +213,11 @@ pub fn convert_urdf_to_components(
                                 ref filename,
                                 scale,
                             } => {
-                                // replace path prefix 
+                                // replace path prefix
                                 let filename = filename.replace("package://crane_x7_description", "/home/azazdeaz/repos/art-e-fact/wizard_separate_tests/gen/crane_x7_test_project/src/crane_x7_description");
                                 let filename = filename.replace("package://sciurus17_description", "/home/azazdeaz/repos/art-e-fact/wizard_separate_tests/gen/crane_x7_test_project/src/sciurus17_ros/sciurus17_description");
                                 println!("mesh filename: {}, scale: {:?}", filename, scale);
-                                
+
                                 commands.entity(visual_entity).insert(PbrBundle {
                                     material: material.clone(),
                                     mesh: asset_server.load(filename.as_str()),
