@@ -4,6 +4,7 @@ use bevy::{
     asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
     prelude::*,
     reflect::TypeUuid,
+    render::texture,
     transform,
     utils::{BoxedFuture, HashMap},
 };
@@ -117,7 +118,7 @@ pub fn convert_urdf_to_components(
                     println!("joint: {}", joint.name);
                 }
                 for material in &urdf_asset.robot.materials {
-                    println!("material: {}", material.name);
+                    println!("material: {:?}", material);
                 }
 
                 let urdf_robot = urdf_asset.robot.clone();
@@ -137,6 +138,7 @@ pub fn convert_urdf_to_components(
                     link_entity_map.insert(link.name.clone(), part);
 
                     for visual in link.visual.iter() {
+                        println!("\n\nvisual: {:?}", visual);
                         let transform = urdf_pose_to_transform(&visual.origin);
                         let visual_entity = commands
                             .spawn((Name::new(
@@ -145,22 +147,35 @@ pub fn convert_urdf_to_components(
                             .id();
                         commands.entity(part).add_child(visual_entity);
 
-                        let material = if let Some(urdf_material) = visual.material.as_ref() {
-                            if urdf_material.color.is_some() {
-                                let color = urdf_material.color.as_ref().unwrap();
-                                println!("color: {:?}", color);
-                                materials.add(
-                                    Color::rgba(
-                                        color.rgba[0] as f32,
-                                        color.rgba[1] as f32,
-                                        color.rgba[2] as f32,
-                                        color.rgba[3] as f32,
-                                    )
-                                    .into(),
+                        // Material with the same name in the root of the urdf
+                        let top_urdf_material = urdf_asset
+                            .robot
+                            .materials
+                            .iter()
+                            .find(|m| m.name == visual.material.as_ref().unwrap().name);
+                        let urdf_material = visual.material.as_ref();
+                        let texture = urdf_material
+                            .and_then(|m| m.texture.as_ref())
+                            .or(top_urdf_material.and_then(|m| m.texture.as_ref()));
+                        let color = urdf_material
+                            .and_then(|m| m.color.as_ref())
+                            .or(top_urdf_material.and_then(|m| m.color.as_ref()));
+
+                        let material = if let Some(texture) = texture {
+                            println!("texture: {:?}", texture);
+                            let texture_path = asset_server.load(texture.filename.as_str());
+                            materials.add(texture_path.into())
+                        } else if let Some(color) = color {
+                            println!("color: {:?}", color);
+                            materials.add(
+                                Color::rgba(
+                                    color.rgba[0] as f32,
+                                    color.rgba[1] as f32,
+                                    color.rgba[2] as f32,
+                                    color.rgba[3] as f32,
                                 )
-                            } else {
-                                materials.add(Color::DARK_GRAY.into())
-                            }
+                                .into(),
+                            )
                         } else {
                             materials.add(Color::DARK_GRAY.into())
                         };
