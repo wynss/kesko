@@ -17,7 +17,8 @@ use kesko_physics::{
     collider::{ColliderPhysicalProperties, ColliderShape},
     force::Force,
     gravity::GravityScale,
-    joint::fixed::FixedJoint,
+    joint::{fixed::FixedJoint, revolute::RevoluteJoint, KeskoAxis},
+    mass::Mass,
     rigid_body::RigidBody,
 };
 
@@ -30,22 +31,30 @@ pub struct UrdfAsset {
 #[derive(Component, Default)]
 pub struct IsUrdfSpawned(pub bool);
 
+#[derive(Component)]
+pub struct JointName(pub String);
+
+#[derive(Component, Default)]
+pub struct UrdfPackageMap(pub HashMap<String, String>);
+
 #[derive(Default, Bundle)]
 pub struct UrdfBundle {
     pub urdf_asset: Handle<UrdfAsset>,
-    pub transform: Transform,
+    pub urdf_package_map: UrdfPackageMap,
     pub is_urdf_spawned: IsUrdfSpawned,
+    pub transform: Transform,
 }
 
 pub struct UrdfModel;
 impl UrdfModel {
     pub fn spawn(
         commands: &mut Commands,
-        asset_path: impl Into<AssetPath<'static>>,
+        urdf_path: impl Into<AssetPath<'static>>,
+        package_map: &HashMap<String, String>,
         transform: Transform,
         asset_server: &Res<AssetServer>,
     ) {
-        let urdf_asset: Handle<UrdfAsset> = asset_server.load(asset_path);
+        let urdf_asset: Handle<UrdfAsset> = asset_server.load(urdf_path);
 
         println!("urdf_asset: {:?}", urdf_asset);
         // Convert from ROS coordinate frame is Z up, Y left, X forward
@@ -57,81 +66,74 @@ impl UrdfModel {
         commands.spawn((
             UrdfBundle {
                 urdf_asset,
+                urdf_package_map: UrdfPackageMap(package_map.clone()),
                 transform,
                 ..Default::default()
             },
             RigidBody::Fixed,
         ));
-        // wait for asset to load
-
-        // commands.spawn((
-        //     SceneBundle {
-        //         scene: urdf_asset,
-        //         transform,
-        //         ..Default::default()
-        //     },
-        //     RigidBody::Dynamic,
-        //     ColliderShape::Sphere { radius: 0.2 },
-        //     InteractiveBundle::<GroupDynamic>::default(),
-        //     Force::default(),
-        //     ColliderPhysicalProperties {
-        //         restitution: 0.7,
-        //         ..default()
-        //     },
-        //     GravityScale::default(),
-        // ));
     }
-}
-
-fn urdf_pose_to_transform(pose: &urdf_rs::Pose) -> Transform {
-    let xyz = Vec3::new(
-        pose.xyz.0[0] as f32,
-        pose.xyz.0[1] as f32,
-        pose.xyz.0[2] as f32,
-    );
-    let rpy = Vec3::new(
-        pose.rpy.0[0] as f32,
-        pose.rpy.0[1] as f32,
-        pose.rpy.0[2] as f32,
-    );
-    let rotation = Quat::from_euler(EulerRot::ZYX, rpy.z, rpy.y, rpy.x);
-    let transform = Transform::from_translation(xyz).with_rotation(rotation);
-    transform
 }
 
 pub fn convert_urdf_to_components(
     mut commands: Commands,
-    mut urdf_models: Query<(Entity, &Handle<UrdfAsset>, &mut IsUrdfSpawned)>,
+    mut urdf_models: Query<(
+        Entity,
+        &Handle<UrdfAsset>,
+        &UrdfPackageMap,
+        &mut IsUrdfSpawned,
+    )>,
     urdf_assets: Res<Assets<UrdfAsset>>,
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    for (root_entity, urdf_asset, mut is_urdf_spawned) in urdf_models.iter_mut() {
+    for (root_entity, urdf_asset, package_map, mut is_urdf_spawned) in urdf_models.iter_mut() {
+        // Substitutes package:// with the path to the package using the package_map
+        let asset_path = |urdf_path: &String| -> String {
+            let mut processed_path = urdf_path.clone();
+            for (package, path) in package_map.0.clone() {
+                processed_path =
+                    processed_path.replace(format!("package://{package}").as_str(), path.as_str());
+            }
+
+            if processed_path.contains("package://") {
+                println!(
+                    "Warning: package:// still in path: {:?}. Please add the package to the package_map.",
+                    processed_path
+                );
+            }
+            processed_path
+        };
+
         if !is_urdf_spawned.0 {
             if let Some(urdf_asset) = urdf_assets.get(urdf_asset) {
-                // print the parts of the robot
-                for link in &urdf_asset.robot.links {
-                    println!("link: {}", link.name);
-                }
-                for joint in &urdf_asset.robot.joints {
-                    println!("joint: {}", joint.name);
-                }
-                for material in &urdf_asset.robot.materials {
-                    println!("material: {:?}", material);
-                }
-
                 let urdf_robot = urdf_asset.robot.clone();
-                // let link_joint_map = k::urdf::link_to_joint_map(&urdf_robot);
+                // map link name to entity
                 let mut link_entity_map: HashMap<String, Entity> = HashMap::default();
 
                 for link in &urdf_robot.links {
                     let part = commands
                         .spawn((
+                            kesko_core::bundle::PhysicBodyBundle::from(
+                                RigidBody::Dynamic,
+                                kesko_core::shape::Shape::Sphere {
+                                    radius: 0.01,
+                                    subdivisions: 5,
+                                },
+                                Transform::default(),
+                            ),
                             Name::new(link.name.clone()),
-                            RigidBody::Dynamic,
-                            TransformBundle::default(),
+                            // RigidBody::Dynamic,
+                            // TransformBundle::default(),
                             VisibilityBundle::default(),
+                            InteractiveBundle::<GroupDynamic>::default(),
+                            // ColliderShape::Sphere {
+                            //     radius: 0.2,
+                            // },
+                            Mass {
+                                val: link.inertial.mass.value as f32,
+                            },
                         ))
                         .id();
 
@@ -228,14 +230,9 @@ pub fn convert_urdf_to_components(
                                 ref filename,
                                 scale,
                             } => {
-                                // replace path prefix
-                                let filename = filename.replace("package://crane_x7_description", "/home/azazdeaz/repos/art-e-fact/wizard_separate_tests/gen/crane_x7_test_project/src/crane_x7_description");
-                                let filename = filename.replace("package://sciurus17_description", "/home/azazdeaz/repos/art-e-fact/wizard_separate_tests/gen/crane_x7_test_project/src/sciurus17_ros/sciurus17_description");
-                                println!("mesh filename: {}, scale: {:?}", filename, scale);
-
                                 commands.entity(visual_entity).insert(PbrBundle {
                                     material: material.clone(),
-                                    mesh: asset_server.load(filename.as_str()),
+                                    mesh: asset_server.load(asset_path(filename).as_str()),
                                     transform,
                                     ..default()
                                 });
@@ -277,6 +274,31 @@ pub fn convert_urdf_to_components(
                     };
                     println!("Join {} -> {}", joint.parent.link, joint.child.link);
                     match joint.joint_type {
+                        // TODO: figure out how to implement URDF motors properly
+                        // urdf_rs::JointType::Revolute => {
+
+                        //     // let STIFFNESS = 3.0;
+                        //     // let DAMPING = 0.4;
+                        //     // let MAX_MOTOR_FORCE = 70.0;
+                        //     let mut physics_joint = RevoluteJoint::attach_to(*parent)
+                        //         .with_parent_anchor(urdf_pose_to_transform(&joint.origin))
+                        //         .with_axis(urdf_axis_to_kesko_axis(&joint.axis))
+                        //         .with_max_motor_force(joint.limit.effort as f32)
+                        //         .with_limits(Vec2::new(
+                        //             joint.limit.lower as f32,
+                        //             joint.limit.upper as f32,
+                        //         ))
+                        //         // .with_motor_params(STIFFNESS, DAMPING)
+                        //         // .with_max_motor_force(MAX_MOTOR_FORCE)
+                        //         .with_limits(Vec2::new(-std::f32::consts::FRAC_PI_4, std::f32::consts::FRAC_PI_4));
+                        //     if let Some(dynamics) = joint.dynamics.as_ref() {
+                        //         physics_joint = physics_joint.with_motor_params(
+                        //             dynamics.friction as f32,
+                        //             dynamics.damping as f32,
+                        //         );
+                        //     }
+                        //     commands.entity(*child).insert((physics_joint, JointName(joint.name.clone())));
+                        // }
                         // urdf_rs::JointType::Fixed => {
                         _ => {
                             println!("Add fixed joint {} -> {:?}", joint.name, joint.origin);
@@ -284,47 +306,70 @@ pub fn convert_urdf_to_components(
                                 FixedJoint::attach_to(*parent)
                                     .with_parent_anchor(urdf_pose_to_transform(&joint.origin)),
                             );
-                        } // urdf_rs::JointType::Revolute => {
-                          //     println!("revolute joint: {}", joint.name);
-                          //     let parent = parent.unwrap();
-                          //     let child = child.unwrap();
-                          //     commands.push_children(parent.0, &[child.0]);
-                          // }
-                          // urdf_rs::JointType::Continuous => {
-                          //     println!("continuous joint: {}", joint.name);
-                          //     let parent = parent.unwrap();
-                          //     let child = child.unwrap();
-                          //     commands.push_children(parent.0, &[child.0]);
-                          // }
-                          // urdf_rs::JointType::Prismatic => {
-                          //     println!("prismatic joint: {}", joint.name);
-                          //     let parent = parent.unwrap();
-                          //     let child = child.unwrap();
-                          //     commands.push_children(parent.0, &[child.0]);
-                          // }
-                          // urdf_rs::JointType::Planar => {
-                          //     println!("planar joint: {}", joint.name);
-                          //     let parent = parent.unwrap();
-                          //     let child = child.unwrap();
-                          //     commands.push_children(parent.0, &[child.0]);
-                          // }
-                          // urdf_rs::JointType::Floating => {
-                          //     println!("floating joint: {}", joint.name);
-                          //     let parent = parent.unwrap();
-                          //     let child = child.unwrap();
-                          //     commands.push_children(parent.0, &[child.0]);
-                          // }
-                          // urdf_rs::JointType::Unknown => {
-                          //     println!("unknown joint: {}", joint.name);
-                          //     let parent = parent.unwrap();
-                          //     let child = child.unwrap();
-                          //     commands.push_children(parent.0, &[child.0]);
-                          // }
+                        }
                     }
                 }
                 is_urdf_spawned.0 = true;
             }
         }
+    }
+}
+
+fn urdf_pose_to_transform(pose: &urdf_rs::Pose) -> Transform {
+    let xyz = Vec3::new(
+        pose.xyz.0[0] as f32,
+        pose.xyz.0[1] as f32,
+        pose.xyz.0[2] as f32,
+    );
+    let rpy = Vec3::new(
+        pose.rpy.0[0] as f32,
+        pose.rpy.0[1] as f32,
+        pose.rpy.0[2] as f32,
+    );
+    let rotation = Quat::from_euler(EulerRot::ZYX, rpy.z, rpy.y, rpy.x);
+    let transform = Transform::from_translation(xyz).with_rotation(rotation);
+    transform
+}
+
+fn urdf_axis_to_kesko_axis(axis: &urdf_rs::Axis) -> KeskoAxis {
+    let x = axis.xyz[0];
+    let y = axis.xyz[1];
+    let z = axis.xyz[2];
+    // check if only one axis is non-zero
+    if x != 0.0 && y == 0.0 && z == 0.0 {
+        if x > 0.0 {
+            KeskoAxis::X
+        } else {
+            KeskoAxis::NegX
+        }
+    } else if x == 0.0 && y != 0.0 && z == 0.0 {
+        if y > 0.0 {
+            KeskoAxis::Y
+        } else {
+            KeskoAxis::NegY
+        }
+    } else if x == 0.0 && y == 0.0 && z != 0.0 {
+        if z > 0.0 {
+            KeskoAxis::Z
+        } else {
+            KeskoAxis::NegZ
+        }
+    } else {
+        warn!(
+            "Invalid axis: {:?}. Only standard basis vectors are supported. Defaulting to X axis",
+            axis
+        );
+        KeskoAxis::X
+    }
+}
+
+fn urdf_axis_to_kesko_axis_angular(axis: &urdf_rs::Axis) -> KeskoAxis {
+    let linear_axis = urdf_axis_to_kesko_axis(axis);
+    match linear_axis {
+        KeskoAxis::X | KeskoAxis::NegX => KeskoAxis::AngX,
+        KeskoAxis::Y | KeskoAxis::NegY => KeskoAxis::AngY,
+        KeskoAxis::Z | KeskoAxis::NegZ => KeskoAxis::AngZ,
+        _ => linear_axis,
     }
 }
 
@@ -337,7 +382,6 @@ impl AssetLoader for UrdfAssetLoader {
         bytes: &'a [u8],
         load_context: &'a mut LoadContext,
     ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
-        println!("FINISH URDF ASSET LOADER!!!!!!!!!!!!!!!!!!!1");
         Box::pin(async move {
             let robot = urdf_rs::read_from_string(std::str::from_utf8(bytes).unwrap()).unwrap();
             let asset = UrdfAsset { robot };

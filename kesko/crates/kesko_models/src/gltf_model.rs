@@ -15,7 +15,7 @@ impl GltfModel {
         let gltf_asset = asset_server.load(
             asset_path,
         );
-        // TODO: add option to select collider submeshes
+        // TODO: add option to select collider submeshes or generate collider from mesh
 
         commands.spawn((
             SceneBundle {

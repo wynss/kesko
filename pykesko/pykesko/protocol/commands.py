@@ -43,6 +43,21 @@ class SpawnAsset:
                 "position": self.position,
             }
         }
+    
+class SpawnUrdf:
+    def __init__(self, urdf_path: str, package_map: dict[str, str], position: list[float]):
+        self.urdf_path = urdf_path
+        self.package_map = package_map
+        self.position = position
+    
+    def to_json(self):
+        return {
+            "SpawnUrdf": {
+                "urdf_path": self.urdf_path,
+                "package_map": self.package_map,
+                "position": self.position,
+            }
+        }
 
 
 class Despawn:

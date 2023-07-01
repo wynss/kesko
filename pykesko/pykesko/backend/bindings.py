@@ -12,6 +12,7 @@ from ..protocol.commands import (
     Spawn,
     Despawn,
     SpawnAsset,
+    SpawnUrdf,
 )
 from ..protocol.response import (
     CollisionStarted,
@@ -59,6 +60,13 @@ class BindingBackend:
             elif isinstance(command, SpawnAsset):
                 self.kesko.spawn_asset(
                     asset_path=command.asset_path, position=command.position
+                )
+
+            elif isinstance(command, SpawnUrdf):
+                self.kesko.spawn_urdf(
+                    urdf_path=command.urdf_path,
+                    package_map=command.package_map,
+                    position=command.position,
                 )
 
             elif isinstance(command, RunPhysics):

@@ -1,3 +1,4 @@
+from pathlib import Path
 
 from pykesko import Kesko, KeskoModel
 from pykesko.backend.backend import BackendType
@@ -9,14 +10,17 @@ if __name__ == "__main__":
     kesko = Kesko(backend_type=BackendType.BINDINGS)
     kesko.initialize()
     
+    here = Path(__file__).parent
+    urdf_path = str(here / "crane_x7.urdf")
+    package_map = {
+        "crane_x7_description": str(here / "crane_x7_description"),
+    }
+
+    print(package_map)
+
     kesko.send(
         [
-            
-            SpawnAsset(
-                asset_path="/home/azazdeaz/repos/temp/bevy/assets/models/FlightHelmet/FlightHelmet.gltf#Scene0",
-                position=[0.0, 1.0, 0.0],
-            ),
-            Spawn(model=KeskoModel.Arena, position=[0.0, 0.0, 0.0], color=Color.WHITE),
+            SpawnUrdf(urdf_path=urdf_path, package_map=package_map, position=[0.0, 0.0, 0.0]),
         ]
     )
 

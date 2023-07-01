@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use bevy::log::Level;
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::hashbrown::HashMap};
 use phf::phf_map;
 use pyo3::prelude::*;
 
@@ -117,6 +117,16 @@ impl KeskoApp {
             .world
             .send_event::<SpawnEvent>(SpawnEvent::SpawnAsset {
                 asset_path,
+                transform: Transform::from_xyz(position[0], position[1], position[2]),
+            })
+    }
+
+    pub fn spawn_urdf(&mut self, urdf_path: String, package_map: HashMap<String, String>, position: Vec<f32>) {
+        self.app
+            .world
+            .send_event::<SpawnEvent>(SpawnEvent::SpawnUrdf {
+                urdf_path,
+                package_map,
                 transform: Transform::from_xyz(position[0], position[1], position[2]),
             })
     }

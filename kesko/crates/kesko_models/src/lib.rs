@@ -9,7 +9,7 @@ pub mod wheely;
 pub mod gltf_model;
 pub mod urdf_model;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::hashbrown::HashMap};
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -53,6 +53,11 @@ pub enum SpawnEvent {
         asset_path: String,
         transform: Transform,
     },
+    SpawnUrdf {
+        urdf_path: String,
+        package_map: HashMap<String, String>,
+        transform: Transform,
+    }
 }
 
 /// Description on how to manually control a robot
@@ -154,6 +159,16 @@ pub fn spawn_system(
             debug!("Spawning asset {:?}", asset_path);
     
             gltf_model::GltfModel::spawn(&mut commands, asset_path.clone(), *transform, &asset_server)
+        }
+        else if let SpawnEvent::SpawnUrdf {
+            urdf_path,
+            package_map,
+            transform,
+        } = event
+        {
+            debug!("Spawning urdf {:?}", urdf_path);
+    
+            urdf_model::UrdfModel::spawn(&mut commands, urdf_path.clone(), package_map, *transform, &asset_server)
         }
     }
 }
