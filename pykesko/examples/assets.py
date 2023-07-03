@@ -6,7 +6,7 @@ from pykesko.color import Color
 
 
 if __name__ == "__main__":
-    kesko = Kesko(backend_type=BackendType.BINDINGS)
+    kesko = Kesko(backend_type=BackendType.TCP)
     kesko.initialize()
     
     kesko.send(
