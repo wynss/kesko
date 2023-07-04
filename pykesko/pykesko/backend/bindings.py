@@ -54,7 +54,7 @@ class BindingBackend:
                     )
 
                 self.kesko.spawn(
-                    model=command.model, position=command.position, color=color
+                    model=command.model, position=command.position, color=color, scale=command.scale, rotation=command.rotation
                 )
 
             elif isinstance(command, SpawnAsset):

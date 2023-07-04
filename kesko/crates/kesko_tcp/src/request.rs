@@ -20,6 +20,8 @@ pub(crate) enum TcpCommand {
         model: Model,
         position: Vec3,
         color: Color,
+        rotation: Vec3,
+        scale: Vec3,
     },
     SpawnAsset {
         asset_path: String,
@@ -106,10 +108,19 @@ pub(crate) fn handle_requests(
                                     model,
                                     position,
                                     color,
+                                    rotation,
+                                    scale,
                                 } => {
                                     spawn_event_writer.send(SpawnEvent::Spawn {
                                         model,
-                                        transform: Transform::from_translation(position),
+                                        transform: Transform::from_translation(position)
+                                            .with_rotation(Quat::from_euler(
+                                                EulerRot::XYZ,
+                                                rotation.x,
+                                                rotation.y,
+                                                rotation.z,
+                                            ))
+                                            .with_scale(scale),
                                         color,
                                     });
                                 }

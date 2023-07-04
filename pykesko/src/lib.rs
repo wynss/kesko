@@ -99,10 +99,24 @@ impl KeskoApp {
         self.app.update();
     }
 
-    pub fn spawn(&mut self, model: Model, position: Vec<f32>, color: Vec<f32>) {
+    pub fn spawn(
+        &mut self,
+        model: Model,
+        position: Vec<f32>,
+        color: Vec<f32>,
+        rotation: Vec<f32>,
+        scale: Vec<f32>,
+    ) {
         self.app.world.send_event::<SpawnEvent>(SpawnEvent::Spawn {
             model,
-            transform: Transform::from_xyz(position[0], position[1], position[2]),
+            transform: Transform::from_xyz(position[0], position[1], position[2])
+                .with_rotation(Quat::from_euler(
+                    EulerRot::XYZ,
+                    rotation[0],
+                    rotation[1],
+                    rotation[2],
+                ))
+                .with_scale(Vec3::new(scale[0], scale[1], scale[2])),
             color: Color::Rgba {
                 red: color[0],
                 green: color[1],
@@ -121,7 +135,12 @@ impl KeskoApp {
             })
     }
 
-    pub fn spawn_urdf(&mut self, urdf_path: String, package_map: HashMap<String, String>, position: Vec<f32>) {
+    pub fn spawn_urdf(
+        &mut self,
+        urdf_path: String,
+        package_map: HashMap<String, String>,
+        position: Vec<f32>,
+    ) {
         self.app
             .world
             .send_event::<SpawnEvent>(SpawnEvent::SpawnUrdf {
