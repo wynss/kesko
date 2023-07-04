@@ -1,11 +1,11 @@
 from pykesko import Kesko, KeskoModel
 from pykesko.backend.backend import BackendType
-from pykesko.protocol.commands import Spawn, SpawnAsset, SpawnUrdf
+from pykesko.protocol.commands import Spawn, SpawnAsset
 from pykesko.color import Color
 
 
 if __name__ == "__main__":
-    kesko = Kesko(backend_type=BackendType.TCP)
+    kesko = Kesko(backend_type=BackendType.BINDINGS)
     kesko.initialize()
 
     kesko.send(
@@ -15,7 +15,7 @@ if __name__ == "__main__":
                 position=[0.0, 1.0, 0.0],
             ),
             Spawn(
-                model=KeskoModel.Sphere,
+                model=KeskoModel.Cube,
                 position=[1.0, 0.0, 0.0],
                 scale=[2.0, 2.0, 2.0],
                 color=Color.RED,

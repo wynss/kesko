@@ -1,5 +1,6 @@
 pub mod arena;
 pub mod car;
+pub mod cube;
 pub mod humanoid;
 pub mod plane;
 pub mod snake;
@@ -70,6 +71,7 @@ pub struct ControlDescription(pub String);
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Model {
     Car,
+    Cube,
     Snake,
     Spider,
     Sphere,
@@ -86,6 +88,7 @@ impl Model {
     pub const fn name(&self) -> &'static str {
         match self {
             Self::Car => "Car",
+            Self::Cube => "Cube",
             Self::Snake => "Snake",
             Self::Spider => "Spider",
             Self::Sphere => "Sphere",
@@ -131,6 +134,7 @@ pub fn spawn_system(
                         &mut meshes,
                     );
                 }
+                Model::Cube => cube::Cube::spawn(&mut commands, material, *transform, &mut meshes),
                 Model::Sphere => {
                     sphere::Sphere::spawn(&mut commands, material, *transform, &mut meshes)
                 }
