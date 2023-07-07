@@ -13,7 +13,7 @@ use kesko::physics::{
 };
 use kesko::plugins::{CorePlugins, HeadlessRenderPlugins, UIPlugin};
 use kesko::tcp::TcpPlugin;
-use kesko_urdf::urdf_plugin::UrdfPlugin;
+use kesko_urdf::UrdfPlugin;
 
 static PYTHON_LOG_TO_BEVY_LOG_LEVEL: phf::Map<i32, Level> = phf_map! {
     10i32 => Level::DEBUG,

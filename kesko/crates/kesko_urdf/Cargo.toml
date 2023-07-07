@@ -19,6 +19,7 @@ kesko_physics = { path = "../kesko_physics" }
 kesko_object_interaction = { path = "../kesko_object_interaction"}
 kesko_raycast = { path = "../kesko_raycast"}
 kesko_core = { path = "../kesko_core"}
+kesko_models = { path = "../kesko_models"}
 
 
 [build-dependencies]

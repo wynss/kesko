@@ -8,7 +8,6 @@ pub mod sphere;
 pub mod spider;
 pub mod wheely;
 pub mod gltf_model;
-pub mod urdf_model;
 
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 use pyo3::prelude::*;
@@ -34,10 +33,7 @@ impl Plugin for ModelPlugin {
                 .chain(),
         )
         .add_plugin(bevy_stl::StlPlugin)
-        .add_asset::<urdf_model::UrdfAsset>()
-        .init_asset_loader::<urdf_model::UrdfAssetLoader>()
         .add_system(spawn_system.in_base_set(SpawnSet::Spawn))
-        .add_system(urdf_model::convert_urdf_to_components.in_base_set(SpawnSet::Spawn))
         .add_system(apply_system_buffers.in_base_set(SpawnSet::SpawnFlush))
         .add_event::<SpawnEvent>();
     }
@@ -163,16 +159,6 @@ pub fn spawn_system(
             debug!("Spawning asset {:?}", asset_path);
     
             gltf_model::GltfModel::spawn(&mut commands, asset_path.clone(), *transform, &asset_server)
-        }
-        else if let SpawnEvent::SpawnUrdf {
-            urdf_path,
-            package_map,
-            transform,
-        } = event
-        {
-            debug!("Spawning urdf {:?}", urdf_path);
-    
-            urdf_model::UrdfModel::spawn(&mut commands, urdf_path.clone(), package_map, *transform, &asset_server)
         }
     }
 }
