@@ -13,6 +13,7 @@ from ..protocol.commands import (
     Despawn,
     SpawnAsset,
     SpawnUrdf,
+    PublishFlatBuffers
 )
 from ..protocol.response import (
     CollisionStarted,
@@ -77,6 +78,9 @@ class BindingBackend:
 
             elif isinstance(command, ApplyControl):
                 self.kesko.apply_motor_commands(command.values)
+
+            elif isinstance(command, PublishFlatBuffers):
+                self.kesko.publish_flatbuffers(command.data)
 
         # step simulation
         self.kesko.step()

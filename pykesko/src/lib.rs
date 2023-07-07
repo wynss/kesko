@@ -13,6 +13,7 @@ use kesko::physics::{
 };
 use kesko::plugins::{CorePlugins, HeadlessRenderPlugins, UIPlugin};
 use kesko::tcp::TcpPlugin;
+use kesko_urdf::urdf_plugin::UrdfPlugin;
 
 static PYTHON_LOG_TO_BEVY_LOG_LEVEL: phf::Map<i32, Level> = phf_map! {
     10i32 => Level::DEBUG,
@@ -41,6 +42,7 @@ fn run_kesko_tcp(window: bool, log_level: i32) {
             })
             .add_plugin(CarPlugin)
             .add_plugin(WheelyPlugin)
+            .add_plugin(UrdfPlugin)
             .add_plugin(TcpPlugin)
             .add_startup_system(start_scene)
             .run();
@@ -205,6 +207,14 @@ impl KeskoApp {
                 },
             });
         }
+    }
+
+    pub fn publish_flatbuffers(&mut self, flatbuffer: Vec<u8>) {
+        self.app
+            .world
+            .send_event::<SimulatorRequestEvent>(SimulatorRequestEvent::PublishFlatBuffers(
+                flatbuffer,
+            ));
     }
 
     pub fn get_multibody_state(&mut self) -> PyResult<Option<String>> {

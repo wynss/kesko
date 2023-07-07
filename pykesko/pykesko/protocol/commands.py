@@ -1,4 +1,5 @@
 from typing import Union, Protocol
+import base64
 
 import numpy as np
 
@@ -119,3 +120,11 @@ class PausePhysics:
 class RunPhysics:
     def to_json(self):
         return "RunPhysics"
+
+class PublishFlatBuffers:
+    def __init__(self, data: bytearray):
+        self.data = data
+
+    def to_json(self):
+        data = base64.b64encode(self.data).decode('utf-8')
+        return {"PublishFlatBuffers": {"data": data}}

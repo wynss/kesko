@@ -41,6 +41,9 @@ pub(crate) enum TcpCommand {
         id: u64,
         command: HashMap<u64, f32>,
     },
+    PublishFlatBuffers {
+        data: String,
+    },
     PausePhysics,
     RunPhysics,
     IsAlive,
@@ -163,6 +166,12 @@ pub(crate) fn handle_requests(
                                             command,
                                         },
                                     )
+                                }
+                                TcpCommand::PublishFlatBuffers { data } => {
+                                    // TODO skip converting to base64 and just send the bytes
+                                    let decoded = base64::decode(data).expect("Invalid base64 string");
+                                    system_event_writer
+                                        .send(SimulatorRequestEvent::PublishFlatBuffers(decoded))
                                 }
                                 TcpCommand::Despawn { id } => {
                                     physic_event_writer.send(PhysicRequestEvent::DespawnBody(id))

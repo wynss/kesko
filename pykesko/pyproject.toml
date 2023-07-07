@@ -24,6 +24,7 @@ keywords = [
     "Bevy"
 ]
 dependencies = [
+    "flatbuffers",
     "numpy",
     "requests",
     "pydantic",

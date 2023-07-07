@@ -1,0 +1,20 @@
+ namespace kesko.urdf;
+ 
+struct Vec3 {
+  x:float;
+  y:float;
+  z:float;
+}
+
+table PackageMap {
+  package_name:string;
+  package_path:string;
+}
+ 
+table SpawnUrdf {
+  position:Vec3;
+  urdf_path:string;
+  package_mappings:[PackageMap]; 
+}
+ 
+root_type SpawnUrdf;

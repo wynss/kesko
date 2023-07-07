@@ -22,6 +22,7 @@ pub enum SimulatorRequestEvent {
         entity: Entity,
         command: HashMap<u64, f32>,
     },
+    PublishFlatBuffers(Vec<u8>),
 }
 
 #[derive(Serialize, Deserialize, Clone)]
