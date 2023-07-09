@@ -7,9 +7,10 @@ pub mod snake;
 pub mod sphere;
 pub mod spider;
 pub mod wheely;
-pub mod gltf_model;
+// pub mod gltf_model;
 
-use bevy::{prelude::*, utils::hashbrown::HashMap};
+use bevy::prelude::*;
+#[cfg(not(target_arch = "wasm32"))]
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -46,15 +47,10 @@ pub enum SpawnEvent {
         transform: Transform,
         color: Color,
     },
-    SpawnAsset {
-        asset_path: String,
-        transform: Transform,
-    },
-    SpawnUrdf {
-        urdf_path: String,
-        package_map: HashMap<String, String>,
-        transform: Transform,
-    }
+    // SpawnAsset {
+    //     asset_path: String,
+    //     transform: Transform,
+    // },
 }
 
 /// Description on how to manually control a robot
@@ -63,7 +59,7 @@ pub enum SpawnEvent {
 pub struct ControlDescription(pub String);
 
 // Enum to represent each default model
-#[pyclass]
+#[cfg_attr(not(target_arch = "wasm32"), pyclass)]
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Model {
     Car,
@@ -77,10 +73,10 @@ pub enum Model {
     Plane,
 }
 
-#[pymethods]
+#[cfg_attr(not(target_arch = "wasm32"), pymethods)]
 impl Model {
     /// Names to use for example in UI
-    #[getter]
+    #[cfg_attr(not(target_arch = "wasm32"), getter)]
     pub const fn name(&self) -> &'static str {
         match self {
             Self::Car => "Car",
@@ -102,7 +98,7 @@ pub fn spawn_system(
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    asset_server: Res<AssetServer>
+    // asset_server: Res<AssetServer>
 ) {
     for event in spawn_event_reader.iter() {
         if let SpawnEvent::Spawn {
@@ -151,14 +147,14 @@ pub fn spawn_system(
                 Model::Plane => plane::spawn(&mut commands, material, &mut meshes),
             }
         }
-        else if let SpawnEvent::SpawnAsset {
-            asset_path,
-            transform,
-        } = event
-        {
-            debug!("Spawning asset {:?}", asset_path);
+        // else if let SpawnEvent::SpawnAsset {
+        //     asset_path,
+        //     transform,
+        // } = event
+        // {
+        //     debug!("Spawning asset {:?}", asset_path);
     
-            gltf_model::GltfModel::spawn(&mut commands, asset_path.clone(), *transform, &asset_server)
-        }
+        //     gltf_model::GltfModel::spawn(&mut commands, asset_path.clone(), *transform, &asset_server)
+        // }
     }
 }

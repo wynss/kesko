@@ -12,14 +12,20 @@ pub struct MainCameraPlugin;
 
 impl Plugin for MainCameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(PanOrbitCameraPlugin)
-            .insert_resource(AtmosphereModel::new(Gradient {
+        app.add_plugin(PanOrbitCameraPlugin);
+
+        // WebGL is not supported atm.: https://github.com/JonahPlusPlus/bevy_atmosphere#-warning-incompatible-with-webgl-
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            app.insert_resource(AtmosphereModel::new(Gradient {
                 sky: Color::hex("3c1357").unwrap(),
                 horizon: Color::hex("e5648a").unwrap(),
                 ground: Color::hex("f5aea4").unwrap(),
             }))
-            .add_plugin(AtmospherePlugin)
-            .add_startup_system(spawn_camera);
+            .add_plugin(AtmospherePlugin);
+        }
+
+        app.add_startup_system(spawn_camera);
     }
 
     fn name(&self) -> &str {

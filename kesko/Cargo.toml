@@ -51,8 +51,6 @@ bevy = { version = "0.10.1", default-features = false, features = ["bevy_render"
 [dependencies]
 bevy = { version = "0.10.1", default-features = false, features = ["bevy_render", "bevy_winit", "bevy_scene", "x11", "bevy_asset", "bevy_pbr", "bevy_core_pipeline", "bevy_gltf"] }
 
-pyo3 = { version = "0.18.3", features = ["extension-module"] }
-
 kesko_types = { path = "crates/kesko_types"}
 kesko_core = { path = "crates/kesko_core" }
 kesko_physics = { path = "crates/kesko_physics", features = ["f32"] }
@@ -62,3 +60,6 @@ kesko_models = { path = "crates/kesko_models" }
 kesko_plugins = { path="crates/kesko_plugins" }
 kesko_diagnostic = { path="crates/kesko_diagnostic" }
 kesko_tcp = { path = "crates/kesko_tcp" }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+pyo3 = { version = "0.18.3", features = ["extension-module"] }

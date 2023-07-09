@@ -17,6 +17,8 @@ fnv = "1.0.7"
 crossbeam = "0.8.1"
 serde = { version = "1.0.137", features = ["derive"] }
 serde_json = "1.0.81"
-pyo3 = { version = "0.18.3", features = ["extension-module"] }
 
 kesko_types = { path = "../kesko_types" }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+pyo3 = { version = "0.18.3", features = ["extension-module"] }

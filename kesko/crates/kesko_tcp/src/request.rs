@@ -23,15 +23,10 @@ pub(crate) enum TcpCommand {
         rotation: Vec3,
         scale: Vec3,
     },
-    SpawnAsset {
-        asset_path: String,
-        position: Vec3,
-    },
-    SpawnUrdf {
-        urdf_path: String,
-        package_map: HashMap<String, String>,
-        position: Vec3,
-    },
+    // SpawnAsset {
+    //     asset_path: String,
+    //     position: Vec3,
+    // },
     Despawn {
         id: u64,
     },
@@ -127,26 +122,15 @@ pub(crate) fn handle_requests(
                                         color,
                                     });
                                 }
-                                TcpCommand::SpawnAsset {
-                                    asset_path,
-                                    position,
-                                } => {
-                                    spawn_event_writer.send(SpawnEvent::SpawnAsset {
-                                        asset_path,
-                                        transform: Transform::from_translation(position),
-                                    });
-                                }
-                                TcpCommand::SpawnUrdf {
-                                    urdf_path,
-                                    package_map,
-                                    position,
-                                } => {
-                                    spawn_event_writer.send(SpawnEvent::SpawnUrdf {
-                                        urdf_path,
-                                        package_map,
-                                        transform: Transform::from_translation(position),
-                                    });
-                                }
+                                // TcpCommand::SpawnAsset {
+                                //     asset_path,
+                                //     position,
+                                // } => {
+                                //     spawn_event_writer.send(SpawnEvent::SpawnAsset {
+                                //         asset_path,
+                                //         transform: Transform::from_translation(position),
+                                //     });
+                                // }
                                 TcpCommand::GetState => {
                                     system_event_writer.send(SimulatorRequestEvent::GetState)
                                 }
