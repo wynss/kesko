@@ -1,0 +1,21 @@
+[package]
+name = "placeholder_box"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bevy = { workspace = true }
+flatbuffers = "23.5.26"
+
+kesko_core = { path = "../kesko_core"}
+kesko_models = { path = "../kesko_models"}
+
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+pyo3 = { version = "0.18.3", features = ["extension-module"] }
+
+
+[build-dependencies]
+flatc-rust = "0.2.0"

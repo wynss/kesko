@@ -1,4 +1,4 @@
- namespace kesko.urdf;
+namespace kesko.urdf;
  
 struct Vec3 {
   x:float;

@@ -14,6 +14,7 @@ use kesko::physics::{
 use kesko::plugins::{CorePlugins, HeadlessRenderPlugins, UIPlugin};
 use kesko::tcp::TcpPlugin;
 use kesko_urdf::UrdfPlugin;
+use placeholder_box::PlaceholderBoxPlugin;
 
 static PYTHON_LOG_TO_BEVY_LOG_LEVEL: phf::Map<i32, Level> = phf_map! {
     10i32 => Level::DEBUG,
@@ -43,6 +44,7 @@ fn run_kesko_tcp(window: bool, log_level: i32) {
             .add_plugin(CarPlugin)
             .add_plugin(WheelyPlugin)
             .add_plugin(UrdfPlugin)
+            .add_plugin(PlaceholderBoxPlugin)
             .add_plugin(TcpPlugin)
             .add_startup_system(start_scene)
             .run();
@@ -126,30 +128,6 @@ impl KeskoApp {
                 alpha: 1.0,
             },
         })
-    }
-
-    pub fn spawn_asset(&mut self, asset_path: String, position: Vec<f32>) {
-        self.app
-            .world
-            .send_event::<SpawnEvent>(SpawnEvent::SpawnAsset {
-                asset_path,
-                transform: Transform::from_xyz(position[0], position[1], position[2]),
-            })
-    }
-
-    pub fn spawn_urdf(
-        &mut self,
-        urdf_path: String,
-        package_map: HashMap<String, String>,
-        position: Vec<f32>,
-    ) {
-        self.app
-            .world
-            .send_event::<SpawnEvent>(SpawnEvent::SpawnUrdf {
-                urdf_path,
-                package_map,
-                transform: Transform::from_xyz(position[0], position[1], position[2]),
-            })
     }
 
     pub fn despawn(&mut self, body_id: u64) {

@@ -85,13 +85,6 @@ fn test_scene(
         &mut meshes,
     );
 
-    kesko_models::gltf_model::GltfModel::spawn(
-        &mut commands,
-        "/home/azazdeaz/repos/temp/bevy/assets/models/FlightHelmet/FlightHelmet.gltf#Scene0",
-        Transform::from_xyz(-2.0, 2.0, 3.0),
-        &asset_server,
-    );
-
     // spawn sphere that will generate collision events
     commands.spawn((
         PbrBundle {

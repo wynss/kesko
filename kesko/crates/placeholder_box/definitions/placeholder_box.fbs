@@ -1,0 +1,21 @@
+namespace kesko.placeholder_box;
+ 
+struct Vec3 {
+  x:float;
+  y:float;
+  z:float;
+}
+
+struct Transform {
+  translation:Vec3;
+  rotation:Vec3;
+  scale:Vec3;
+}
+ 
+table SpawnPlaceholderBox {
+  name:string;
+  transform:Transform;
+  color:Vec3;
+}
+ 
+root_type SpawnPlaceholderBox;

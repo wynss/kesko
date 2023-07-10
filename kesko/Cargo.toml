@@ -10,7 +10,8 @@ members = [
     "crates/kesko_ui",
     "crates/kesko_diagnostic",
     "crates/kesko_tcp",
-    "crates/kesko_urdf"
+    "crates/kesko_urdf",
+    "crates/placeholder_box"
 ]
 
 [package]
