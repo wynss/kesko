@@ -59,7 +59,7 @@ pub enum SpawnEvent {
 pub struct ControlDescription(pub String);
 
 // Enum to represent each default model
-#[cfg_attr(not(target_arch = "wasm32"), pyclass)]
+#[cfg_attr(not(target_arch = "wasm32"), pyclass(get_all))]
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Model {
     Car,
@@ -76,7 +76,6 @@ pub enum Model {
 #[cfg_attr(not(target_arch = "wasm32"), pymethods)]
 impl Model {
     /// Names to use for example in UI
-    #[cfg_attr(not(target_arch = "wasm32"), getter)]
     pub const fn name(&self) -> &'static str {
         match self {
             Self::Car => "Car",
