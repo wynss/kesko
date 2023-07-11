@@ -31,22 +31,16 @@ def clear_msg() -> bytearray:
     return builder.Output()
 
 if __name__ == "__main__":
-    kesko = Kesko(backend_type=BackendType.TCP)
+    kesko = Kesko(backend_type=BackendType.BINDINGS)
     kesko.initialize()
 
-    # for rotation in range(100):
-    # print(rotation)
-    kesko.send(
+    for rotation in range(100):
+        kesko.step()
+        kesko.send(
         [
             PublishFlatBuffers(data=clear_msg()),
-            PublishFlatBuffers(data=spawn_model_msg(100.0)),
+            PublishFlatBuffers(data=spawn_model_msg(rotation / 100.0)),
         ]
     )
-    print("sent")
-    # kesko.step()
-    # time.sleep(0.1)
-
-    for _ in range(100):
-        kesko.step()
 
     kesko.close()

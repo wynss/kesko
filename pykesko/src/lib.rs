@@ -86,6 +86,8 @@ impl KeskoApp {
             )
             .add_plugin(CarPlugin)
             .add_plugin(WheelyPlugin)
+            .add_plugin(UrdfPlugin)
+            .add_plugin(PlaceholderBoxPlugin)
             .add_startup_system(start_scene);
         self.app.setup();
     }
@@ -188,6 +190,7 @@ impl KeskoApp {
     }
 
     pub fn publish_flatbuffers(&mut self, flatbuffer: Vec<u8>) {
+        println!("Sending fb: {:?}", flatbuffer);
         self.app
             .world
             .send_event::<SimulatorRequestEvent>(SimulatorRequestEvent::PublishFlatBuffers(
