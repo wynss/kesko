@@ -13,7 +13,7 @@ table PackageMap {
  
 table SpawnUrdf {
   position:Vec3;
-  urdf_path:string;
+  urdf_path:string (required);
   package_mappings:[PackageMap]; 
 }
  

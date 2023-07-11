@@ -20,6 +20,10 @@ class SpawnPlaceholderBox(object):
     def GetRootAsSpawnPlaceholderBox(cls, buf, offset=0):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
+    @classmethod
+    def SpawnPlaceholderBoxBufferHasIdentifier(cls, buf, offset, size_prefixed=False):
+        return flatbuffers.util.BufferHasIdentifier(buf, offset, b"\x50\x42\x53\x50", size_prefixed=size_prefixed)
+
     # SpawnPlaceholderBox
     def Init(self, buf, pos):
         self._tab = flatbuffers.table.Table(buf, pos)

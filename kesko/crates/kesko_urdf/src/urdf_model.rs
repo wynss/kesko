@@ -41,28 +41,43 @@ pub struct UrdfBundle {
     pub transform: Transform,
 }
 
-pub struct UrdfModel;
+pub struct UrdfModel {
+    urdf_path: AssetPath<'static>,
+    package_map: HashMap<String, String>,
+    transform: Transform,
+}
+
 impl UrdfModel {
-    pub fn spawn(
-        commands: &mut Commands,
+    pub fn new(
         urdf_path: impl Into<AssetPath<'static>>,
-        package_map: &HashMap<String, String>,
+        package_map: HashMap<String, String>,
         transform: Transform,
+    ) -> Self {
+        Self {
+            urdf_path: urdf_path.into(),
+            package_map: package_map,
+            transform,
+        }
+    }
+
+    pub fn spawn(
+        &self,
+        commands: &mut Commands,
         asset_server: &Res<AssetServer>,
     ) {
-        let urdf_asset: Handle<UrdfAsset> = asset_server.load(urdf_path);
+        let urdf_asset: Handle<UrdfAsset> = asset_server.load(self.urdf_path.clone());
 
         println!("urdf_asset: {:?}", urdf_asset);
         // Convert from ROS coordinate frame is Z up, Y left, X forward
         //   to Bevy coordinate frame: Y up, X right, Z backward
-        let transform = transform
+        let transform = self.transform
             * Transform::from_rotation(Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2))
             * Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2));
 
         commands.spawn((
             UrdfBundle {
                 urdf_asset,
-                urdf_package_map: UrdfPackageMap(package_map.clone()),
+                urdf_package_map: UrdfPackageMap(self.package_map.clone()),
                 transform,
                 ..Default::default()
             },

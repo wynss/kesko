@@ -19,3 +19,4 @@ table SpawnPlaceholderBox {
 }
  
 root_type SpawnPlaceholderBox;
+file_identifier "PBSP";

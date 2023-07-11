@@ -341,11 +341,11 @@ impl<'a> SpawnUrdf<'a> {
     unsafe { self._tab.get::<Vec3>(SpawnUrdf::VT_POSITION, None)}
   }
   #[inline]
-  pub fn urdf_path(&self) -> Option<&'a str> {
+  pub fn urdf_path(&self) -> &'a str {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(SpawnUrdf::VT_URDF_PATH, None)}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(SpawnUrdf::VT_URDF_PATH, None).unwrap()}
   }
   #[inline]
   pub fn package_mappings(&self) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<PackageMap<'a>>>> {
@@ -364,7 +364,7 @@ impl flatbuffers::Verifiable for SpawnUrdf<'_> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
      .visit_field::<Vec3>("position", Self::VT_POSITION, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("urdf_path", Self::VT_URDF_PATH, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("urdf_path", Self::VT_URDF_PATH, true)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<PackageMap>>>>("package_mappings", Self::VT_PACKAGE_MAPPINGS, false)?
      .finish();
     Ok(())
@@ -380,7 +380,7 @@ impl<'a> Default for SpawnUrdfArgs<'a> {
   fn default() -> Self {
     SpawnUrdfArgs {
       position: None,
-      urdf_path: None,
+      urdf_path: None, // required field
       package_mappings: None,
     }
   }
@@ -414,6 +414,7 @@ impl<'a: 'b, 'b> SpawnUrdfBuilder<'a, 'b> {
   #[inline]
   pub fn finish(self) -> flatbuffers::WIPOffset<SpawnUrdf<'a>> {
     let o = self.fbb_.end_table(self.start_);
+    self.fbb_.required(o, SpawnUrdf::VT_URDF_PATH,"urdf_path");
     flatbuffers::WIPOffset::new(o.value())
   }
 }

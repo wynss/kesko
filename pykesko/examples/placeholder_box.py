@@ -1,4 +1,4 @@
-from pathlib import Path
+import time
 
 from pykesko import Kesko, KeskoModel
 from pykesko.backend.backend import BackendType
@@ -6,31 +6,47 @@ from pykesko.protocol.commands import PublishFlatBuffers
 from pykesko.color import Color
 
 import flatbuffers
-from messages.kesko.placeholder_box import Vec3, Transform, SpawnPlaceholderBox
+from messages.kesko.placeholder_box import Vec3, Transform, SpawnPlaceholderBox, Clear
 
-
-if __name__ == "__main__":
-    kesko = Kesko(backend_type=BackendType.TCP)
-    kesko.initialize()
-    
+def spawn_model_msg(rotation) -> bytearray:
     builder = flatbuffers.Builder(1024)
     name = builder.CreateString("Boxy")
     SpawnPlaceholderBox.Start(builder)
     SpawnPlaceholderBox.AddName(builder, name)
-    transform = Transform.CreateTransform(builder, 0.0, 1.0, 0.0, 0.0, 1.0, 0.3, 0.5, 2.0, 1.0)
+    transform = Transform.CreateTransform(builder, 0.0, 1.0, 0.0, 0.0, rotation, 0.3, 0.5, 2.0, 1.0)
     SpawnPlaceholderBox.AddTransform(builder, transform)
     SpawnPlaceholderBox.AddColor(builder, Vec3.CreateVec3(builder, 1.0, 0.0, 0.0))
 
     message = SpawnPlaceholderBox.End(builder)
+    builder.Finish(message, b"PBSP")
+
+    return builder.Output()
+
+def clear_msg() -> bytearray:
+    builder = flatbuffers.Builder(1024)
+    Clear.Start(builder)
+    message = Clear.End(builder)
     builder.Finish(message)
 
+    return builder.Output()
+
+if __name__ == "__main__":
+    kesko = Kesko(backend_type=BackendType.TCP)
+    kesko.initialize()
+
+    # for rotation in range(100):
+    # print(rotation)
     kesko.send(
         [
-            PublishFlatBuffers(data=builder.Output()),
+            PublishFlatBuffers(data=clear_msg()),
+            PublishFlatBuffers(data=spawn_model_msg(100.0)),
         ]
     )
+    print("sent")
+    # kesko.step()
+    # time.sleep(0.1)
 
-    for _ in range(1000):
+    for _ in range(100):
         kesko.step()
 
     kesko.close()

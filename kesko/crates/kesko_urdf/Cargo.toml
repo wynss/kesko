@@ -19,6 +19,7 @@ kesko_object_interaction = { path = "../kesko_object_interaction"}
 kesko_raycast = { path = "../kesko_raycast"}
 kesko_core = { path = "../kesko_core"}
 kesko_models = { path = "../kesko_models"}
+anyhow = "1.0.71"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 pyo3 = { version = "0.18.3", features = ["extension-module"] }

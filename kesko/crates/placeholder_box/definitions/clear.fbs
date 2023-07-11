@@ -1,0 +1,6 @@
+namespace kesko.placeholder_box;
+ 
+table Clear {}
+ 
+root_type Clear;
+file_identifier "PBCL";
