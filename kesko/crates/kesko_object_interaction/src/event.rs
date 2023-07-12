@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::interaction::{Drag, Hover, Select};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Event)]
 pub enum InteractionEvent {
     DragStarted(Entity),
     DragStopped(Entity),
@@ -14,7 +14,7 @@ pub enum InteractionEvent {
 }
 
 /// Event that can be sent to select/deselect an entity
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Event)]
 pub enum SelectEvent {
     Select(Entity),
     Deselect(Entity),

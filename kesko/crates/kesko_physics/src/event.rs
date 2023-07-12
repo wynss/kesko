@@ -16,6 +16,7 @@ use crate::{
     PhysicState,
 };
 
+#[derive(Event)]
 pub enum PhysicRequestEvent {
     PausePhysics,
     RunPhysics,
@@ -24,7 +25,7 @@ pub enum PhysicRequestEvent {
     DespawnAll,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Event)]
 pub enum PhysicResponseEvent {
     StartedPhysics,
     StoppedPhysics,
@@ -67,7 +68,7 @@ pub(crate) fn handle_events(
                 next_physic_state.set(PhysicState::Running);
                 response_events.send(PhysicResponseEvent::StartedPhysics);
             }
-            PhysicRequestEvent::TogglePhysics => match physic_state.0 {
+            PhysicRequestEvent::TogglePhysics => match physic_state.get() {
                 PhysicState::Stopped => {
                     next_physic_state.set(PhysicState::Running);
                     response_events.send(PhysicResponseEvent::StartedPhysics);

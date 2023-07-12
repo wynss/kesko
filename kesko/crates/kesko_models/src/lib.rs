@@ -12,7 +12,6 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
-#[system_set(base)]
 pub enum SpawnSet {
     Spawn,
     SpawnFlush,
@@ -21,7 +20,7 @@ pub enum SpawnSet {
 pub struct ModelPlugin;
 impl Plugin for ModelPlugin {
     fn build(&self, app: &mut App) {
-        app.configure_sets(First, SpawnSet::Spawn)
+        app.configure_set(First, SpawnSet::Spawn)
             .add_systems(
                 First,
                 (spawn_system, apply_deferred)
@@ -32,6 +31,7 @@ impl Plugin for ModelPlugin {
     }
 }
 
+#[derive(Debug, Event)]
 pub enum SpawnEvent {
     OpenWindow,
     Spawn {

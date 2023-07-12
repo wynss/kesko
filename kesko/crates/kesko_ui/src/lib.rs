@@ -11,9 +11,9 @@ use bevy_egui::{egui, EguiContexts, EguiPlugin};
 pub struct UIPlugin;
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(EguiPlugin)
+        app.add_plugins(EguiPlugin)
             // core ui
-            .add_startup_system(initialize_ui_components_system)
+            .add_systems(Startup, initialize_ui_components_system)
             // add components
             // main menu component
             .add_systems(

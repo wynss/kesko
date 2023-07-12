@@ -31,7 +31,7 @@ where
             .add_event::<InteractionEvent>()
             .add_event::<SelectEvent>()
             .init_resource::<GlobalDragState>()
-            .add_plugin(RayCastPlugin::<T>::default())
+            .add_plugins(RayCastPlugin::<T>::default())
             .add_systems(
                 Update,
                 (

@@ -519,7 +519,7 @@ impl Default for CarController {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Event)]
 enum CarControlEvent {
     Velocity(CarVelocity),
     Direction(CarDirection),

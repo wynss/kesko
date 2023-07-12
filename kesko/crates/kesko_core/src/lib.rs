@@ -64,7 +64,7 @@ impl Plugin for CorePlugin {
                     }),
             )
             // ability to grab bodies
-            .add_plugin(GrabablePlugin::<GroupDynamic>::default())
+            .add_plugins(GrabablePlugin::<GroupDynamic>::default())
             .add_systems(
                 Update,
                 (

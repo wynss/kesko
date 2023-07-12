@@ -17,7 +17,6 @@ enum TcpConnectionState {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, SystemSet)]
-#[system_set(base)]
 enum TcpSet {
     Request,
     Response,
@@ -42,10 +41,8 @@ impl Plugin for TcpPlugin {
                 app.add_state::<TcpConnectionState>()
                     .insert_resource(KeskoRes(listener))
                     .insert_resource(KeskoRes(TcpBuffer::new()))
-                    .configure_sets(First, TcpSet::Request)
-                    .configure_sets(Last, TcpSet::Response)
-                    .add_systems(First, apply_system_buffers.in_base_set(TcpSet::Request))
-                    .add_system(apply_system_buffers.in_base_set(TcpSet::Response))
+                    .configure_set(First, TcpSet::Request)
+                    .configure_set(Last, TcpSet::Response)
                     .add_systems(
                         First,
                         (handle_incoming_connections, apply_deferred)
@@ -63,7 +60,7 @@ impl Plugin for TcpPlugin {
                         Last,
                         response::handle_responses
                             .run_if(in_state(TcpConnectionState::Connected))
-                            .in_base_set(TcpSet::Response),
+                            .in_set(TcpSet::Response),
                     );
             }
             Err(e) => {

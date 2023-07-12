@@ -9,7 +9,7 @@ use kesko_physics::multibody::{MultibodyChild, MultibodyRoot};
 
 // Event for when a multibody has been selected/deselected
 // the entity contained in the event is the root of the multibody
-#[derive(Debug)]
+#[derive(Debug, Event)]
 pub enum MultibodySelectionEvent {
     Selected(Entity),
     Deselected(Entity),

@@ -236,7 +236,7 @@ pub(crate) fn update_joint_pos_system(
 }
 
 /// Event for communicate joint motor positions and velocities
-#[derive(Debug)]
+#[derive(Debug, Event)]
 pub struct JointMotorEvent {
     pub entity: Entity,
     pub command: MotorCommand,

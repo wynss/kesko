@@ -93,24 +93,18 @@ impl Plugin for PhysicsPlugin {
             // Physics events
             .add_event::<event::PhysicRequestEvent>()
             .add_event::<event::PhysicResponseEvent>()
-            .add_system(event::handle_events)
+            .add_systems(Update, event::handle_events)
             .add_event::<joint::JointMotorEvent>()
             // configure how the physics sets are run
             .configure_sets(
                 PreUpdate,
                 (
                     PhysicSets::AddRigidBodies,
-                    PhysicSets::AddRigidBodiesFlush,
                     PhysicSets::AddColliders,
-                    PhysicSets::AddCollidersFlush,
                     PhysicSets::AddJoints,
-                    PhysicSets::AddJointsFlush,
                     PhysicSets::AddMultibodies,
-                    PhysicSets::AddMultibodiesFlush,
                     PhysicSets::PipelineStep,
-                    PhysicSets::PipelineStepFlush,
                     PhysicSets::PostPipeline,
-                    PhysicSets::PostPipelineFlush,
                 )
                     .chain(),
             )

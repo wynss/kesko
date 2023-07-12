@@ -48,7 +48,6 @@ impl Plugin for WheelyPlugin {
         app.add_event::<WheelyControlEvent>().add_systems(
             Update,
             (
-                systems,
                 Wheely::enable_control_system,
                 Wheely::send_control_events,
                 Wheely::handle_control_system,
@@ -74,6 +73,7 @@ impl Default for WheelyController {
     }
 }
 
+#[derive(Event)]
 enum WheelyControlEvent {
     LeftWheelForward,
     LeftWheelBackward,

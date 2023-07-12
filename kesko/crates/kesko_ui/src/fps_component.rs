@@ -97,6 +97,7 @@ impl FPSComponent {
     }
 }
 
+#[derive(Event)]
 pub enum FPSComponentEvent {
     /// will open the component
     Open,

@@ -14,7 +14,7 @@ impl Plugin for PanOrbitCameraPlugin {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Event)]
 enum PanOrbitCameraEvents {
     Orbit(Vec2),
     Pan(Vec2),
@@ -117,7 +117,7 @@ fn send_camera_mouse_events(
         if key_input.pressed(KeyCode::Tab) {
             translation.y += 1.0;
         }
-        if key_input.pressed(KeyCode::LShift) {
+        if key_input.pressed(KeyCode::ShiftLeft) {
             translation.y -= 1.0;
         }
 
