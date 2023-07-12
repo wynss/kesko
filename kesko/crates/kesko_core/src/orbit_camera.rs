@@ -9,8 +9,7 @@ pub struct PanOrbitCameraPlugin;
 
 impl Plugin for PanOrbitCameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(send_camera_mouse_events)
-            .add_system(handle_camera_events)
+        app.add_systems(Update, (send_camera_mouse_events, handle_camera_events))
             .add_event::<PanOrbitCameraEvents>();
     }
 }

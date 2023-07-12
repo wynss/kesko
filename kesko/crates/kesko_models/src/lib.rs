@@ -21,18 +21,14 @@ pub enum SpawnSet {
 pub struct ModelPlugin;
 impl Plugin for ModelPlugin {
     fn build(&self, app: &mut App) {
-        app.configure_sets(
-            (
-                CoreSet::FirstFlush,
-                SpawnSet::Spawn,
-                SpawnSet::SpawnFlush,
-                CoreSet::PreUpdate,
+        app.configure_sets(First, SpawnSet::Spawn)
+            .add_systems(
+                First,
+                (spawn_system, apply_deferred)
+                    .in_set(SpawnSet::Spawn)
+                    .chain(),
             )
-                .chain(),
-        )
-        .add_system(spawn_system.in_base_set(SpawnSet::Spawn))
-        .add_system(apply_system_buffers.in_base_set(SpawnSet::SpawnFlush))
-        .add_event::<SpawnEvent>();
+            .add_event::<SpawnEvent>();
     }
 }
 

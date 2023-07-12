@@ -88,7 +88,7 @@ mod tests {
     fn add_rigid_body() {
         let mut app = App::new();
 
-        app.add_system(add_rigid_bodies);
+        app.add_systems(Update, add_rigid_bodies);
 
         app.init_resource::<KeskoRes<Entity2Body>>();
         app.init_resource::<KeskoRes<Body2Entity>>();

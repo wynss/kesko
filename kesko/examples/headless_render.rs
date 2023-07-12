@@ -18,8 +18,8 @@ fn main() {
         .add_plugins(HeadlessRenderPlugins::default())
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_startup_system(setup)
-        .add_system(log_collision_events)
+        .add_systems(Startup, setup)
+        .add_systems(Update, log_collision_events)
         .run();
 }
 

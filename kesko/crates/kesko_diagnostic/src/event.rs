@@ -7,11 +7,16 @@ use kesko_physics::{event::collision::CollisionEvent, joint::JointMotorEvent};
 pub struct DebugEventPlugin;
 impl Plugin for DebugEventPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(log_multibody_selection_event)
-            .add_system(log_joint_events)
-            .add_system(log_select_events)
-            .add_system(log_interaction_events)
-            .add_system(log_collision_events);
+        app.add_systems(
+            Update,
+            (
+                log_multibody_selection_event,
+                log_joint_events,
+                log_select_events,
+                log_interaction_events,
+                log_collision_events,
+            ),
+        );
     }
 }
 

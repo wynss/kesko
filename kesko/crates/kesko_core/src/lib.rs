@@ -65,24 +65,30 @@ impl Plugin for CorePlugin {
             )
             // ability to grab bodies
             .add_plugin(GrabablePlugin::<GroupDynamic>::default())
-            // vertical marker systems
-            .add_system(handle_vertical_marker_spawning::<GroupStatic>)
-            .add_system(update_vertical_marker_pos_system::<GroupStatic>)
-            // physics related
-            .add_system(change_physic_state_on_space)
-            // multibody selection systems and events
-            .add_system(multibody_selection_system)
+            .add_systems(
+                Update,
+                (
+                    // vertical marker systems
+                    handle_vertical_marker_spawning::<GroupStatic>,
+                    update_vertical_marker_pos_system::<GroupStatic>,
+                    // physics related
+                    change_physic_state_on_space,
+                    // multibody selection system
+                    multibody_selection_system,
+                ),
+            )
+            // multibody selection event
             .add_event::<MultibodySelectionEvent>()
             // simulator system events
             .add_event::<event::SimulatorRequestEvent>()
             .add_event::<event::SimulatorResponseEvent>()
             .add_systems(
+                Last,
                 (
                     event::handle_system_events,
                     event::handle_serializable_state_request,
                     event::handle_motor_command_requests,
-                )
-                    .in_base_set(CoreSet::Last),
+                ),
             );
     }
 }
@@ -116,12 +122,12 @@ impl Plugin for CoreHeadlessPlugin {
         .add_event::<event::SimulatorRequestEvent>()
         .add_event::<event::SimulatorResponseEvent>()
         .add_systems(
+            Last,
             (
                 event::handle_system_events,
                 event::handle_serializable_state_request,
                 event::handle_motor_command_requests,
-            )
-                .in_base_set(CoreSet::LastFlush),
+            ),
         );
     }
 }

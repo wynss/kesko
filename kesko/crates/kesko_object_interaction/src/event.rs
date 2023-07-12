@@ -185,6 +185,7 @@ mod tests {
         };
 
         app.add_systems(
+            Update,
             (
                 trigger_events,
                 send_interaction_events::<TestGroup>,
@@ -215,7 +216,7 @@ mod tests {
 
         // setup and run systems once
         app.world.send_event(SelectEvent::Select(entity));
-        app.add_system(handle_select_events::<TestGroup>);
+        app.add_systems(Update, handle_select_events::<TestGroup>);
         app.update();
 
         // check that the entity is now selected

@@ -23,7 +23,7 @@ fn main() {
         .add_plugin(PanOrbitCameraPlugin)
         .add_plugins(DiagnosticsPlugins)
         .add_startup_system(setup)
-        .add_system(bevy::window::close_on_esc)
+        .add_systems(Update, bevy::window::close_on_esc)
         .insert_resource(ClearColor(Color::hex("F5F5F5").unwrap()))
         .run();
 }

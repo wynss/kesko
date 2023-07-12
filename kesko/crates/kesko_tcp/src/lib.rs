@@ -42,28 +42,25 @@ impl Plugin for TcpPlugin {
                 app.add_state::<TcpConnectionState>()
                     .insert_resource(KeskoRes(listener))
                     .insert_resource(KeskoRes(TcpBuffer::new()))
-                    .configure_sets(
-                        (
-                            TcpSet::Request,
-                            CoreSet::First,
-                            CoreSet::LastFlush,
-                            TcpSet::Response,
-                        )
-                            .chain(),
-                    )
-                    .add_system(apply_system_buffers.in_base_set(TcpSet::Request))
+                    .configure_sets(First, TcpSet::Request)
+                    .configure_sets(Last, TcpSet::Response)
+                    .add_systems(First, apply_system_buffers.in_base_set(TcpSet::Request))
                     .add_system(apply_system_buffers.in_base_set(TcpSet::Response))
-                    .add_system(
-                        handle_incoming_connections
+                    .add_systems(
+                        First,
+                        (handle_incoming_connections, apply_deferred)
+                            .chain()
                             .run_if(in_state(TcpConnectionState::NotConnected))
-                            .in_base_set(TcpSet::Request),
+                            .in_set(TcpSet::Request),
                     )
-                    .add_system(
+                    .add_systems(
+                        First,
                         request::handle_requests
                             .run_if(in_state(TcpConnectionState::Connected))
-                            .in_base_set(TcpSet::Request),
+                            .in_set(TcpSet::Request),
                     )
-                    .add_system(
+                    .add_systems(
+                        Last,
                         response::handle_responses
                             .run_if(in_state(TcpConnectionState::Connected))
                             .in_base_set(TcpSet::Response),

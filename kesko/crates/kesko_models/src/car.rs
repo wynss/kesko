@@ -35,10 +35,14 @@ const BACK_WALL: &str = "back_wall";
 pub struct CarPlugin;
 impl Plugin for CarPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<CarControlEvent>()
-            .add_system(Car::enable_control_system)
-            .add_system(Car::send_car_control_events)
-            .add_system(Car::handle_car_control_system);
+        app.add_event::<CarControlEvent>().add_systems(
+            Update,
+            (
+                Car::enable_control_system,
+                Car::send_car_control_events,
+                Car::handle_car_control_system,
+            ),
+        );
     }
 }
 

@@ -48,14 +48,13 @@ where
 {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            (create_rays_system::<T>, calc_intersections_system::<T>)
-                .chain()
-                .in_base_set(CoreSet::Update),
+            Update,
+            (create_rays_system::<T>, calc_intersections_system::<T>).chain(),
         );
 
         if self.debug {
-            app.add_startup_system(debug::spawn_debug_pointer);
-            app.add_system(debug::update_debug_pointer::<T>.in_base_set(CoreSet::First));
+            app.add_systems(Startup, debug::spawn_debug_pointer);
+            app.add_systems(First, debug::update_debug_pointer::<T>);
         }
     }
 }

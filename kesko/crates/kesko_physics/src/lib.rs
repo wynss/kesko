@@ -28,22 +28,14 @@ pub enum PhysicState {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemSet)]
-#[system_set(base)]
 pub enum PhysicSets {
     AddRigidBodies,
-    AddRigidBodiesFlush,
     AddJoints,
-    AddJointsFlush,
     AddColliders,
-    AddCollidersFlush,
     AddMultibodies,
-    AddMultibodiesFlush,
 
     PipelineStep,
-    PipelineStepFlush,
-
     PostPipeline,
-    PostPipelineFlush,
 }
 
 pub struct PhysicsPlugin {
@@ -105,8 +97,8 @@ impl Plugin for PhysicsPlugin {
             .add_event::<joint::JointMotorEvent>()
             // configure how the physics sets are run
             .configure_sets(
+                PreUpdate,
                 (
-                    CoreSet::UpdateFlush,
                     PhysicSets::AddRigidBodies,
                     PhysicSets::AddRigidBodiesFlush,
                     PhysicSets::AddColliders,
@@ -119,40 +111,60 @@ impl Plugin for PhysicsPlugin {
                     PhysicSets::PipelineStepFlush,
                     PhysicSets::PostPipeline,
                     PhysicSets::PostPipelineFlush,
-                    CoreSet::PostUpdate,
                 )
                     .chain(),
             )
-            .add_system(rigid_body::add_rigid_bodies.in_base_set(PhysicSets::AddRigidBodies))
-            .add_system(apply_system_buffers.in_base_set(PhysicSets::AddRigidBodiesFlush))
-            .add_system(collider::add_colliders.in_base_set(PhysicSets::AddColliders))
-            .add_system(apply_system_buffers.in_base_set(PhysicSets::AddCollidersFlush))
-            .add_system(joint::add_multibody_joints.in_base_set(PhysicSets::AddJoints))
-            .add_system(apply_system_buffers.in_base_set(PhysicSets::AddJointsFlush))
-            .add_system(multibody::add_multibodies.in_base_set(PhysicSets::AddMultibodies))
-            .add_system(apply_system_buffers.in_base_set(PhysicSets::AddMultibodiesFlush))
-            .add_system(
-                physics_pipeline_step
-                    .in_base_set(PhysicSets::PipelineStep)
+            .add_systems(
+                PreUpdate,
+                (rigid_body::add_rigid_bodies, apply_deferred)
+                    .in_set(PhysicSets::AddRigidBodies)
+                    .chain(),
+            )
+            .add_systems(
+                PreUpdate,
+                (collider::add_colliders, apply_deferred)
+                    .in_set(PhysicSets::AddColliders)
+                    .chain(),
+            )
+            .add_systems(
+                PreUpdate,
+                (joint::add_multibody_joints, apply_deferred)
+                    .in_set(PhysicSets::AddJoints)
+                    .chain(),
+            )
+            .add_systems(
+                PreUpdate,
+                (multibody::add_multibodies, apply_deferred)
+                    .chain()
+                    .in_set(PhysicSets::AddMultibodies),
+            )
+            .add_systems(
+                PreUpdate,
+                (physics_pipeline_step, apply_deferred)
+                    .chain()
+                    .in_set(PhysicSets::PipelineStep)
                     .run_if(in_state(PhysicState::Running)),
             )
-            .add_system(apply_system_buffers.in_base_set(PhysicSets::PipelineStepFlush))
             .add_systems(
+                PreUpdate,
                 (
-                    update_bevy_world,
-                    multibody::update_multibody_vel_angvel,
-                    impulse::update_impulse,
-                    force::update_force_system,
-                    gravity::update_gravity_scale_system,
-                    mass::update_multibody_mass_system,
-                    joint::update_joint_motors_system,
-                    joint::update_joint_pos_system,
-                    event::collision::send_collision_events_system,
-                    event::spawn::send_spawned_events,
+                    (
+                        update_bevy_world,
+                        multibody::update_multibody_vel_angvel,
+                        impulse::update_impulse,
+                        force::update_force_system,
+                        gravity::update_gravity_scale_system,
+                        mass::update_multibody_mass_system,
+                        joint::update_joint_motors_system,
+                        joint::update_joint_pos_system,
+                        event::collision::send_collision_events_system,
+                        event::spawn::send_spawned_events,
+                    ),
+                    apply_deferred,
                 )
-                    .in_base_set(PhysicSets::PostPipeline),
-            )
-            .add_system(apply_system_buffers.in_base_set(PhysicSets::PostPipelineFlush));
+                    .chain()
+                    .in_set(PhysicSets::PostPipeline),
+            );
     }
 }
 

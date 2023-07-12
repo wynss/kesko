@@ -7,7 +7,7 @@ use kesko_ui::fps_component::FPSComponentEvent;
 pub struct FPSPlugin;
 impl Plugin for FPSPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(Self::propagate_fps_system);
+        app.add_systems(Update, Self::propagate_fps_system);
     }
 }
 

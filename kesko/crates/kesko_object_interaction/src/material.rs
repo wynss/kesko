@@ -52,7 +52,7 @@ mod tests {
         let material = materials.add(Color::GOLD.into());
         app.world.spawn((OriginalMaterial::default(), material));
 
-        app.add_system(set_initial_interaction_material);
+        app.add_systems(Update, set_initial_interaction_material);
         app.update();
 
         // only 1 entity
