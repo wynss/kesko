@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_atmosphere::prelude::*;
 
 use kesko_object_interaction::InteractorBundle;
 
@@ -13,12 +12,6 @@ pub struct MainCameraPlugin;
 impl Plugin for MainCameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(PanOrbitCameraPlugin)
-            // .insert_resource(AtmosphereModel::new(Gradient {
-            //     sky: Color::hex("3c1357").unwrap(),
-            //     horizon: Color::hex("e5648a").unwrap(),
-            //     ground: Color::hex("f5aea4").unwrap(),
-            // }))
-            // .add_plugins(AtmospherePlugin)
             .add_systems(Startup, spawn_camera);
     }
 
@@ -42,7 +35,6 @@ pub fn spawn_camera(mut commands: Commands) {
             dist_to_center: distance,
             ..Default::default()
         },
-        // AtmosphereCamera::default(),
         InteractorBundle::<GroupDynamic>::default(),
     ));
 }
