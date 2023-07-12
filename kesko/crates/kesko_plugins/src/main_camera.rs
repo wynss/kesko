@@ -12,14 +12,14 @@ pub struct MainCameraPlugin;
 
 impl Plugin for MainCameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(PanOrbitCameraPlugin)
-            .insert_resource(AtmosphereModel::new(Gradient {
-                sky: Color::hex("3c1357").unwrap(),
-                horizon: Color::hex("e5648a").unwrap(),
-                ground: Color::hex("f5aea4").unwrap(),
-            }))
-            .add_plugin(AtmospherePlugin)
-            .add_startup_system(spawn_camera);
+        app.add_plugins(PanOrbitCameraPlugin)
+            // .insert_resource(AtmosphereModel::new(Gradient {
+            //     sky: Color::hex("3c1357").unwrap(),
+            //     horizon: Color::hex("e5648a").unwrap(),
+            //     ground: Color::hex("f5aea4").unwrap(),
+            // }))
+            // .add_plugins(AtmospherePlugin)
+            .add_systems(Startup, spawn_camera);
     }
 
     fn name(&self) -> &str {
@@ -42,7 +42,7 @@ pub fn spawn_camera(mut commands: Commands) {
             dist_to_center: distance,
             ..Default::default()
         },
-        AtmosphereCamera::default(),
+        // AtmosphereCamera::default(),
         InteractorBundle::<GroupDynamic>::default(),
     ));
 }

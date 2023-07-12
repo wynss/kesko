@@ -1,4 +1,4 @@
-use bevy::diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin};
+use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 
 use kesko_ui::fps_component::FPSComponentEvent;
@@ -13,7 +13,7 @@ impl Plugin for FPSPlugin {
 
 impl FPSPlugin {
     fn propagate_fps_system(
-        diagnostic: Res<Diagnostics>,
+        diagnostic: Res<DiagnosticsStore>,
         mut fps_ew: EventWriter<FPSComponentEvent>,
     ) {
         if let Some(fps) = diagnostic.get(FrameTimeDiagnosticsPlugin::FPS) {

@@ -6,6 +6,6 @@ pub struct DefaultPhysicsPlugin;
 
 impl Plugin for DefaultPhysicsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(PhysicsPlugin::gravity());
+        app.add_plugins(PhysicsPlugin::gravity());
     }
 }
