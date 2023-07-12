@@ -16,8 +16,8 @@ use kesko_plugins::HeadlessRenderPlugins;
 fn main() {
     App::new()
         .add_plugins(HeadlessRenderPlugins::default())
-        .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        .add_plugins(LogDiagnosticsPlugin::default())
+        .add_plugins(FrameTimeDiagnosticsPlugin::default())
         .add_systems(Startup, setup)
         .add_systems(Update, log_collision_events)
         .run();

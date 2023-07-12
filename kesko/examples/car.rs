@@ -8,9 +8,9 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(CorePlugins::default())
-        .add_plugin(DebugEventPlugin)
-        .add_startup_system(setup_scene)
-        .add_plugin(models::car::CarPlugin)
+        .add_plugins(DebugEventPlugin)
+        .add_systems(Startup, setup_scene)
+        .add_plugins(models::car::CarPlugin)
         .run();
 }
 

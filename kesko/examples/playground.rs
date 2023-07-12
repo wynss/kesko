@@ -15,14 +15,16 @@ use kesko_plugins::physics::DefaultPhysicsPlugin;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_plugin(DefaultPhysicsPlugin::default())
-        .add_plugin(InteractionPlugin::<GroupDynamic>::default())
-        .add_plugin(PanOrbitCameraPlugin)
-        .add_plugins(DiagnosticsPlugins)
-        .add_startup_system(setup)
+        .add_plugins((
+            DefaultPlugins,
+            LogDiagnosticsPlugin::default(),
+            FrameTimeDiagnosticsPlugin::default(),
+            DefaultPhysicsPlugin::default(),
+            InteractionPlugin::<GroupDynamic>::default(),
+            PanOrbitCameraPlugin,
+            DiagnosticsPlugins,
+        ))
+        .add_systems(Startup, setup)
         .add_systems(Update, bevy::window::close_on_esc)
         .insert_resource(ClearColor(Color::hex("F5F5F5").unwrap()))
         .run();

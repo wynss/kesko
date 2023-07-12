@@ -36,19 +36,20 @@ fn run_kesko_tcp(window: bool, log_level: i32) {
 
     if window {
         App::new()
-            .add_plugins(CorePlugins {
-                log_level: *bevy_log_level,
-            })
-            .add_plugin(CarPlugin)
-            .add_plugin(WheelyPlugin)
-            .add_plugin(TcpPlugin)
-            .add_startup_system(start_scene)
+            .add_plugins((
+                CorePlugins {
+                    log_level: *bevy_log_level,
+                },
+                CarPlugin,
+                WheelyPlugin,
+                TcpPlugin,
+            ))
+            .add_systems(Startup, start_scene)
             .run();
     } else {
         App::new()
-            .add_plugins(HeadlessRenderPlugins::default())
-            .add_plugin(TcpPlugin)
-            .add_startup_system(start_scene)
+            .add_plugins((HeadlessRenderPlugins::default(), TcpPlugin))
+            .add_systems(Startup, start_scene)
             .run();
     }
 }
@@ -73,23 +74,23 @@ impl KeskoApp {
 
     pub fn init_default(&mut self) {
         self.app
-            .add_plugins(
+            .add_plugins((
                 CorePlugins {
                     log_level: self.log_level,
                 }
                 .build()
                 .disable::<UIPlugin>(),
-            )
-            .add_plugin(CarPlugin)
-            .add_plugin(WheelyPlugin)
-            .add_startup_system(start_scene);
+                CarPlugin,
+                WheelyPlugin,
+            ))
+            .add_systems(Startup, start_scene);
         self.app.setup();
     }
 
     pub fn init_headless(&mut self) {
         self.app
             .add_plugins(HeadlessRenderPlugins::default())
-            .add_startup_system(start_scene);
+            .add_systems(Startup, start_scene);
     }
 
     pub fn step(&mut self) {

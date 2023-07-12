@@ -15,21 +15,23 @@ use kesko_tcp::TcpPlugin;
 
 fn main() {
     App::new()
-        .add_plugin(CorePlugin::default())
-        .add_plugin(UIPlugin)
-        .add_plugin(ModelPlugin)
-        .add_plugin(MainCameraPlugin)
-        .add_plugin(PhysicsPlugin {
-            initial_state: kesko_physics::PhysicState::Stopped,
-            ..default()
-        })
-        .add_plugin(GrabablePlugin::<GroupDynamic>::default())
-        .add_plugin(InteractionPlugin::<GroupDynamic>::default())
-        .add_plugin(InteractionPlugin::<GroupStatic>::default())
-        .add_plugin(FrameTimeDiagnosticsPlugin)
-        .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(TcpPlugin)
-        .add_startup_system(setup)
+        .add_plugins((
+            CorePlugin::default(),
+            UIPlugin,
+            ModelPlugin,
+            MainCameraPlugin,
+            PhysicsPlugin {
+                initial_state: kesko_physics::PhysicState::Stopped,
+                ..default()
+            },
+            GrabablePlugin::<GroupDynamic>::default(),
+            InteractionPlugin::<GroupDynamic>::default(),
+            InteractionPlugin::<GroupStatic>::default(),
+            FrameTimeDiagnosticsPlugin,
+            LogDiagnosticsPlugin::default(),
+            TcpPlugin,
+        ))
+        .add_systems(Startup, setup)
         .run();
 }
 
