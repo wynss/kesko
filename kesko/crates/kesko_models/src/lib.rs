@@ -97,7 +97,6 @@ pub fn spawn_system(
     mut commands: Commands,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    // asset_server: Res<AssetServer>
 ) {
     for event in spawn_event_reader.iter() {
         if let SpawnEvent::Spawn {
@@ -146,14 +145,5 @@ pub fn spawn_system(
                 Model::Plane => plane::spawn(&mut commands, material, &mut meshes),
             }
         }
-        // else if let SpawnEvent::SpawnAsset {
-        //     asset_path,
-        //     transform,
-        // } = event
-        // {
-        //     debug!("Spawning asset {:?}", asset_path);
-    
-        //     gltf_model::GltfModel::spawn(&mut commands, asset_path.clone(), *transform, &asset_server)
-        // }
     }
 }

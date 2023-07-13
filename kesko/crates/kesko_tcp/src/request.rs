@@ -23,15 +23,10 @@ pub(crate) enum TcpCommand {
         rotation: Vec3,
         scale: Vec3,
     },
-    // SpawnAsset {
-    //     asset_path: String,
-    //     position: Vec3,
-    // },
     Despawn {
         id: u64,
     },
     DespawnAll,
-
     ApplyMotorCommand {
         id: u64,
         command: HashMap<u64, f32>,
@@ -87,7 +82,7 @@ pub(crate) fn handle_requests(
         match tcp_stream.read(&mut tcp_buffer.data) {
             Ok(msg_len) => {
                 if msg_len == 0 {
-                    continue;
+                    return;
                 }
 
                 got_msg = true;
@@ -122,15 +117,6 @@ pub(crate) fn handle_requests(
                                         color,
                                     });
                                 }
-                                // TcpCommand::SpawnAsset {
-                                //     asset_path,
-                                //     position,
-                                // } => {
-                                //     spawn_event_writer.send(SpawnEvent::SpawnAsset {
-                                //         asset_path,
-                                //         transform: Transform::from_translation(position),
-                                //     });
-                                // }
                                 TcpCommand::GetState => {
                                     system_event_writer.send(SimulatorRequestEvent::GetState)
                                 }

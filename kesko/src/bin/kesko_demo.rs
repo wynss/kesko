@@ -26,7 +26,6 @@ fn test_scene(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>
 ) {
     kesko_models::arena::spawn(
         &mut commands,

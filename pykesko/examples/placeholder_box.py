@@ -48,7 +48,8 @@ def clear_msg() -> bytearray:
 if __name__ == "__main__":
     connection = RenetServerWorker()
     for i in range(9999999999):
-        connection.send("Message #{}".format(i))
+        connection.send(clear_msg())
+        connection.send(spawn_model_msg(i / 10.0))
         time.sleep(1.0)
 
         message = connection.try_receive()

@@ -19,8 +19,8 @@ use pyo3::prelude::*;
 
 #[cfg_attr(not(target_arch = "wasm32"), pyclass)]
 pub struct RenetServerWorker {
-    sender_to_worker: Sender<String>,
-    receiver_from_worker: Receiver<String>,
+    sender_to_worker: Sender<Vec<u8>>,
+    receiver_from_worker: Receiver<Vec<u8>>,
     handle: Option<JoinHandle<()>>,
 }
 
@@ -82,22 +82,20 @@ impl RenetServerWorker {
 
                 // Receive messages
                 for client_id in server.clients_id() {
-                    while let Some(message) =
+                    while let Some(data) =
                         server.receive_message(client_id, DefaultChannel::ReliableOrdered)
                     {
-                        // println!("Received message from client {}: {:?}", client_id, message);
-                        let text = String::from_utf8(message.into()).unwrap();
-                        // println!("Client ({}) sent text: {}", client_id, text);
-                        let text = format!("{}", text);
-                        worker_send.send(text).unwrap();
+                        println!("Received message from client {}: {:?}", client_id, data);
+                        worker_send.send(data.to_vec()).unwrap();
                     }
                 }
 
                 match worker_receive.try_recv() {
                     Ok(message) => {
+                        println!("Broadcasting message: {:?}", message);
                         server.broadcast_message(
                             DefaultChannel::ReliableOrdered,
-                            format!("response to {}", message).as_bytes().to_vec(),
+                            message,
                         );
                     }
                     Err(TryRecvError::Empty) => {
@@ -120,14 +118,14 @@ impl RenetServerWorker {
         }
     }
 
-    pub fn send(&self, message: String) {
+    pub fn send(&self, message: Vec<u8>) {
         self.sender_to_worker.send(message).unwrap();
     }
 
-    pub fn try_receive(&self) -> Option<String> {
+    pub fn try_receive(&self) -> Option<Vec<u8>> {
         match self.receiver_from_worker.try_recv() {
             Ok(message) => {
-                println!("Main thread received: {}", message);
+                println!("Main thread received: {:?}", message);
                 Some(message)
             }
             Err(TryRecvError::Empty) => None,

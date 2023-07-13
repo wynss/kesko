@@ -11,7 +11,8 @@ members = [
     "crates/kesko_diagnostic",
     "crates/kesko_tcp",
     "crates/kesko_urdf",
-    "crates/placeholder_box"
+    "crates/placeholder_box",
+    "crates/renet_transport"    
 ]
 
 [package]
@@ -34,6 +35,9 @@ name = "kesko_tcp_headless"
 
 [[bin]]
 name = "kesko_demo"
+
+[[bin]]
+name = "empty_tcp"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
@@ -61,6 +65,9 @@ kesko_models = { path = "crates/kesko_models" }
 kesko_plugins = { path="crates/kesko_plugins" }
 kesko_diagnostic = { path="crates/kesko_diagnostic" }
 kesko_tcp = { path = "crates/kesko_tcp" }
+kesko_urdf = { path = "crates/kesko_urdf" }
+placeholder_box = { path = "crates/placeholder_box" }
+renet_transport = { path = "crates/renet_transport" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 pyo3 = { version = "0.18.3", features = ["extension-module"] }

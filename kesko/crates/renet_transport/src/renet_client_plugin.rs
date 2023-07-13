@@ -7,6 +7,7 @@ use bevy_renet::{
     transport::NetcodeClientPlugin,
     RenetClientPlugin,
 };
+use kesko_core::event::SimulatorRequestEvent;
 use std::{net::UdpSocket, time::SystemTime};
 
 struct MyEvent {
@@ -63,20 +64,16 @@ fn send_message_system(mut client: ResMut<RenetClient>, mut my_events: EventRead
     for MyEvent { message } in my_events.iter() {
         let msg = format!("Client response to: {}", message);
         println!("Sending message: {:?}", msg);
-        client.send_message(
-            DefaultChannel::ReliableOrdered,
-            msg,
-        );
+        client.send_message(DefaultChannel::ReliableOrdered, msg);
     }
 }
 
-fn receive_message_system(mut client: ResMut<RenetClient>,
-    mut my_events: EventWriter<MyEvent>) {
-    while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
-        let message = String::from_utf8(message.to_vec()).unwrap();
-        println!("Received message: {:?}", message);
-        my_events.send(MyEvent {
-            message,
-        });
+fn receive_message_system(
+    mut client: ResMut<RenetClient>,
+    mut system_event_writer: EventWriter<SimulatorRequestEvent>,
+) {
+    while let Some(data) = client.receive_message(DefaultChannel::ReliableOrdered) {
+        println!("Received message: {:?}", data);
+        system_event_writer.send(SimulatorRequestEvent::PublishFlatBuffers(data.to_vec()));
     }
 }
