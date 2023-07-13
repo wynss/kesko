@@ -11,7 +11,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use bevy::render::{camera::Projection, primitives::Aabb};
+use bevy::render::primitives::Aabb;
 use bevy::{prelude::*, window::PrimaryWindow};
 
 use intersect::{aabb_intersection, mesh_intersection, RayHit};
@@ -124,12 +124,11 @@ fn create_rays_system<T: Component + Default>(
     mut ray_source_query: Query<(
         &mut RayCastSource<T>,
         Option<&Camera>,
-        Option<&Projection>,
         Option<&GlobalTransform>,
     )>,
 ) {
     let window = windows.get_single().unwrap();
-    for (mut ray_source, camera, perspective_projection, transform) in ray_source_query.iter_mut() {
+    for (mut ray_source, camera, transform) in ray_source_query.iter_mut() {
         // todo: Remove this and make a separate reset system that can be triggered
         if let Some(ray_hit) = &ray_source.ray_hit {
             ray_source.prev_ray_hit = Some(ray_hit.clone());
@@ -139,47 +138,26 @@ fn create_rays_system<T: Component + Default>(
         ray_source.ray_hit = None;
 
         match transform {
-            Some(transform) => {
-                match ray_source.method {
-                    RayCastMethod::ScreenSpace => {
-                        let camera = match camera {
-                            Some(camera) => camera,
-                            None => {
-                                error!("Ray cast source with method screen space has no camera component");
-                                return;
-                            }
-                        };
-
-                        let perspective_projection = match perspective_projection {
-                            Some(perspective_projection) => match perspective_projection {
-                                Projection::Perspective(perspective_proj) => perspective_proj,
-                                _ => {
-                                    error!("Got wrong projection for main camera");
-                                    return;
-                                }
-                            },
-                            None => {
-                                error!("Could not get perspective projection for main camera");
-                                return;
-                            }
-                        };
-
-                        if let Some(cursor_position) = window.cursor_position() {
-                            ray_source.ray = Some(Ray::from_screen_space(
-                                window,
-                                camera,
-                                &perspective_projection,
-                                transform,
-                                cursor_position,
-                            ));
+            Some(transform) => match ray_source.method {
+                RayCastMethod::ScreenSpace => {
+                    let camera = match camera {
+                        Some(camera) => camera,
+                        None => {
+                            error!(
+                                "Ray cast source with method screen space has no camera component"
+                            );
+                            return;
                         }
-                    }
-                    RayCastMethod::FromEntity { direction } => {
-                        ray_source.ray =
-                            Some(Ray::from_world_space(transform.translation(), direction));
+                    };
+
+                    if let Some(cursor_position) = window.cursor_position() {
+                        ray_source.ray = Ray::from_screen_space(camera, transform, cursor_position);
                     }
                 }
-            }
+                RayCastMethod::FromEntity { direction } => {
+                    ray_source.ray = Some(Ray::new(transform.translation(), direction));
+                }
+            },
             None => {
                 error!("Camera has no global transform");
                 return;
