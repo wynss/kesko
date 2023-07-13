@@ -43,7 +43,7 @@ impl Default for CorePlugin {
 impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Msaa::Sample4)
-            .insert_resource(ClearColor(Color::hex("000000").unwrap()))
+            .insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
             .add_plugins(
                 DefaultPlugins
                     .set(WindowPlugin {

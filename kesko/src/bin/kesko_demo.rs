@@ -110,7 +110,7 @@ fn test_scene(
     // Light
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 100_000.0,
+            illuminance: 40_000.0,
             // Configure the projection to better fit the scene
             shadows_enabled: true,
             ..default()

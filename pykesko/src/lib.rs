@@ -84,7 +84,7 @@ impl KeskoApp {
                 WheelyPlugin,
             ))
             .add_systems(Startup, start_scene);
-        self.app.setup();
+        self.app.cleanup();
     }
 
     pub fn init_headless(&mut self) {
