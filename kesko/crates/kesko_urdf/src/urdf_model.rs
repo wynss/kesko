@@ -1,23 +1,10 @@
-use std::f32::consts::FRAC_2_PI;
-
-use bevy::{
-    asset::{AssetLoader, AssetPath, LoadContext, LoadedAsset},
-    prelude::*,
-    reflect::TypeUuid,
-    render::texture,
-    transform,
-    utils::{BoxedFuture, HashMap},
-};
-use serde::Deserialize;
+use bevy::{asset::AssetPath, prelude::*, utils::HashMap};
 use urdf_rs;
 
 use kesko_core::interaction::groups::GroupDynamic;
 use kesko_object_interaction::InteractiveBundle;
 use kesko_physics::{
-    collider::{ColliderPhysicalProperties, ColliderShape},
-    force::Force,
-    gravity::GravityScale,
-    joint::{fixed::FixedJoint, revolute::RevoluteJoint, KeskoAxis},
+    joint::{fixed::FixedJoint, KeskoAxis},
     mass::Mass,
     rigid_body::RigidBody,
 };
@@ -60,11 +47,7 @@ impl UrdfModel {
         }
     }
 
-    pub fn spawn(
-        &self,
-        commands: &mut Commands,
-        asset_server: &Res<AssetServer>,
-    ) {
+    pub fn spawn(&self, commands: &mut Commands, asset_server: &Res<AssetServer>) {
         let urdf_asset: Handle<UrdfAsset> = asset_server.load(self.urdf_path.clone());
 
         println!("urdf_asset: {:?}", urdf_asset);

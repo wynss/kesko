@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use anyhow::{anyhow, Result};
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 use kesko_core::event::SimulatorRequestEvent;
@@ -26,14 +24,6 @@ impl Plugin for UrdfPlugin {
     fn name(&self) -> &str {
         "URDF Plugin"
     }
-}
-
-enum Message {
-    SpawnUrdf {
-        urdf_path: String,
-        transform: Transform,
-        package_mapping: HashMap<String, String>,
-    },
 }
 
 pub fn parse_spawn_message(
