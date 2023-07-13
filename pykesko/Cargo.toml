@@ -11,6 +11,7 @@ crate-type = ["cdylib"]
 bevy = { version = "0.10.1", default-features = false, features = ["bevy_render", "bevy_winit", "bevy_scene", "x11", "bevy_asset", "bevy_pbr", "bevy_core_pipeline"] }
 kesko = { path = "../kesko"}
 kesko_urdf = { path = "../kesko/crates/kesko_urdf" }
+renet_transport = { path = "../kesko/crates/renet_transport" }
 placeholder_box = { path = "../kesko/crates/placeholder_box" }
 phf = { version = "0.11.1", features = ["macros"] }
 pyo3 = { version = "0.18.3", features = ["extension-module", "hashbrown"] }

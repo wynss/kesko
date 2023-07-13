@@ -15,6 +15,7 @@ use kesko::plugins::{CorePlugins, HeadlessRenderPlugins, UIPlugin};
 use kesko::tcp::TcpPlugin;
 use kesko_urdf::UrdfPlugin;
 use placeholder_box::PlaceholderBoxPlugin;
+use renet_transport::RenetServerWorker;
 
 static PYTHON_LOG_TO_BEVY_LOG_LEVEL: phf::Map<i32, Level> = phf_map! {
     10i32 => Level::DEBUG,
@@ -27,6 +28,7 @@ static PYTHON_LOG_TO_BEVY_LOG_LEVEL: phf::Map<i32, Level> = phf_map! {
 fn pykesko(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<KeskoApp>()?;
     m.add_class::<Model>()?;
+    m.add_class::<RenetServerWorker>()?;
     m.add_function(wrap_pyfunction!(run_kesko_tcp, m)?)?;
     Ok(())
 }
@@ -190,7 +192,6 @@ impl KeskoApp {
     }
 
     pub fn publish_flatbuffers(&mut self, flatbuffer: Vec<u8>) {
-        println!("Sending fb: {:?}", flatbuffer);
         self.app
             .world
             .send_event::<SimulatorRequestEvent>(SimulatorRequestEvent::PublishFlatBuffers(

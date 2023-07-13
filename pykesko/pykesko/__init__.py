@@ -3,6 +3,7 @@ from pykesko.kesko import Kesko
 # import the the rust bindings
 from .pykesko import KeskoApp as _KeskoApp
 from .pykesko import Model as KeskoModel
+from .pykesko import RenetServerWorker
 from .pykesko import run_kesko_tcp
 
 from gym.envs.registration import register

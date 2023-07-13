@@ -12,3 +12,6 @@ renet = { version = "0.0.12"}
 flatbuffers = "23.5.26"
 
 kesko_core = { path = "../kesko_core"}
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+pyo3 = { version = "0.18.3", features = ["extension-module"] }

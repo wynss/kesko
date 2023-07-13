@@ -1,6 +1,6 @@
 import time
 
-from pykesko import Kesko, KeskoModel
+from pykesko import Kesko, RenetServerWorker
 from pykesko.backend.backend import BackendType
 from pykesko.protocol.commands import PublishFlatBuffers
 from pykesko.color import Color
@@ -26,21 +26,31 @@ def clear_msg() -> bytearray:
     builder = flatbuffers.Builder(1024)
     Clear.Start(builder)
     message = Clear.End(builder)
-    builder.Finish(message)
+    builder.Finish(message, b"PBCL")
 
     return builder.Output()
 
+# if __name__ == "__main__":
+#     kesko = Kesko(backend_type=BackendType.BINDINGS)
+#     kesko.initialize()
+
+#     for rotation in range(100):
+#         kesko.step()
+#         kesko.send(
+#         [
+#             PublishFlatBuffers(data=clear_msg()),
+#             PublishFlatBuffers(data=spawn_model_msg(rotation / 100.0)),
+#         ]
+#     )
+
+#     kesko.close()
+
 if __name__ == "__main__":
-    kesko = Kesko(backend_type=BackendType.BINDINGS)
-    kesko.initialize()
+    connection = RenetServerWorker()
+    for i in range(9999999999):
+        connection.send("Message #{}".format(i))
+        time.sleep(1.0)
 
-    for rotation in range(100):
-        kesko.step()
-        kesko.send(
-        [
-            PublishFlatBuffers(data=clear_msg()),
-            PublishFlatBuffers(data=spawn_model_msg(rotation / 100.0)),
-        ]
-    )
-
-    kesko.close()
+        message = connection.try_receive()
+        if message is not None:
+            print(message)

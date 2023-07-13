@@ -14,13 +14,19 @@ use renet::{
     ConnectionConfig, DefaultChannel, RenetServer, ServerEvent,
 };
 
+#[cfg(not(target_arch = "wasm32"))]
+use pyo3::prelude::*;
+
+#[cfg_attr(not(target_arch = "wasm32"), pyclass)]
 pub struct RenetServerWorker {
     sender_to_worker: Sender<String>,
     receiver_from_worker: Receiver<String>,
     handle: Option<JoinHandle<()>>,
 }
 
+#[cfg_attr(not(target_arch = "wasm32"), pymethods)]
 impl RenetServerWorker {
+    #[new]
     pub fn new() -> Self {
         let public_addr: SocketAddr = "127.0.0.1:5000".parse().unwrap();
 
