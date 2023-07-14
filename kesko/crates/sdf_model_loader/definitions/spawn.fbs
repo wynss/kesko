@@ -1,0 +1,21 @@
+namespace kesko.sdf_model_loader;
+ 
+struct Vec3 {
+  x:float;
+  y:float;
+  z:float;
+}
+
+struct Transform {
+  translation:Vec3;
+  rotation:Vec3;
+  scale:Vec3;
+}
+ 
+table SpawnSdfModel {
+  sdf_path:string;
+  transform:Transform;
+}
+ 
+root_type SpawnSdfModel;
+file_identifier "SLSP";

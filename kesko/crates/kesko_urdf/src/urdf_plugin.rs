@@ -33,38 +33,43 @@ pub fn parse_spawn_message(
         .iter()
         .map(|event| {
             if let SimulatorRequestEvent::PublishFlatBuffers(data) = event {
-                let spawn_urdf = root_as_spawn_urdf(data.as_slice())?;
-                let urdf_path = spawn_urdf.urdf_path().to_string();
-                let transform = spawn_urdf
-                    .position()
-                    .and_then(|position| {
-                        Some(Transform::from_xyz(
-                            position.x(),
-                            position.y(),
-                            position.z(),
-                        ))
-                    })
-                    .unwrap_or_default();
-                let package_mapping = spawn_urdf
-                    .package_mappings()
-                    .unwrap_or_default()
-                    .iter()
-                    .map(|mapping| {
-                        (
-                            mapping.package_name().unwrap_or("").into(),
-                            mapping.package_path().unwrap_or("").into(),
-                        )
-                    })
-                    .collect::<HashMap<String, String>>();
+                if flatbuffers::buffer_has_identifier(
+                    data,
+                    urdf_generated::kesko::urdf::SPAWN_URDF_IDENTIFIER,
+                    false,
+                ) {
+                    let spawn_urdf = root_as_spawn_urdf(data.as_slice())?;
+                    let urdf_path = spawn_urdf.urdf_path().to_string();
+                    let transform = spawn_urdf
+                        .position()
+                        .and_then(|position| {
+                            Some(Transform::from_xyz(
+                                position.x(),
+                                position.y(),
+                                position.z(),
+                            ))
+                        })
+                        .unwrap_or_default();
+                    let package_mapping = spawn_urdf
+                        .package_mappings()
+                        .unwrap_or_default()
+                        .iter()
+                        .map(|mapping| {
+                            (
+                                mapping.package_name().unwrap_or("").into(),
+                                mapping.package_path().unwrap_or("").into(),
+                            )
+                        })
+                        .collect::<HashMap<String, String>>();
 
-                Ok(UrdfModel::new(
-                    urdf_path,
-                    package_mapping,
-                    transform,
-                ))
-            } else {
-                Err(anyhow!("Not a SpawnUrdf message"))
+                    return Ok(UrdfModel::new(
+                        urdf_path,
+                        package_mapping,
+                        transform,
+                    ));
+                }
             }
+            Err(anyhow!("Not a SpawnUrdf message"))
         })
         .filter(|message| message.is_ok())
         .map(|message| message.unwrap())

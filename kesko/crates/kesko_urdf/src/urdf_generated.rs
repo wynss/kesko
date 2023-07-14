@@ -488,16 +488,28 @@ pub unsafe fn root_as_spawn_urdf_unchecked(buf: &[u8]) -> SpawnUrdf {
 pub unsafe fn size_prefixed_root_as_spawn_urdf_unchecked(buf: &[u8]) -> SpawnUrdf {
   flatbuffers::size_prefixed_root_unchecked::<SpawnUrdf>(buf)
 }
+pub const SPAWN_URDF_IDENTIFIER: &str = "URSP";
+
+#[inline]
+pub fn spawn_urdf_buffer_has_identifier(buf: &[u8]) -> bool {
+  flatbuffers::buffer_has_identifier(buf, SPAWN_URDF_IDENTIFIER, false)
+}
+
+#[inline]
+pub fn spawn_urdf_size_prefixed_buffer_has_identifier(buf: &[u8]) -> bool {
+  flatbuffers::buffer_has_identifier(buf, SPAWN_URDF_IDENTIFIER, true)
+}
+
 #[inline]
 pub fn finish_spawn_urdf_buffer<'a, 'b>(
     fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
     root: flatbuffers::WIPOffset<SpawnUrdf<'a>>) {
-  fbb.finish(root, None);
+  fbb.finish(root, Some(SPAWN_URDF_IDENTIFIER));
 }
 
 #[inline]
 pub fn finish_size_prefixed_spawn_urdf_buffer<'a, 'b>(fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>, root: flatbuffers::WIPOffset<SpawnUrdf<'a>>) {
-  fbb.finish_size_prefixed(root, None);
+  fbb.finish_size_prefixed(root, Some(SPAWN_URDF_IDENTIFIER));
 }
 }  // pub mod urdf
 }  // pub mod kesko

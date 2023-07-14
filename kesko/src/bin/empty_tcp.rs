@@ -13,6 +13,7 @@ use kesko_physics::{
     collider::ColliderShape, event::collision::GenerateCollisionEvents, force::Force,
     gravity::GravityScale, rigid_body::RigidBody, joint::{ JointMotorEvent ,MotorCommand },
 };
+use sdf_model_loader::SdfModel;
 
 fn main() {
     App::new()
@@ -21,6 +22,7 @@ fn main() {
         .add_plugin(CarPlugin)
         .add_plugin(WheelyPlugin)
         .add_plugin(kesko_urdf::UrdfPlugin)
+        .add_plugin(sdf_model_loader::SdfPlugin)
         .add_plugin(placeholder_box::PlaceholderBoxPlugin)
         .add_plugin(renet_transport::RenetTransportPlugin)
         .add_startup_system(setup)
@@ -31,18 +33,8 @@ fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    server: Res<AssetServer>
 ) {
-    kesko_models::arena::spawn(
-        &mut commands,
-        materials.add(StandardMaterial {
-            base_color: Color::WHITE,
-            ..default()
-        }),
-        &mut meshes,
-        10.0,
-        10.0,
-        0.75,
-    );
     // Light
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {

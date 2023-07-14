@@ -18,3 +18,5 @@ table SpawnUrdf {
 }
  
 root_type SpawnUrdf;
+
+file_identifier "URSP";

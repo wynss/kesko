@@ -34,9 +34,10 @@ impl SdfModel {
     pub fn spawn(&self, commands: &mut Commands, asset_server: &Res<AssetServer>) {
         let mut sdf_file_path = self.sdf_path.clone();
         sdf_file_path.push("model.sdf");
+        println!("load sdf_asset: {:?}", sdf_file_path);
         let sdf_asset: Handle<SdfAsset> = asset_server.load(sdf_file_path);
 
-        println!("sdf_asset: {:?}", sdf_asset);
+        
         // Convert from ROS coordinate frame is Z up, Y left, X forward
         //   to Bevy coordinate frame: Y up, X right, Z backward
         let transform = self.transform
