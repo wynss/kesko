@@ -9,13 +9,12 @@ pub struct PanOrbitCameraPlugin;
 
 impl Plugin for PanOrbitCameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(send_camera_mouse_events)
-            .add_system(handle_camera_events)
+        app.add_systems(Update, (send_camera_mouse_events, handle_camera_events))
             .add_event::<PanOrbitCameraEvents>();
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Event)]
 enum PanOrbitCameraEvents {
     Orbit(Vec2),
     Pan(Vec2),
@@ -118,7 +117,7 @@ fn send_camera_mouse_events(
         if key_input.pressed(KeyCode::Tab) {
             translation.y += 1.0;
         }
-        if key_input.pressed(KeyCode::LShift) {
+        if key_input.pressed(KeyCode::ShiftLeft) {
             translation.y -= 1.0;
         }
 

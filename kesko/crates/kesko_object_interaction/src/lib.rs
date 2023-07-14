@@ -31,8 +31,9 @@ where
             .add_event::<InteractionEvent>()
             .add_event::<SelectEvent>()
             .init_resource::<GlobalDragState>()
-            .add_plugin(RayCastPlugin::<T>::default())
+            .add_plugins(RayCastPlugin::<T>::default())
             .add_systems(
+                Update,
                 (
                     update_interactions::<T>,
                     event::send_interaction_events::<T>,
@@ -40,8 +41,7 @@ where
                     debug::update_interaction_material::<T>,
                     set_initial_interaction_material,
                 )
-                    .chain()
-                    .in_base_set(CoreSet::Update),
+                    .chain(),
             );
     }
 }

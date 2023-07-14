@@ -8,7 +8,7 @@ name = "pykesko"
 crate-type = ["cdylib"]
 
 [dependencies]
-bevy = { version = "0.10.1", default-features = false, features = ["bevy_render", "bevy_winit", "bevy_scene", "x11", "bevy_asset", "bevy_pbr", "bevy_core_pipeline"] }
+bevy = { version = "0.11.0"}
 kesko = { path = "../kesko"}
 phf = { version = "0.11.1", features = ["macros"] }
 pyo3 = { version = "0.18.3", features = ["extension-module"] }

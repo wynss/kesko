@@ -43,16 +43,18 @@ mod tests {
     #[test]
     fn test_set_initial_material() {
         let mut app = App::new();
-        app.add_plugin(TaskPoolPlugin::default())
-            .add_plugin(TypeRegistrationPlugin::default())
-            .add_plugin(AssetPlugin::default())
-            .add_asset::<StandardMaterial>();
+        app.add_plugins((
+            TaskPoolPlugin::default(),
+            TypeRegistrationPlugin::default(),
+            AssetPlugin::default(),
+        ))
+        .add_asset::<StandardMaterial>();
 
         let mut materials = app.world.resource_mut::<Assets<StandardMaterial>>();
         let material = materials.add(Color::GOLD.into());
         app.world.spawn((OriginalMaterial::default(), material));
 
-        app.add_system(set_initial_interaction_material);
+        app.add_systems(Update, set_initial_interaction_material);
         app.update();
 
         // only 1 entity

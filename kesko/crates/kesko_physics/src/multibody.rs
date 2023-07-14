@@ -162,7 +162,7 @@ mod tests {
     #[test]
     fn test_name() {
         let mut app = App::new();
-        app.add_plugin(PhysicsPlugin::default());
+        app.add_plugins(PhysicsPlugin::default());
 
         // add root
         let root_entity = app

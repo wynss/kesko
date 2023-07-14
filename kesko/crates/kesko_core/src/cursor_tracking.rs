@@ -23,8 +23,13 @@ where
     T: Component + Default,
 {
     fn build(&self, app: &mut App) {
-        app.add_system(update_tracking_system::<T>.after(update_tracking_controller_system::<T>))
-            .add_system(update_tracking_controller_system::<T>);
+        app.add_systems(
+            Update,
+            (
+                update_tracking_controller_system::<T>,
+                update_tracking_system::<T>.after(update_tracking_controller_system::<T>),
+            ),
+        );
     }
 }
 

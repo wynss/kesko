@@ -8,12 +8,12 @@ struct RayCastGroup;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(FrameTimeDiagnosticsPlugin::default())
-        .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(RayCastPlugin::<RayCastGroup>::default())
+        .add_plugins(FrameTimeDiagnosticsPlugin::default())
+        .add_plugins(LogDiagnosticsPlugin::default())
+        .add_plugins(RayCastPlugin::<RayCastGroup>::default())
         .insert_resource(Msaa::Sample4)
-        .add_startup_system(setup)
-        .add_system(bevy::window::close_on_esc)
+        .add_systems(Startup, setup)
+        .add_systems(Update, bevy::window::close_on_esc)
         .run();
 }
 

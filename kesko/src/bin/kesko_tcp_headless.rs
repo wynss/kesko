@@ -11,10 +11,12 @@ fn main() {
         .add_plugins(HeadlessRenderPlugins {
             initial_physic_state: kesko_physics::PhysicState::Stopped,
         })
-        .add_plugin(FrameTimeDiagnosticsPlugin)
-        .add_plugin(LogDiagnosticsPlugin::default())
-        .add_plugin(TcpPlugin)
-        .add_startup_system(setup)
+        .add_plugins((
+            FrameTimeDiagnosticsPlugin,
+            LogDiagnosticsPlugin::default(),
+            TcpPlugin,
+        ))
+        .add_systems(Startup, setup)
         .run();
 }
 

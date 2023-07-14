@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 bevy = { workspace = true }
-bevy_atmosphere = { version="0.6.0" }
 
 kesko_core = { path = "../kesko_core" }
 kesko_physics = { path = "../kesko_physics" }

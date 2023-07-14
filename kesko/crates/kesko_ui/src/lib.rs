@@ -11,12 +11,13 @@ use bevy_egui::{egui, EguiContexts, EguiPlugin};
 pub struct UIPlugin;
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(EguiPlugin)
+        app.add_plugins(EguiPlugin)
             // core ui
-            .add_startup_system(initialize_ui_components_system)
+            .add_systems(Startup, initialize_ui_components_system)
             // add components
             // main menu component
             .add_systems(
+                Update,
                 (
                     main_menu::MainMenuComponent::update_system,
                     spawn_component::SpawnComponent::update_system,
@@ -26,10 +27,16 @@ impl Plugin for UIPlugin {
                     .chain(),
             )
             .add_event::<about::AboutEvent>()
-            .add_system(spawn_component::SpawnComponent::show_and_send_system)
+            .add_systems(
+                Update,
+                spawn_component::SpawnComponent::show_and_send_system,
+            )
             .add_event::<fps_component::FPSComponentEvent>()
-            .add_system(fps_component::FPSComponent::show_and_send_system)
-            .add_system(multibody_component::MultibodyUIComponent::show_system);
+            .add_systems(Update, fps_component::FPSComponent::show_and_send_system)
+            .add_systems(
+                Update,
+                multibody_component::MultibodyUIComponent::show_system,
+            );
     }
 
     fn name(&self) -> &str {

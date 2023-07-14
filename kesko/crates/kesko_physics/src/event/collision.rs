@@ -9,7 +9,7 @@ use crate::rapier_extern::rapier;
 #[derive(Component)]
 pub struct GenerateCollisionEvents;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Event)]
 pub enum CollisionEvent {
     CollisionStarted(CollisionData),
     CollisionStopped(CollisionData),

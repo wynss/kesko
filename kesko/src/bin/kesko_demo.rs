@@ -16,9 +16,9 @@ fn main() {
     App::new()
         .add_plugins(CorePlugins::default())
         .add_plugins(DiagnosticsPlugins)
-        .add_plugin(CarPlugin)
-        .add_plugin(WheelyPlugin)
-        .add_startup_system(test_scene)
+        .add_plugins(CarPlugin)
+        .add_plugins(WheelyPlugin)
+        .add_systems(Startup, test_scene)
         .run();
 }
 
@@ -110,7 +110,7 @@ fn test_scene(
     // Light
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 100_000.0,
+            illuminance: 40_000.0,
             // Configure the projection to better fit the scene
             shadows_enabled: true,
             ..default()

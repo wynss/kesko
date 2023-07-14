@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 
+#[derive(Event)]
 pub(crate) enum AboutEvent {
     Open,
 }

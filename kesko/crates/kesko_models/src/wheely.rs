@@ -45,10 +45,14 @@ const BACK_WHEEL_WIDTH: f32 = 0.04;
 pub struct WheelyPlugin;
 impl Plugin for WheelyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<WheelyControlEvent>()
-            .add_system(Wheely::enable_control_system)
-            .add_system(Wheely::send_control_events)
-            .add_system(Wheely::handle_control_system);
+        app.add_event::<WheelyControlEvent>().add_systems(
+            Update,
+            (
+                Wheely::enable_control_system,
+                Wheely::send_control_events,
+                Wheely::handle_control_system,
+            ),
+        );
     }
 }
 
@@ -69,6 +73,7 @@ impl Default for WheelyController {
     }
 }
 
+#[derive(Event)]
 enum WheelyControlEvent {
     LeftWheelForward,
     LeftWheelBackward,

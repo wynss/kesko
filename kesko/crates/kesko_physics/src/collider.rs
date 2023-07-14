@@ -157,7 +157,7 @@ mod tests {
         app.init_resource::<KeskoRes<rapier::RigidBodySet>>();
         app.init_resource::<KeskoRes<rapier::ColliderSet>>();
 
-        app.add_systems((add_rigid_bodies, add_colliders).chain());
+        app.add_systems(Update, (add_rigid_bodies, add_colliders).chain());
 
         app
     }

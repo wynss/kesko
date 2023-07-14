@@ -14,6 +14,7 @@ use kesko_physics::{
 };
 use serde::{Deserialize, Serialize};
 
+#[derive(Event)]
 pub enum SimulatorRequestEvent {
     GetState,
     ExitApp,
@@ -24,7 +25,7 @@ pub enum SimulatorRequestEvent {
     },
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Event)]
 pub enum SimulatorResponseEvent {
     MultibodyStates(MultiBodyStates),
     WillExitApp,

@@ -236,7 +236,7 @@ pub(crate) fn update_joint_pos_system(
 }
 
 /// Event for communicate joint motor positions and velocities
-#[derive(Debug)]
+#[derive(Debug, Event)]
 pub struct JointMotorEvent {
     pub entity: Entity,
     pub command: MotorCommand,
@@ -523,7 +523,7 @@ mod tests {
     #[test]
     fn test_add_one_joint() {
         let mut app = App::new();
-        app.add_system(add_multibody_joints);
+        app.add_systems(Update, add_multibody_joints);
 
         app.init_resource::<KeskoRes<rapier::MultibodyJointSet>>();
         app.init_resource::<KeskoRes<Entity2JointHandle>>();
@@ -642,7 +642,7 @@ mod tests {
         app.world.insert_resource(events);
 
         // add system and run
-        app.add_system(update_joint_motors_system);
+        app.add_systems(Update, update_joint_motors_system);
         app.update();
 
         // get result
@@ -711,7 +711,7 @@ mod tests {
         app.insert_resource(events);
 
         // add system and run
-        app.add_system(update_joint_motors_system);
+        app.add_systems(Update, update_joint_motors_system);
         app.update();
 
         // get result
@@ -788,7 +788,7 @@ mod tests {
         app.insert_resource(events);
 
         // Run stage
-        app.add_system(update_joint_motors_system);
+        app.add_systems(Update, update_joint_motors_system);
         app.update();
 
         // get result
@@ -863,7 +863,7 @@ mod tests {
         app.insert_resource(events);
 
         // add system and run
-        app.add_system(update_joint_motors_system);
+        app.add_systems(Update, update_joint_motors_system);
         app.update();
 
         // get result
