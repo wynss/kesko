@@ -12,7 +12,6 @@ pub struct IsSdfSpawned(pub bool);
 #[derive(Default, Bundle)]
 pub struct SdfBundle {
     pub sdf_asset: Handle<SdfAsset>,
-    pub transform: Transform,
     pub is_sdf_spawned: IsSdfSpawned,
 }
 
@@ -47,9 +46,10 @@ impl SdfModel {
         commands.spawn((
             SdfBundle {
                 sdf_asset,
-                transform,
                 ..Default::default()
             },
+            TransformBundle::from_transform(transform),
+            VisibilityBundle::default(),
             RigidBody::Fixed,
         ));
     }
@@ -69,18 +69,26 @@ pub fn convert_sdf_to_components(
         }
         is_sdf_spawned.0 = true;
         let sdf_asset = sdf_assets.get(sdf_asset_handle).unwrap();
-        println!("Very good! We're loading the OBJ file now. {:?}", sdf_asset.visual_path);
-        commands.entity(root_entity).insert((
-            Name::new(sdf_asset.name.clone()),
-            PbrBundle {
-                mesh: asset_server.load(sdf_asset.visual_path.clone()),
-                // material: materials.add(StandardMaterial {
-                //     base_color_texture: Some(asset_server.load("cube.png")),
-                //     ..default()
-                // }),
-                ..default()
-            },
-        ));
+
+
+        let mut visual_path = sdf_asset.visual_path.clone();
+        if visual_path.ends_with(".glb") || visual_path.ends_with(".gltf") {
+            visual_path += "#Scene0";
+        }
+        // Convert from ROS coordinate frame is Z up, Y left, X forward
+        //   to Bevy coordinate frame: Y up, X right, Z backward
+        let from_ros_frame = 
+            Transform::from_rotation(Quat::from_rotation_x(std::f32::consts::FRAC_PI_2)) * Transform::from_rotation(Quat::from_rotation_y(std::f32::consts::FRAC_PI_2));
+        // let from_ros_frame = Transform::default();   
+
+        commands.entity(root_entity).with_children(|parent| {
+            parent.spawn((TransformBundle::from_transform(from_ros_frame), VisibilityBundle::default())).with_children(|parent| {
+                parent.spawn(SceneBundle {
+                    scene: asset_server.load(visual_path),
+                    ..default()
+                });
+            });
+        });
     }
     //     // Substitutes package:// with the path to the package using the package_map
     //     let asset_path = |sdf_path: &String| -> String {
