@@ -20,6 +20,10 @@ class PackageMap(object):
     def GetRootAsPackageMap(cls, buf, offset=0):
         """This method is deprecated. Please switch to GetRootAs."""
         return cls.GetRootAs(buf, offset)
+    @classmethod
+    def PackageMapBufferHasIdentifier(cls, buf, offset, size_prefixed=False):
+        return flatbuffers.util.BufferHasIdentifier(buf, offset, b"\x55\x52\x53\x50", size_prefixed=size_prefixed)
+
     # PackageMap
     def Init(self, buf, pos):
         self._tab = flatbuffers.table.Table(buf, pos)
