@@ -8,7 +8,6 @@ pub mod spider;
 pub mod wheely;
 
 use bevy::prelude::*;
-use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
@@ -47,7 +46,6 @@ pub enum SpawnEvent {
 pub struct ControlDescription(pub String);
 
 // Enum to represent each default model
-#[pyclass]
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Model {
     Car,
@@ -60,10 +58,8 @@ pub enum Model {
     Plane,
 }
 
-#[pymethods]
 impl Model {
     /// Names to use for example in UI
-    #[getter]
     pub const fn name(&self) -> &'static str {
         match self {
             Self::Car => "Car",

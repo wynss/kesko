@@ -6,7 +6,7 @@ use phf::phf_map;
 use pyo3::prelude::*;
 
 use kesko::core::event::{SimulatorRequestEvent, SimulatorResponseEvent};
-use kesko::models::{car::CarPlugin, wheely::WheelyPlugin, Model, SpawnEvent};
+use kesko::models::{car::CarPlugin, wheely::WheelyPlugin, Model as KeskoModel, SpawnEvent};
 use kesko::physics::{
     event::{collision::CollisionEvent, PhysicRequestEvent, PhysicResponseEvent},
     joint::{JointMotorEvent, MotorCommand},
@@ -20,6 +20,36 @@ static PYTHON_LOG_TO_BEVY_LOG_LEVEL: phf::Map<i32, Level> = phf_map! {
     30i32 => Level::WARN,
     40i32 => Level::ERROR,
 };
+
+/// Wrapping of the kesko models in order to expose them to python. This will be removed once
+/// the kesko models is removed in favor of URDF.
+#[pyclass]
+#[derive(Debug, Clone)]
+pub enum Model {
+    Car,
+    Snake,
+    Spider,
+    Sphere,
+    Wheely,
+    Humanoid,
+    Arena,
+    Plane,
+}
+
+impl From<Model> for KeskoModel {
+    fn from(model: Model) -> Self {
+        match model {
+            Model::Car => KeskoModel::Car,
+            Model::Snake => KeskoModel::Snake,
+            Model::Spider => KeskoModel::Spider,
+            Model::Sphere => KeskoModel::Sphere,
+            Model::Wheely => KeskoModel::Wheely,
+            Model::Humanoid => KeskoModel::Humanoid,
+            Model::Arena => KeskoModel::Arena,
+            Model::Plane => KeskoModel::Plane,
+        }
+    }
+}
 
 #[pymodule]
 fn pykesko(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
@@ -102,7 +132,7 @@ impl KeskoApp {
 
     pub fn spawn(&mut self, model: Model, position: Vec<f32>, color: Vec<f32>) {
         self.app.world.send_event::<SpawnEvent>(SpawnEvent::Spawn {
-            model,
+            model: model.into(),
             transform: Transform::from_xyz(position[0], position[1], position[2]),
             color: Color::Rgba {
                 red: color[0],
