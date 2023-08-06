@@ -1,6 +1,5 @@
 # rust
 **/target
-/wasm
 Cargo.lock
 
 # binaries
@@ -14,9 +13,9 @@ Cargo.lock
 .idea
 .vscode
 
-# trunk
+# wasm and trunk
 dist/
-
+**/wasm
 
 # mac
 .DS_Store
