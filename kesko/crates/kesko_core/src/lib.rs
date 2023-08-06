@@ -28,6 +28,9 @@ use bevy::{
     DefaultPlugins,
 };
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash, SystemSet)]
+pub struct HandleEventsSet;
+
 pub struct CorePlugin {
     pub log_level: Level,
 }
@@ -82,13 +85,14 @@ impl Plugin for CorePlugin {
             // simulator system events
             .add_event::<event::SimulatorRequestEvent>()
             .add_event::<event::SimulatorResponseEvent>()
+            .configure_set(Last, HandleEventsSet)
             .add_systems(
                 Last,
                 (
                     event::handle_system_events,
                     event::handle_serializable_state_request,
                     event::handle_motor_command_requests,
-                ),
+                ).in_set(HandleEventsSet),
             );
     }
 }

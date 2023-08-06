@@ -6,6 +6,7 @@ use std::net::TcpListener;
 use bevy::prelude::*;
 
 use kesko_types::resource::KeskoRes;
+use kesko_core::HandleEventsSet;
 
 const URL: &str = "127.0.0.1:8080";
 
@@ -42,7 +43,7 @@ impl Plugin for TcpPlugin {
                     .insert_resource(KeskoRes(listener))
                     .insert_resource(KeskoRes(TcpBuffer::new()))
                     .configure_set(First, TcpSet::Request)
-                    .configure_set(Last, TcpSet::Response)
+                    .configure_set(Last, TcpSet::Response.after(HandleEventsSet))
                     .add_systems(
                         First,
                         (handle_incoming_connections, apply_deferred)
