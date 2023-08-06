@@ -1,9 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
+    <link data-trunk rel="rust" data-bin=kesko_main />
 </head>
 <body>
-    
+    <canvas id="kesko-wasm"></canvas>
+    <script>
+        document.getElementById("kesko-wasm").addEventListener("contextmenu", function(event){
+            event.preventDefault();
+            event.stopPropagation();
+        }); 
+        document.getElementById("kesko-wasm").addEventListener("click", function(event){
+            event.preventDefault();
+            event.stopPropagation();
+        });
+        document.getElementById("kesko-wasm").addEventListener("mousedown", function(event){
+            if (event.button == 1) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
+    </script>
 </body>
 </html>
